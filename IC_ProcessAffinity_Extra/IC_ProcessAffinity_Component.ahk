@@ -7,18 +7,32 @@ Gui, ICScriptHub:Tab, Process Affinity
 Gui, ICScriptHub:Font, w700
 Gui, ICScriptHub:Add, Text, , Core affinity:
 Gui, ICScriptHub:Font, w400
-Gui, ICScriptHub:Add, Button , x+10 vProcessAffinitySave gProcessAffinitySave, Save
-Gui, ICScriptHub:Add, Text, vProcessAffinityText x+5 w125
+Gui, ICScriptHub:Add, Button , Disabled x15 y+10 vProcessAffinityLoad gProcessAffinityLoad, Load
+Gui, ICScriptHub:Add, Button , Disabled x+10 vProcessAffinitySave gProcessAffinitySave, Save
+Gui, ICScriptHub:Add, Text, vProcessAffinityText x15 y+5 w125
 
 GUIFunctions.UseThemeTextColor("TableTextColor")
-Gui, ICScriptHub:Add, ListView, AltSubmit Checked -Hdr -Multi x15 y+15 w120 h320 vProcessAffinityView gProcessAffinityView, CoreID
+EnvGet, ProcessorCount, NUMBER_OF_PROCESSORS
+hCols := Min(ProcessorCount + 1, 33)
+Gui, ICScriptHub:Add, ListView, AltSubmit Checked Disabled -Hdr -Multi R%hCols% x15 y+10 w120 vProcessAffinityView gProcessAffinityView, CoreID
 GUIFunctions.UseThemeListViewBackgroundColor("ProcessAffinityView")
-IC_ProcessAffinity_Component.BuildCoreList()
+IC_ProcessAffinity_Component.Init()
+
+; Load button
+ProcessAffinityLoad()
+{
+    restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
+    LV_Delete()
+    IC_ProcessAffinity_Component.ReloadCheckboxes()
+    Sleep, 50
+    GuiControl, ICScriptHub:, ProcessAffinityText, Settings loaded.
+}
 
 ; Save button
 ProcessAffinitySave()
 {
     IC_ProcessAffinity_Component.SaveSettings()
+    GuiControl, ICScriptHub:, ProcessAffinityText, Settings saved.
 }
 
 ; ViewList
@@ -26,11 +40,12 @@ ProcessAffinityView()
 {
     if (A_GuiEvent == "I")
     {
-        if InStr(ErrorLevel, "C", true)
+        if (InStr(ErrorLevel, "C", true))
             IC_ProcessAffinity_Component.Update(A_EventInfo, 1)
-        else if InStr(ErrorLevel, "c", true)
+        else if (InStr(ErrorLevel, "c", true))
             IC_ProcessAffinity_Component.Update(A_EventInfo, 0)
     }
+    GuiControl, ICScriptHub:, ProcessAffinityText,
 }
 
 /*  IC_ProcessAffinity_Component
@@ -42,37 +57,47 @@ ProcessAffinityView()
 */
 Class IC_ProcessAffinity_Component
 {
-    ; Builds checkboxes for CoreAffinity
-    BuildCoreList()
+    ; Start up GUI
+    Init()
     {
         EnvGet, ProcessorCount, NUMBER_OF_PROCESSORS
         this.ProcessorCount := ProcessorCount
         if (ProcessorCount == 0)
         {
-            GuiControl, Disable, ProcessAffinitySave
             GuiControl, ICScriptHub:, ProcessAffinityText, No cores found.
             return
         }
         else if (ProcessorCount > 64) ; TODO: Support for CPU Groups
         {
-            GuiControl, Disable, ProcessAffinitySave
             GuiControl, ICScriptHub:, ProcessAffinityText, > 64 CPUs not supported.
             return
         }
+        GuiControl, Enable, ProcessAffinityLoad
+        GuiControl, Enable, ProcessAffinitySave
+        GuiControl, Enable, ProcessAffinityView
+        ProcessAffinityLoad()
+        this.SaveSettings()
+    }
+
+    ; Builds checkboxes for CoreAffinity
+    ReloadCheckboxes()
+    {
+        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
+        processorCount := this.ProcessorCount
         this.LoadSettings()
         LV_Add(, "All processors") ; Create unchecked boxes
-        loop, %ProcessorCount%
+        loop, % processorCount
         {
             LV_Add(, "CPU " . A_Index - 1)
         }
         settings := this.Settings["ProcessAffinityMask"]
-        loop, %ProcessorCount% ; Check boxes
+        loop, % processorCount ; Check boxes
         {
             checked := (settings & (2 ** (A_Index - 1))) != 0
             if (checked)
                 LV_Modify(A_Index + 1, "Check")
         }
-        this.SaveSettings()
+        LV_ModifyCol(, 1) ; Hide horizontal scroll bar
     }
 
     ; Loads settings from the addon's setting.json file.
@@ -95,6 +120,7 @@ Class IC_ProcessAffinity_Component
      ; Saves settings to addon's setting.json file.
     SaveSettings()
     {
+        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
         coreMask := 0
         rowNumber := 1
         loop ; Sum up all checked boxes as an integer || signed int for 64 cores
@@ -143,6 +169,7 @@ Class IC_ProcessAffinity_Component
     ; Update checkboxes
     Update(checkBoxIndex := 0, on := 1)
     {
+        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
         if (checkBoxIndex == 1) ; Toggle all checkbox
             this.ToggleAllCores(on)
         else if (!on)
@@ -160,6 +187,7 @@ Class IC_ProcessAffinity_Component
     {
         if (!on AND !this.AreAllCoresChecked())
             return
+        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
         loop % LV_GetCount() - 1 ; Skip the toggle all checkbox
         {
             LV_Modify(A_Index + 1, on ? "Check" : "-Check")
@@ -169,6 +197,7 @@ Class IC_ProcessAffinity_Component
     ; Returns true if all the core checkboxes are checked
     AreAllCoresChecked()
     {
+        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
         rowNumber := 1 ; This causes the first loop iteration to start the search at the top of the list.
         loop
         {

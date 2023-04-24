@@ -1,0 +1,10 @@
+{
+	"Name":"Area Timing",
+	"Version": "v0.1.0",
+    "Includes" : "IC_AreaTiming_Component.ahk",
+    "Author" : "ImpEGamer",
+    "Url" : "https://github.com/imp444/Idle-Champions/tree/main/AddOns/IC_AreaTiming",
+    "Info" : "This Addon will record area transition and completion time.",
+    "Dependencies" : [
+    ]
+}

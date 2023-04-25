@@ -43,12 +43,12 @@ AreaTimingReset()
 
 AreaTimingView()
 {
-    Sleep, 10000
+    Sleep, 100
 }
 
 ModAreaTimingView()
 {
-    Sleep, 10000
+    Sleep, 100
 }
 
 ; Test to see if BrivGemFarm addon is avaialbe.
@@ -180,6 +180,7 @@ Class IC_AreaTiming_Component
         {
             while (g_SF.Memory.ReadTransitioning() > 0) ; wait for screen transition
             {
+                Sleep, 1
             }
             dtAreaToNextTime := Round(( A_TickCount - currentZoneStartTime ) / 1000, 2)
             currentZoneStartTime := A_TickCount

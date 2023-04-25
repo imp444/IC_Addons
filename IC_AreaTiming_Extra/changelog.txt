@@ -1,3 +1,7 @@
+April 25, 2023 - v.0.1.1
+    Added timers that closer reflect the actual game mechanics.
+    Known issues : zone skipping when dragging the vertical bar, inaccurate or negative values.
+
 April 24, 2023 - v.0.1.0
     Area timing functions for Idle Champions.
     Known issues: Timing transitions starts from when the zone is completed, registering the animation from Briv jump returns.

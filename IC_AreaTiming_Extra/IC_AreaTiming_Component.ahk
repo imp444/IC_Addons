@@ -12,7 +12,7 @@ Gui, ICScriptHub:Add, Button , x+10 vAreaTimingStop gAreaTimingStop, Stop
 Gui, ICScriptHub:Add, Button , x+60 vAreaTimingReset gAreaTimingReset, Reset
 
 GUIFunctions.UseThemeTextColor("TableTextColor")
-Gui, ICScriptHub:Add, ListView, AltSubmit -Multi R40 x15 y+10 w315 vAreaTimingView, Area|Next|Time (s)|Previous (s)|Average (s)|Count
+Gui, ICScriptHub:Add, ListView, R40 x15 y+10 w375 vAreaTimingView gAreaTimingView, Area|Next|T_area|T_tran|Time (s)|Previous|Average|Count
 GUIFunctions.UseThemeListViewBackgroundColor("AreaTimingView")
 
 Gui, ICScriptHub:Font, w700
@@ -20,7 +20,7 @@ Gui, ICScriptHub:Add, Text, , Mod 50 (Excluding area 1 and offline stack area):
 Gui, ICScriptHub:Font, w400
 
 GUIFunctions.UseThemeTextColor("TableTextColor")
-Gui, ICScriptHub:Add, ListView, AltSubmit -Multi R8 x15 y+10 w315 vModAreaTimingView, Area|Next|Time (s)|Previous (s)|Average (s)|Count
+Gui, ICScriptHub:Add, ListView, R8 x15 y+10 w375 vModAreaTimingView gModAreaTimingView, Area|Next|T_area|T_tran|Time (s)|Previous|Average|Count
 GUIFunctions.UseThemeListViewBackgroundColor("ModAreaTimingView")
 
 ; Start button
@@ -39,6 +39,16 @@ AreaTimingStop()
 AreaTimingReset()
 {
     g_AreaTiming.Reset()
+}
+
+AreaTimingView()
+{
+    Sleep, 10000
+}
+
+ModAreaTimingView()
+{
+    Sleep, 10000
 }
 
 ; Test to see if BrivGemFarm addon is avaialbe.
@@ -67,11 +77,13 @@ Class IC_AreaTiming_Component
     {
         this.TimerFunctions := {}
         fncToCallOnTimer := ObjBindMethod(this, "UpdateAreaTimingStatTimers")
-        this.TimerFunctions[fncToCallOnTimer] := 10
+        this.TimerFunctions[fncToCallOnTimer] := 20
         fncToCallOnTimer := ObjBindMethod(this, "UpdateGUI")
-        this.TimerFunctions[fncToCallOnTimer] := 250
+        this.TimerFunctions[fncToCallOnTimer] := 400
         fncToCallOnTimer := ObjBindMethod(this, "UpdateModGUI")
-        this.TimerFunctions[fncToCallOnTimer] := 250
+        this.TimerFunctions[fncToCallOnTimer] := 400
+        fncToCallOnTimer := ObjBindMethod(IC_AreaTimingObject, "ProcessQueue")
+        this.TimerFunctions[fncToCallOnTimer] := 200
     }
 
     Start()
@@ -99,6 +111,7 @@ Class IC_AreaTiming_Component
     Reset()
     {
         IC_AreaTimingObject.Items := {}
+        IC_AreaTimingObject.Queue := []
         IC_AreaTimingObject.Pending := {}
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "AreaTimingView")
         LV_Delete()
@@ -115,24 +128,39 @@ Class IC_AreaTiming_Component
     ; Based on IC_BrivGemFarm_Stats_Functions.ahk\UpdateStatTimers()
     UpdateAreaTimingStatTimers()
     {
-        static previousZoneStartTime := A_TickCount
-        static previousLoopStartTime := A_TickCount
+        static currentZoneStartTime := A_TickCount
+        static previousLoopStartTime := A_TickCount ; not used
         static lastZone := 1
         static lastResetCount := 0
         static LastTriggerStart := false
         static skipMod50 := false
+        static running := false
+        static areaClearTrigger := false
+        static dtAreaTime := 0
+        static skipFirstArea := 1
+        static skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
+        static mem := g_SF.Memory
 
-        TriggerStart := IsObject(this.SharedRunData) ? this.SharedRunData.TriggerStart : LastTriggerStart
         Critical, On
+        TriggerStart := IsObject(this.SharedRunData) ? this.SharedRunData.TriggerStart : LastTriggerStart
         currentZone := g_SF.Memory.ReadCurrentZone()
+        highestZone := g_SF.Memory.ReadHighestZone()
+        if (!areaClearTrigger AND highestZone > currentZone) ; area cleared
+        {
+            dtAreaTime := Round((A_TickCount - currentZoneStartTime ) / 1000, 2)
+            areaClearTrigger := true
+        }
         if (this.ResetStats) ; Manual reset
         {
-            previousZoneStartTime := A_TickCount
+            currentZoneStartTime := A_TickCount
             previousLoopStartTime := A_TickCount
             lastZone := currentZone
             lastResetCount := g_SF.Memory.ReadResetsCount()
             LastTriggerStart := false
             this.ResetStats := false
+            skipFirstArea := currentZone
+            skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
+            return
         }
         if (g_SF.Memory.ReadResetsCount() > lastResetCount OR (g_SF.Memory.ReadResetsCount() == 0 AND g_SF.Memory.ReadAreaActive() AND lastResetCount != 0 ) OR (TriggerStart AND LastTriggerStart != TriggerStart)) ; Modron or Manual reset happend
         {
@@ -140,7 +168,7 @@ Class IC_AreaTiming_Component
                 this.UpdateRunStats := true
             lastResetCount := g_SF.Memory.ReadResetsCount()
             previousLoopStartTime := A_TickCount
-            previousZoneStartTime := A_TickCount ; Reset zone timer after modron reset
+            currentZoneStartTime := A_TickCount ; Reset zone timer after modron reset
             lastZone := 1
         }
         if !g_SF.Memory.ReadUserIsInited() ; resetting/restarting
@@ -150,15 +178,20 @@ Class IC_AreaTiming_Component
         }
         else if ((currentZone > lastZone) AND (currentZone >= 2)) ; zone reset
         {
-            ;while (g_SF.Memory.ReadTransitioning() == 1) ; wait for screen transition
-               ; Sleep, 10
-            dtCurrentLevelTime := Round( ( A_TickCount - previousZoneStartTime ) / 1000, 2 )
-            if (lastZone == 1)
+            while (g_SF.Memory.ReadTransitioning() > 0) ; wait for screen transition
+            {
+            }
+            dtAreaToNextTime := Round(( A_TickCount - currentZoneStartTime ) / 1000, 2)
+            currentZoneStartTime := A_TickCount
+            if (lastZone <= 1)
                 skipMod50 := true
-            IC_AreaTimingObject.AddProgress(lastZone, currentZone, dtCurrentLevelTime, skipMod50)
+            if (lastZone != skipFirstArea AND ((lastZone + skipAmount + 1) >= currentZone)) ; Skip first value
+            {
+                IC_AreaTimingObject.AddToQueue(lastZone, currentZone, dtAreaTime, dtAreaToNextTime, skipMod50)
+            }
             lastZone := currentZone
-            previousZoneStartTime := A_TickCount
             skipMod50 := false
+            areaClearTrigger := false
         }
         else if ((g_SF.Memory.ReadHighestZone() < 3) AND (lastZone >= 3) AND (currentZone > 0) ) ; After reset. +1 buffer for time to read value
         {
@@ -169,6 +202,7 @@ Class IC_AreaTiming_Component
     }
 
     ; Function that updates the AreaTiming GUI
+    ; Area|Next|T_area|T_tran|Time (s)|Previous|Average|Count
     UpdateGUI()
     {
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "AreaTimingView")
@@ -181,8 +215,8 @@ Class IC_AreaTiming_Component
             item := pending[k]
             if (IsObject(item))
             {
-                LV_GetText(previous, A_Index, 4)
-                LV_Modify(A_Index, "Col3", item.time, previous, item.averageTime, item.count)
+                LV_GetText(previous, A_Index, 6)
+                LV_Modify(A_Index, "Col3", item.areaTime, item.transitionTime, item.time, previous, item.averageTime, item.count)
                 pending.Delete(k)
             }
             if pending.Count() == 0
@@ -190,17 +224,17 @@ Class IC_AreaTiming_Component
         }
         for k, v in pending ; New items
         {
-            LV_Add(, v.lastZone, v.currentZone, v.time, "", v.averageTime, v.count)
+            LV_Add(, v.lastZone, v.currentZone, v.areaTime, v.transitionTime, v.time, "", v.averageTime, v.count)
             pending.Delete(k)
         }
         if (this.UpdateRunStats) ; Move current stats to previous stats
         {
             Loop % LV_GetCount()
             {
-                LV_GetText(time, A_Index, 3)
-                LV_GetText(average, A_Index, 5)
-                LV_GetText(count, A_Index, 6)
-                LV_Modify(A_Index, "Col3", "", time, average, count)
+                LV_GetText(time, A_Index, 5)
+                LV_GetText(average, A_Index, 7)
+                LV_GetText(count, A_Index, 8)
+                LV_Modify(A_Index, "Col5", "", time, average, count)
             }
             LV_ModifyCol(1, "Sort")
             this.UpdateRunStats := false
@@ -212,6 +246,7 @@ Class IC_AreaTiming_Component
     }
 
     ; Function that updates the AreaTiming Mod50 GUI
+    ; Area|Next|T_area|T_tran|Time (s)|Previous|Average|Count
     UpdateModGUI()
     {
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ModAreaTimingView")
@@ -224,8 +259,8 @@ Class IC_AreaTiming_Component
             item := pending[k]
             if (IsObject(item))
             {
-                LV_GetText(previous, A_Index, 4)
-                LV_Modify(A_Index, "Col3", item.time, previous, item.averageTime, item.count)
+                LV_GetText(previous, A_Index, 5)
+                LV_Modify(A_Index, "Col3", item.areaTime, item.transitionTime, item.time, previous, item.averageTime, item.count)
                 pending.Delete(k)
             }
             if pending.Count() == 0
@@ -233,25 +268,15 @@ Class IC_AreaTiming_Component
         }
         for k, v in pending ; New items
         {
-            LV_Add(, v.lastZone, v.currentZone, v.time, "", v.averageTime, v.count)
+            LV_Add(, v.lastZone, v.currentZone, v.areaTime, v.transitionTime, v.time, "", v.averageTime, v.count)
             pending.Delete(k)
         }
-;        if (this.UpdateRunStats) ; Move current stats to previous stats
-;        {
-;            Loop % LV_GetCount()
-;            {
-;                LV_GetText(time, A_Index, 3)
-;                LV_GetText(average, A_Index, 5)
-;                LV_GetText(count, A_Index, 6)
-;                LV_Modify(A_Index, "Col3", "", time, average, count)
-;            }
-;            LV_ModifyCol(1, "Sort")
-;            this.UpdateRunStats := false
-;        }
         Loop % LV_GetCount("Col") ; Resize columns
         {
             LV_ModifyCol(A_Index, "AutoHdr")
         }
+        LV_ModifyCol(1, "Integer")
+        LV_ModifyCol(1, "Sort")
     }
 }
 
@@ -261,47 +286,73 @@ Class IC_AreaTimingObject
     static Items := {}
     static Pending := {}
     static PendingMod50 := {}
+    static Queue := []
 
-    __New(lastZone, currentZone, time)
+    __New(lastZone, currentZone, areaTime, areaToNextTime)
     {
         this.lastZone := lastZone
         this.currentZone := currentZone
-        this.time := time
+        this.areaTime := areaTime
+        this.transitionTime := Round(areaToNextTime - areaTime, 2)
+        this.time := areaToNextTime
         this.totalTime := 0
         this.averageTime := 0
         this.count := 0
     }
 
-    ; Get/Create stats items
-    AddProgress(lastZone, currentZone, time, skipMod50 := false)
+    ; areaToNextTime = areaTime + transitonTime
+    AddToQueue(lastZone, currentZone, areaTime, areaToNextTime, skipMod50 := false)
     {
+        rawItem := {}
+        rawItem.lastZone := lastZone
+        rawItem.currentZone := currentZone
+        rawItem.areaTime := areaTime
+        rawItem.areaToNextTime := areaToNextTime
+        rawItem.skipMod50 := skipMod50
+        IC_AreaTimingObject.Queue.Push(rawItem)
+    }
+
+    ProcessQueue()
+    {
+        q := IC_AreaTimingObject.Queue
+        while q.Length()
+            IC_AreaTimingObject.AddProgress(q.RemoveAt(1))
+    }
+
+    ; Get/Create stats items
+    AddProgress(rawItem)
+    {
+        lastZone := rawItem.lastZone
+        currentZone := rawItem.currentZone
+        areaTime := rawItem.areaTime
+        areaToNextTime := rawItem.areaToNextTime
         k := lastZone . "to" . currentZone
-        item := IC_AreaTimingObject.GetProgress(k, lastZone, currentZone, time)
+        item := IC_AreaTimingObject.GetProgress(k, lastZone, currentZone, areaTime, areaToNextTime)
         IC_AreaTimingObject.Pending[k] := item.Clone()
-        if (skipMod50) ; Skip on reset/offline stacking
+        if (rawItem.skipMod50) ; Skip on reset/offline stacking
             return
         modLastZone := Mod(lastZone, 50) ? Mod(lastZone, 50) : 50
         modCurrentZone := Mod(currentZone, 50) ? Mod(currentZone, 50) : 50
         k := "mod" . modLastZone . "to" . modCurrentZone
-        item := IC_AreaTimingObject.GetProgress(k, modLastZone, modCurrentZone, time)
+        item := IC_AreaTimingObject.GetProgress(k, modLastZone, modCurrentZone, areaTime, areaToNextTime)
         IC_AreaTimingObject.PendingMod50[k] := item.Clone()
     }
 
     ; Update stats item
-    GetProgress(key, lastZone, currentZone, time)
+    GetProgress(key, lastZone, currentZone, areaTime, areaToNextTime)
     {
         item := IC_AreaTimingObject.Items[key]
         if (!IsObject(item))
         {
-            item := new IC_AreaTimingObject(lastZone, currentZone, time)
+            item := new IC_AreaTimingObject(lastZone, currentZone, areaTime, areaToNextTime)
             IC_AreaTimingObject.Items[key] := item
         }
         item.count += 1
-        item.time := time
-        item.totalTime += item.time
+        item.areaTime := areaTime
+        item.transitionTime := Round(areaToNextTime - areaTime, 2)
+        item.time := Round(areaToNextTime, 2)
+        item.totalTime := Round(item.totalTime + item.time, 2)
         item.averageTime := Round(item.totalTime / item.count, 2)
         return item
     }
 }
-
-#include %A_LineFile%\..\IC_AreaTiming_Functions.ahk

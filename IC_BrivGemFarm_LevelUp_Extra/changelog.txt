@@ -1,0 +1,6 @@
+May 02, 2023 - v.0.1.0
+    BrivGemFarm LevelUp - This Addon will allow to set up maximum champion level settings for BrivGemFarm.
+    Missing features :
+        Settings are currently not saved in profiles.
+        It is currently not possible to select predetermined levels from the dropdown list for each champion.
+        After leaving z1, champions will be leveled by ID instead of speed champs first then gold champs.

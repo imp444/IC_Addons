@@ -1,6 +1,7 @@
 ; Functions used by this addon
 class IC_BrivGemFarm_LevelUp_Functions
 {
+    static SettingsPath := A_LineFile . "\..\BrivGemFarm_LevelUp_Settings.json"
     static HeroDefsPath := A_LineFile . "\..\HeroDefines.json"
 
     ; Adds IC_BrivGemFarm_LevelUp_Addon.ahk to the startup of the Briv Gem Farm script.
@@ -12,94 +13,17 @@ class IC_BrivGemFarm_LevelUp_Functions
         FileAppend, %addonLoc%, %g_BrivFarmModLoc%
     }
 
-    ; Retrieves cached_definitions path. If silent = false, prompts a choose dialog if path not found
-    ; Saves the last known valid path
-    FindCachedDefinitionsPath(silent := true)
+    ; Returns true if the two objects have identical key/value pairs
+    AreObjectsEqual(obj1 := "", obj2 := "")
     {
-        settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
-        if (settings.lastCachedPath == "" OR !FileExist(settings.lastCachedPath))
+        if (obj1.Length() != obj2.Length())
+            return false
+        for k, v in obj1
         {
-            exePath := % g_UserSettings[ "InstallPath" ] ; Steam
-            cachedPath := % exePath . "\..\IdleDragons_Data\StreamingAssets\downloaded_files\cached_definitions.json"
-            if (!FileExist(cachedPath) AND !silent) ; Try to find cached_definitions folder
-                FileSelectFile, cachedPath, 1, % "\..\..\..\..\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\cached_definitions.json", cached_definitions.json, cached_definitions.json
-            settings.lastCachedPath := cachedPath
-            g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
+            if (obj2[k] != v)
+                return false
         }
-        else
-            cachedPath := settings.lastCachedPath
-        return cachedPath
-    }
-
-    ; Create definitions with upgrade levels from cached_definitions.json
-    CreateHeroDefs(silent := true)
-    {
-        path := this.FindCachedDefinitionsPath(silent)
-        if (path == "")
-            return ""
-        g_BrivGemFarm_LevelUp.UpdateLastUpdated("Loading new definitions...")
-        defs := g_SF.LoadObjectFromJSON(path)
-        ; Parse hero_defines
-        heroDefs := defs.hero_defines
-        trimmedHeroDefs := {}
-        for k, v in heroDefs
-        {
-            if (RegExMatch(v.name, "Y\d+E\d+") OR ErrorLevel != 0) ; skip placeholder
-                continue
-            id := v.id
-            obj := {}
-            obj.name := v.name
-            obj.seat_id := v.seat_id
-            if (!IsObject(trimmedHeroDefs[v]))
-                trimmedHeroDefs[v] = {}
-            trimmedHeroDefs[id] := obj
-        }
-        ; Parse upgrade_defines
-        index := 0
-        key := "upgrade_defines_" . index
-        while isObject(defs[key])
-        {
-            currentUpgradeDef := defs[key]
-            for k, v in currentUpgradeDef
-            {
-                if (v.required_upgrade_id == 9999)
-                    continue
-                heroID := v.hero_id
-                id := v.id
-                if (!IsObject(trimmedHeroDefs[heroID]["upgrades"]))
-                    trimmedHeroDefs[heroID]["upgrades"] := {}
-                obj := {}
-                if v.required_upgrade_id < 9999
-                {
-                    obj.required_level := v.required_level
-                    if (v.name != "")
-                        obj.name := v.name
-                    if (v.specialization_name)
-                        obj.specialization_name := v.specialization_name
-                    if (v.tip_text)
-                        obj.tip_text := v.tip_text
-                }
-                trimmedHeroDefs[heroID]["upgrades"][id] := obj
-            }
-            key := "upgrade_defines_" . index++
-        }
-        g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath, trimmedHeroDefs)
-        lastUpdateString := "Last updated: " . A_YYYY . "/" A_MM "/" A_DD " at " A_Hour . ":" A_Min
-        g_BrivGemFarm_LevelUp.UpdateLastUpdated(lastUpdateString)
-        return trimmedHeroDefs
-    }
-
-    /*  ReadHeroDefs - Read last definitions from HeroDefines.json
-        Parameters:    silent: bool - If true, doesn't prompt the dialog to choose the file if not found
-
-        Returns:       bool - True if all champions in Q formation are at or past their target level, false otherwise
-    */
-    ReadHeroDefs(silent := true)
-    {
-        heroDefs := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath)
-        if (!IsObject(heroDefs))
-            heroDefs := this.CreateHeroDefs(silent)
-        return heroDefs
+        return true
     }
 }
 
@@ -145,6 +69,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             g_SF.SetFormation(g_BrivUserSettings)
             if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
             {
+                g_SharedData.SaveFormations()
                 g_SharedData.BossesHitThisRun := 0
                 g_SF.ToggleAutoProgress( 0, false, true )
                 g_SharedData.StackFail := this.CheckForFailedConv()
@@ -202,6 +127,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SF.ToggleAutoProgress( 1 )
                 continue
             }
+
             g_SF.ToggleAutoProgress( 1 )
             if (g_SF.CheckifStuck())
             {
@@ -270,12 +196,11 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     DoPartySetupMax()
     {
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
-        maxLevels := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels.Clone()
-        for champID, targetLevel in maxLevels
+        for champID, targetLevel in g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite1))
             {
-                if (champID == 58 AND maxLevels[58] <= 170) ; If briv level is set to less than 170, he doesn't get MetalBorn - Level him back after stacking
+                if (champID == 58 AND g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[58] <= 170) ; If briv level is set to less than 170, he doesn't get MetalBorn - Level him back after stacking
                 {
                     targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
                     if g_SF.Memory.ReadSBStacks() < targetStacks
@@ -345,10 +270,63 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
     ; Load new leveling settings from the GUI settings file
     LoadMinMaxLevels()
     {
-        settings := g_SF.LoadObjectFromJSON(A_LineFile . "\..\BrivGemFarm_LevelUp_Settings.json")
+        settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Functions.SettingsPath)
         if (!IsObject(settings))
             return
         g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
         this.UpdateMaxLevels := true
+    }
+
+    ; Save full Q,W,E formations to BrivGemFarm_LevelUp_Settings.json
+    SaveFormations()
+    {
+        static formationsFromIndex := {1: "Q", 2: "W", 3: "E"}
+        static lastFormations := ""
+        static lastFormationsNotSaved := true
+
+        settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Functions.SettingsPath)
+        if (!IsObject(settings))
+            settings := {}
+        savedFormations := settings.SavedFormations
+        if (!IsObject(savedFormations))
+        {
+            savedFormations := {}
+            settings["SavedFormations"] := savedFormations
+            save := true
+        }
+        if (lastFormations == "")
+            lastFormations := {}
+        if (!save) ; Compare the last known formation to the current in-game formation, then current formation to saved formation
+        {
+            Loop, 3
+            {
+                currentFormation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(A_Index), true) ; without empty slots
+                lastFormation := lastFormations[formationsFromIndex[A_Index]]
+                if (!IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(currentFormation, lastFormation))
+                {
+                    lastFormations[formationsFromIndex[A_Index]] := currentFormation
+                    if (!lastFormationsNotSaved)
+                    {
+                        save := true
+                        break
+                    }
+                }
+                savedFormation := savedFormations[formationsFromIndex[A_Index]]
+                if (!IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(currentFormation, savedFormation))
+                {
+                    save := true
+                    break
+                }
+            }
+            lastFormationsNotSaved := false
+        }
+        if (save)
+        {
+            savedFormations.Q := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(1), true)
+            savedFormations.W := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(2), true)
+            savedFormations.E := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(3), true)
+            settings["SavedFormations"] := savedFormations
+            g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Functions.SettingsPath, settings)
+        }
     }
 }

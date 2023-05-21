@@ -1,6 +1,10 @@
+﻿CB_SETITEMHEIGHT := 0x0153
+CB_SETDROPPEDWIDTH := 0x0160
+
 GUIFunctions.AddTab("BrivGF LevelUp")
 
 global g_BrivGemFarm_LevelUp := new IC_BrivGemFarm_LevelUp_Component
+global g_DefinesLoader := new IC_BrivGemFarm_LevelUp_DefinesLoader
 
 ; Add GUI fields to this addon's tab.
 Gui, ICScriptHub:Tab, BrivGF LevelUp
@@ -24,20 +28,22 @@ AddSeat(xSpacing, ySpacing, seat)
     Gui, ICScriptHub:Add, Text, Center x%xSpacing% y+%ySpacing% w15, % seat
     GUIFunctions.UseThemeTextColor("InputBoxTextColor")
     Gui, ICScriptHub:Add, DropDownList , vDDL_BrivGemFarmLevelUpName_%seat% gBrivGemFarm_LevelUp_Name x+%xSpacing% y+-16 w111
-    Gui, ICScriptHub:Add, ComboBox, Limit6 vCombo_BrivGemFarmLevelUpMinLevel_%seat% gBrivGemFarm_LevelUp_MinMax_Clamp x+%xSpacing% w60
-    Gui, ICScriptHub:Add, ComboBox, Limit6 vCombo_BrivGemFarmLevelUpMaxLevel_%seat% gBrivGemFarm_LevelUp_MinMax_Clamp x+%xSpacing% w60
-
+    Gui, ICScriptHub:Add, ComboBox, Limit6 hwndHBrivGemFarmLevelUpMinLevel_%seat% vCombo_BrivGemFarmLevelUpMinLevel_%seat% gBrivGemFarm_LevelUp_MinMax_Clamp x+%xSpacing% w60
+    Gui, ICScriptHub:Add, ComboBox, Limit6 hwndHBrivGemFarmLevelUpMaxLevel_%seat% vCombo_BrivGemFarmLevelUpMaxLevel_%seat% gBrivGemFarm_LevelUp_MinMax_Clamp x+%xSpacing% w60
     GUIFunctions.UseThemeTextColor()
 }
 
-Gui, ICScriptHub:Add, Button, x20 y+20 Disabled vBrivGemFarm_LevelUp_LoadQFormation gBrivGemFarm_LevelUp_LoadQFormation, Load Q formation
+Gui, ICScriptHub:Add, Text, x20 y+20, Formation
+Gui, ICScriptHub:Add, DropDownList, x+10 y+-17 w35 AltSubmit Disabled hwndBrivGemFarm_LevelUp_LoadFormation vBrivGemFarm_LevelUp_LoadFormation gBrivGemFarm_LevelUp_LoadFormation, Q||W|E
+PostMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BrivGemFarm_LevelUp_LoadFormation%
 Gui, ICScriptHub:Add, Button, x+20 Disabled vBrivGemFarm_LevelUp_Default gBrivGemFarm_LevelUp_Default, Default Settings
-Gui, ICScriptHub:Add, Button, x+20 Disabled vBrivGemFarm_LevelUp_Save gBrivGemFarm_LevelUp_Save, Save
+Gui, ICScriptHub:Add, Button, x+20 Hidden vBrivGemFarm_LevelUp_Save gBrivGemFarm_LevelUp_Save, Save
 Gui, ICScriptHub:Add, Text, x+15 y+-18 w90 vBrivGemFarm_LevelUp_Changes
 Gui, ICScriptHub:Add, Button, x+15 y+-18 Hidden vBrivGemFarm_LevelUp_Undo gBrivGemFarm_LevelUp_Undo, Undo
-Gui, ICScriptHub:Add, Text, x20 y+15 w400 vBrivGemFarm_LevelUp_Text, % "No settings."
-Gui, ICScriptHub:Add, Button, x20 y+20 vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
-Gui, ICScriptHub:Add, Text, x+10 y+-18 w400 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No settings."
+Gui, ICScriptHub:Add, Text, x20 y+15 w450 R2 vBrivGemFarm_LevelUp_Text, % "No settings."
+Gui, ICScriptHub:Add, Button, x20 y+10 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
+Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No settings."
+Gui, ICScriptHub:Add, CheckBox, x20 y+20 vBrivGemFarm_LevelUp_Spoilers gBrivGemFarm_LevelUp_Spoilers, Show spoilers
 
 ; Switch names
 BrivGemFarm_LevelUp_Name()
@@ -45,43 +51,72 @@ BrivGemFarm_LevelUp_Name()
     global
     Gui, ICScriptHub:Submit, NoHide
     local name := % %A_GuiControl%
-    heroDefs := g_BrivGemFarm_LevelUp.HeroDefines
+    heroDefs := g_DefinesLoader.HeroDefines
     for k, v in heroDefs
     {
         if (v.name == name)
         {
-            seat_id := v.seat_id
+            IC_BrivGemFarm_LevelUp_Seat.Seats[v.seat_id].UpdateMinMaxLevels(name)
             break
         }
     }
-    GuiControl, Text, Combo_BrivGemFarmLevelUpMinLevel_%seat_id%, % g_BrivGemFarm_LevelUp.TempSettings.minLevels[k]
-    GuiControl, Text, Combo_BrivGemFarmLevelUpMaxLevel_%seat_id%, % g_BrivGemFarm_LevelUp.TempSettings.maxLevels[k]
 }
 
-; Check min/max level inputs
+; Sets the width of min/max comboBoxes for a seat
+SetMinMaxComboWidth(seat_id, width)
+{
+    global
+    minH := HBrivGemFarmLevelUpMinLevel_%seat_id%
+    maxH := HBrivGemFarmLevelUpMaxLevel_%seat_id%
+    PostMessage, CB_SETDROPPEDWIDTH, width, 0, , ahk_id %minH%
+    PostMessage, CB_SETDROPPEDWIDTH, width, 0, , ahk_id %maxH%
+}
+
+; Returns the width of DDL accomodating the longest item in list
+DropDownSize(List, Font:="", FontSize:=10, Padding:=24)
+{
+	Loop, Parse, List, |
+	{
+		if Font
+			Gui DropDownSize:Font, s%FontSize%, %Font%
+		Gui DropDownSize:Add, Text, R1, %A_LoopField%
+		GuiControlGet T, DropDownSize:Pos, Static%A_Index%
+		TW > X ? X := TW :
+	}
+	Gui DropDownSize:Destroy
+	return X + Padding
+}
+
+; Input upgrade level when selected from DDL, then verify that min/max level inputs are in 0-999999 range
 BrivGemFarm_LevelUp_MinMax_Clamp()
 {
     global
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
     local clamped := value
+    Loop, Parse, clamped, :, " "
+    {
+        clamped := A_LoopField
+        break
+    }
     if clamped is not integer
         clamped := 0
     clamped := clamped <= 0 ? 0 : clamped
     clamped := clamped > 999999 ? 999999 : clamped
     if (clamped != value)
-        GuiControl, Text, %A_GuiControl%, % clamped
+        GuiControl, ICScriptHub:Text, %A_GuiControl%, % clamped
     Gui, ICScriptHub:Submit, NoHide
-    Sleep, 20
     g_BrivGemFarm_LevelUp.UpdateTempSettings()
 }
 
-; Load Q formation to the GUI
-BrivGemFarm_LevelUp_LoadQFormation()
+; Load formation to the GUI
+BrivGemFarm_LevelUp_LoadFormation()
 {
-    GuiControl, Disable, BrivGemFarm_LevelUp_LoadQFormation
-    g_BrivGemFarm_LevelUp.LoadFormation()
-    GuiControl, Enable, BrivGemFarm_LevelUp_LoadQFormation
+    Gui, ICScriptHub:Submit, NoHide
+    GuiControl, ICScriptHub:Disable, BrivGemFarm_LevelUp_LoadFormation
+    Sleep, 20
+    g_BrivGemFarm_LevelUp.LoadFormation(%A_GuiControl%)
+    GuiControl, ICScriptHub:Enable, BrivGemFarm_LevelUp_LoadFormation
 }
 
 ; Default settings button
@@ -92,9 +127,9 @@ BrivGemFarm_LevelUp_Default()
         Return
     IfMsgBox, Timeout
         Return
-    GuiControl, Disable, BrivGemFarm_LevelUp_Default
+    GuiControl, ICScriptHub:Disable, BrivGemFarm_LevelUp_Default
     g_BrivGemFarm_LevelUp.LoadSettings(true)
-    GuiControl, Enable, BrivGemFarm_LevelUp_Default
+    GuiControl, ICScriptHub:Enable, BrivGemFarm_LevelUp_Default
 }
 
 ; Save settings button
@@ -106,7 +141,7 @@ BrivGemFarm_LevelUp_Save()
     IfMsgBox, Timeout
         Return
     Gui, ICScriptHub:Submit, NoHide
-    g_BrivGemFarm_LevelUp.SaveSettings()
+    g_BrivGemFarm_LevelUp.SaveSettings(true)
 }
 
 ; Undo temp settings button
@@ -123,9 +158,20 @@ BrivGemFarm_LevelUp_Undo()
 ; Load new definitions
 BrivGemFarm_LevelUp_LoadDefinitions()
 {
-    GuiControl, Disable, BrivGemFarm_LevelUp_LoadDefinitions
-    g_BrivGemFarm_LevelUp.ReadOrCreateHeroDefs(false, true)
-    GuiControl, Enable, BrivGemFarm_LevelUp_LoadDefinitions
+    GuiControl, ICScriptHub:Disable, BrivGemFarm_LevelUp_LoadDefinitions
+    g_DefinesLoader.Start(false, true)
+}
+
+; Spoilers
+BrivGemFarm_LevelUp_Spoilers()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    showSpoilers := BrivGemFarm_LevelUp_Spoilers
+    g_BrivGemFarm_LevelUp.Settings.ShowSpoilers := showSpoilers
+    g_BrivGemFarm_LevelUp.SaveSettings()
+    Loop, 12
+        IC_BrivGemFarm_LevelUp_Seat.Seats[A_Index].ToggleSpoilers(showSpoilers)
 }
 
 g_BrivGemFarm_LevelUp.Init()
@@ -137,43 +183,26 @@ g_BrivGemFarm_LevelUp.Init()
 Class IC_BrivGemFarm_LevelUp_Component
 {
     static SettingsPath := A_LineFile . "\..\BrivGemFarm_LevelUp_Settings.json"
-    HeroDefines := ""
+
     Settings := ""
     TempSettings := ""
 
     ; GUI startup
     Init()
     {
-        this.ReadOrCreateHeroDefs()
-        this.Update()
+        this.TempSettings := {}
+        this.LoadSettings()
+        g_DefinesLoader.Start()
     }
 
-    /*  ReadOrCreateHeroDefs - Read/Write definitions from/to HeroDefines.json
-        Parameters:    silent: bool - If true, doesn't prompt the dialog to choose the file if not found
-                       create: bool - If true, force new definitions
-
-        Returns:
-    */
-    ReadOrCreateHeroDefs(silent := true, create := false)
+    ; Performs additional functions after definitions have been fully loaded
+    OnHeroDefinesFinished()
     {
-        heroDefs := create ? IC_BrivGemFarm_LevelUp_Functions.CreateHeroDefs(silent) : IC_BrivGemFarm_LevelUp_Functions.ReadHeroDefs(silent)
-        if (heroDefs == "" AND silent == true)
-            this.UpdateLastUpdated("WARNING: Could not load Hero definitions. Try manually loading them.")
-        else if (heroDefs == "" AND silent == false)
-            return
-        else
-        {
-            this.HeroDefines := heroDefs
-            for k, v in heroDefs
-            {
-                seat_id := v.seat_id
-                GuiControl, ICScriptHub:, DDL_BrivGemFarmLevelUpName_%seat_id%, % v.name
-            }
-            this.LoadSettings()
-            GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadQFormation
-            GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_Default
-            GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_Save
-        }
+        this.FillMissingDefaultSettings()
+        this.UndoTempSettings()
+        GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadFormation
+        GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_Default
+        GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadDefinitions
     }
 
     /*  LoadSettings - Load GUI settings
@@ -183,37 +212,35 @@ Class IC_BrivGemFarm_LevelUp_Component
     */
     LoadSettings(default := false)
     {
-        settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
         save := false
+        settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
         if (!IsObject(settings) OR default OR !IsObject(settings.BrivGemFarm_LevelUp_Settings))
         {
             settings := this.LoadDefaultSettings()
+            if (!IsObject(settings) OR !IsObject(settings.BrivGemFarm_LevelUp_Settings))
+                save := true
+        }
+        if (settings.ShowSpoilers == "")
+        {
+            settings.ShowSpoilers := false
             save := true
         }
-        if (!IsObject(settings))
-            return
         this.Settings := settings
-        if (save AND !default)
-            this.SaveSettings()
-        this.TempSettings := {}
         this.UndoTempSettings()
+        if (save)
+            this.SaveSettings()
         if (default)
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, Default settings loaded.
+            this.Update("Default settings loaded.")
         else
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, Settings loaded.
+            this.Update("Settings loaded.")
     }
 
     ; Load default settings to be used by IC_BrivGemFarm_LevelUp_Functions.ahk
     ; Speed champs have specific values that limit leveling to the minimum required to obtain all their speed abilities
     LoadDefaultSettings()
     {
-        heroDefs := IC_BrivGemFarm_LevelUp_Functions.ReadHeroDefs(false)
-        if (heroDefs == "")
-            return
-        this.HeroDefines := HeroDefs
-        settings := {}
-        minLevels := {}, maxLevels := {}
-        for k, v in heroDefs
+        settings := {}, minLevels := {}, maxLevels := {}
+        Loop, 126
         {
             minLevels[k] := 0, maxLevels[k] := 1
         }
@@ -239,17 +266,37 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[113] := 1, maxLevels[113] := 1400 ; Egbert
         minLevels[94] := 1, maxLevels[94] := 2640 ; Rust
         minLevels[30] := 1, maxLevels[30] := 2020 ; Azaka
-        settings.BrivGemFarm_LevelUp_Settings := {}
-        settings.BrivGemFarm_LevelUp_Settings.minLevels := minLevels
-        settings.BrivGemFarm_LevelUp_Settings.maxLevels := maxLevels
+        settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
         return settings
+    }
+
+    ; Update min/max values for champions added after default settings have been initialized
+    FillMissingDefaultSettings()
+    {
+        save := false
+        levelSettings := this.Settings.BrivGemFarm_LevelUp_Settings
+        for heroID in g_DefinesLoader.HeroDefines
+        {
+            if levelSettings.minLevels[heroID] == ""
+            {
+                levelSettings.minLevels[heroID] := 0
+                save := true
+            }
+            if levelSettings.maxLevels[heroID] == ""
+            {
+                levelSettings.maxLevels[heroID] := 1
+                save := true
+            }
+        }
+        if (save)
+            this.SaveSettings()
     }
 
     ; Update temporary min/max level settings
     UpdateTempSettings()
     {
         Gui, ICScriptHub:Submit, NoHide
-        heroDefs := this.HeroDefines
+        heroDefs := g_DefinesLoader.HeroDefines
         Loop, 12
         {
             seat_id = % A_Index
@@ -280,14 +327,15 @@ Class IC_BrivGemFarm_LevelUp_Component
         for k, v in this.Settings.BrivGemFarm_LevelUp_Settings.maxLevels
             this.TempSettings.maxLevels[k] := v
         this.LoadFormation(this.GetFormationFromGUI())
-        this.Update()
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, Settings loaded.
+        this.Update("Settings loaded.")
     }
 
+    ; Returns a list of champIDs from the current selected champions
     GetFormationFromGUI()
     {
+        Gui, ICScriptHub:Submit, NoHide
         formation := []
-        heroDefs := this.HeroDefines
+        heroDefs := g_DefinesLoader.HeroDefines
         Loop, 12
         {
             seat_id = % A_Index
@@ -305,16 +353,23 @@ Class IC_BrivGemFarm_LevelUp_Component
         return formation
     }
 
-    ; Save GUI settings
-    SaveSettings()
+    /*  SaveSettings - Save GUI settings
+        Parameters:    applyTempSettings: bool - If true, apply temporary settings before saving
+
+        Returns:
+    */
+    SaveSettings(applyTempSettings := false)
     {
         settings := this.Settings
-        for k, v in this.TempSettings.minLevels
-            settings.BrivGemFarm_LevelUp_Settings.minLevels[k] := v
-        for k, v in this.TempSettings.maxLevels
-            settings.BrivGemFarm_LevelUp_Settings.maxLevels[k] := v
+        if (applyTempSettings)
+        {
+            for k, v in this.TempSettings.minLevels
+                settings.BrivGemFarm_LevelUp_Settings.minLevels[k] := v
+            for k, v in this.TempSettings.maxLevels
+                settings.BrivGemFarm_LevelUp_Settings.maxLevels[k] := v
+            this.Update("Settings saved.")
+        }
         g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
-        this.Update()
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
@@ -322,97 +377,258 @@ Class IC_BrivGemFarm_LevelUp_Component
         }
     }
 
-    ; Updates the GUI text strings, looks for settings temp changes
-    Update()
+    /*  Update - Updates the GUI text strings, look for temp settings changes
+        Parameters: text - The text shown under formation selection/default settings
+
+        Returns:
+    */
+    Update(text := "")
     {
         if (!g_BrivUserSettings[ "Fkeys" ])
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, WARNING: F keys disabled. This Addon uses them to level champions.
+            text := "WARNING: F keys disabled. This Addon uses them to level up champions.`nEnable them both in the script (BrivGemFarm tab) and in the game (Settings -> General)."
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, % text
         this.UpdateLastUpdated()
         ; Temp changes
-        changed := false
-        for k, v in this.Settings.BrivGemFarm_LevelUp_Settings.minLevels
-        {
-            if (this.TempSettings.minLevels[k] != v)
-            {
-                changed := true
-                break
-            }
-        }
+        changed := !IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(this.Settings.BrivGemFarm_LevelUp_Settings.minLevels, this.TempSettings.minLevels)
         if (!changed)
-        {
-            for k, v in this.Settings.BrivGemFarm_LevelUp_Settings.maxLevels
-            {
-                if (this.TempSettings.maxLevels[k] != v)
-                {
-                    changed := true
-                    break
-                }
-            }
-        }
+            changed := !IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(this.Settings.BrivGemFarm_LevelUp_Settings.maxLevels, this.TempSettings.maxLevels)
         if (changed)
         {
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Changes, Unsaved changes.
-            GuiControl, Show, BrivGemFarm_LevelUp_Undo
+            GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Save
+            GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Undo
         }
         else
         {
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Changes
-            GuiControl, Hide, BrivGemFarm_LevelUp_Undo
+            GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Save
+            GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Undo
         }
     }
 
     ; Update the text that shows the last time cached_definitions.json was loaded
-    UpdateLastUpdated(lastUpdateString := "")
+    UpdateLastUpdated(lastUpdateString := "", save := false)
     {
         this.Settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
         if (!IsObject(this.Settings))
             this.Settings := {}
         if (lastUpdateString != "")
         {
-            this.Settings.lastUpdateString := lastUpdateString
-            g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, this.Settings)
+            this.Settings.LastUpdateString := lastUpdateString
+            if (save)
+                g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, this.Settings)
         }
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_DefinitionsStatus, % this.Settings.lastUpdateString
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_DefinitionsStatus, % this.Settings.LastUpdateString
     }
 
     ; Loads formation from champIDs into the GUI, defaults to Q formation
-    LoadFormation(formation := "")
+    LoadFormation(formation := 1)
     {
-        g_SF.Memory.OpenProcessReader()
-        if (!isObject(formation))
+        if (!IsObject(formation) OR formation.Length() == 0)
         {
-            slot := g_SF.Memory.GetSavedFormationSlotByFavorite(1)
-            formation := g_SF.Memory.GetFormationSaveBySlot(slot, true) ; Q without empty slots
-            formationIsQ := true
+            formationIndex := formation.Length() == 0 ? 1 : formation
+            formation := this.GetSavedFormation(formationIndex)
         }
         if (formation.Length() == 0)
         {
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, Invalid Q formation. Game closed?
+            GuiControl, ICScriptHub:Choose, BrivGemFarm_LevelUp_LoadFormation, 0
+            this.Update("Invalid formation. Game closed?")
             return
         }
-        Loop, 12 ; Delete contents
-        {
-            GuiControl, Choose, DDL_BrivGemFarmLevelUpName_%A_Index%, 0
-            GuiControl, Choose, Combo_BrivGemFarmLevelUpMinLevel_%A_Index%, 0
-            GuiControl, Choose, Combo_BrivGemFarmLevelUpMaxLevel_%A_Index%, 0
-        }
+        seats := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         for k, v in formation
         {
             if (v <= 0 OR v == "")
                 continue
-            champData := this.HeroDefines[v]
+            champData := g_DefinesLoader.HeroDefines[v]
             seat_id := champData.seat_id
-            GuiControl, ChooseString, DDL_BrivGemFarmLevelUpName_%seat_id%, % champData.name
-            GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMinLevel_%seat_id%, % "|" . g_BrivGemFarm_LevelUp.TempSettings.minLevels[v]
-            GuiControl, ChooseString, Combo_BrivGemFarmLevelUpMinLevel_%seat_id%, % "|" . g_BrivGemFarm_LevelUp.TempSettings.minLevels[v]
-            GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMaxLevel_%seat_id%, % "|" . g_BrivGemFarm_LevelUp.TempSettings.maxLevels[v]
-            GuiControl, ChooseString, Combo_BrivGemFarmLevelUpMaxLevel_%seat_id%, % "|" . g_BrivGemFarm_LevelUp.TempSettings.maxLevels[v]
+            name := champData.name
+            seats.Delete(seat_id)
+            GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_%seat_id%, % "|" . name
+            Sleep, 1
         }
-        if (formationIsQ)
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, Q formation loaded.
+        for k, v in seats ; Delete contents from unused seats
+            IC_BrivGemFarm_LevelUp_Seat.Seats[v].DeleteContents()
+        this.Update()
+    }
+
+    ; Returns one of the in-game formations that are saved by the gem farming script after each reset
+    GetSavedFormation(formation := 1)
+    {
+        savedFormations := this.Settings.SavedFormations
+        if (!IsObject(savedFormations))
+        {
+            g_SF.Memory.OpenProcessReader()
+            try ; avoid thrown errors when comobject is not available.
+            {
+                SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
+                SharedRunData.SaveFormations()
+            }
+            return g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formation), true) ; without empty slots
+        }
+        Switch formation
+        {
+            Case 1:
+                return savedFormations.Q
+            Case 2:
+                return savedFormations.W
+            Case 3:
+                return savedFormations.E
+            Default:
+                return formation
+        }
+    }
+}
+
+; Functions used to update min/max upgrade values of each seat
+Class IC_BrivGemFarm_LevelUp_Seat
+{
+    static Seats := IC_BrivGemFarm_LevelUp_Seat.BuildSeats()
+
+    ID := 0
+    HeroDataByID := {}
+    HeroDataByName := {}
+    HasSpoiler := false
+
+    __New(seat)
+    {
+        this.ID := seat
+    }
+
+    ; Adds the data for a champion to this seat's dictionnary sorted by name
+    AddChampion(data)
+    {
+        this.HeroDataByName[data.name] := data
+        if (!this.HasSpoiler)
+            this.HasSpoiler := this.IsSpoiler(data.allow_time_gate)
+    }
+
+    ; Deletes min/max upgrade list and sets this seat's fields to empty values
+    DeleteContents()
+    {
+        seat := this.ID
+        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
+        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
+        GuiControl, ICScriptHub:Choose, DDL_BrivGemFarmLevelUpName_%seat%, 0
+        GuiControl, ICScriptHub:Choose, Combo_BrivGemFarmLevelUpMinLevel_%seat%, 0
+        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % "|"
+        GuiControl, ICScriptHub:Move, Combo_BrivGemFarmLevelUpMinLevel_%seat%, h25
+        GuiControl, ICScriptHub:Choose, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, 0
+        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, % "|"
+        GuiControl, ICScriptHub:Move, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, h25
+        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
+        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
+    }
+
+    /*  UpdateMinMaxLevels - Update min/max upgrades values and upgrade list
+                             The size of the longest item in the list will be cached at the first time the champion is chosen
+        Parameters:          name: string - The name of a champion
+
+        Returns:
+    */
+    UpdateMinMaxLevels(name)
+    {
+        global
+        seat := this.ID
+        heroData := this.HeroDataByName[name]
+        upgrades := heroData.upgrades
+        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
+        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
+        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % "|" . upgrades
+        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, % "|" . upgrades
+        if(heroData.cachedSize == "")
+            heroData.cachedSize := DropDownSize(heroData.upgrades)
+        SetMinMaxComboWidth(seat, heroData.cachedSize)
+        Sleep, 1
+        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % g_BrivGemFarm_LevelUp.TempSettings.minLevels[k]
+        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, % g_BrivGemFarm_LevelUp.TempSettings.maxLevels[k]
+        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
+        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
+    }
+
+    ; Updates the list of champions names for this lot
+    UpdateNames()
+    {
+        global
+        showSpoilers := g_BrivGemFarm_LevelUp.Settings.ShowSpoilers
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Spoilers, % showSpoilers
+        names := "|"
+        for ID, heroData in this.HeroDataByID
+        {
+            if (showSpoilers OR !this.IsSpoiler(heroData.allow_time_gate))
+                names .= heroData.name . "|"
+        }
+        seat := this.ID
+        GuiControl, ICScriptHub:, DDL_BrivGemFarmLevelUpName_%seat%, % names
+    }
+
+    ; Toggle this seat's spoilers on/off
+    ToggleSpoilers(value)
+    {
+        if (!this.HasSpoiler)
+            return
+        names := "|"
+        for ID, heroData in this.HeroDataByID
+        {
+            if (value OR !this.IsSpoiler(heroData.allow_time_gate))
+                names .= heroData.name . "|"
+        }
+        seat := this.ID
+        choice := DDL_BrivGemFarmLevelUpName_%seat% ; Remember the current name selection
+        GuiControl, ICScriptHub:, DDL_BrivGemFarmLevelUpName_%seat%, % names
+        GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_%seat%, % choice
+        Gui, ICScriptHub:Submit, NoHide
+        if (choice != DDL_BrivGemFarmLevelUpName_%seat%)
+            this.DeleteContents()
+    }
+
+    ; Static methods
+
+    /*  IsSpoiler -    Find if a champion is part of spoilers
+        Parameters:    allow_time_gate: string - A time string that shows when the champion's Time Gate will be available (UTC)
+
+        Returns:       bool - True if the champion's Time Gate is available in 12 days or less (when the event starts)
+    */
+    IsSpoiler(allow_time_gate := "")
+    {
+        if (allow_time_gate == "")
+            return false
+        dt := ""
+        Loop, Parse, allow_time_gate, :%A_Space%-
+            dt .= A_LoopField
+        EnvAdd, dt, 7, H
+        EnvAdd, dt, -12, D
+        EnvSub, dt, A_NowUTC, D
+        return dt >= 0
+    }
+
+    ; Adds a single champion data to his seat's container
+    AddChampionData(data)
+    {
+        IC_BrivGemFarm_LevelUp_Seat.Seats[data.seat_id].AddChampion(data)
+    }
+
+    ; Build seats on startup
+    BuildSeats()
+    {
+        seats := []
+        Loop, 12
+            seats.Push(new IC_BrivGemFarm_LevelUp_Seat(A_Index))
+        return seats
+    }
+
+    ; Performs additional functions after definitions have been fully loaded
+    OnHeroDefinesFinished()
+    {
+        for ID, heroData in g_DefinesLoader.HeroDefines
+            IC_BrivGemFarm_LevelUp_Seat.Seats[heroData.seat_id].HeroDataByID[ID] := heroData
+        for seatID, seat in IC_BrivGemFarm_LevelUp_Seat.Seats
+            seat.UpdateNames()
+        g_BrivGemFarm_LevelUp.OnHeroDefinesFinished()
     }
 }
 
 IC_BrivGemFarm_LevelUp_Functions.InjectAddon()
 
+#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_DefinesLoader.ahk
 #include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_Functions.ahk

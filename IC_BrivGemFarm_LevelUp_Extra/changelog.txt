@@ -1,3 +1,12 @@
+May 22, 2023 - v.0.2.0
+    Added list of upgrades for each champion to help choosing specific upgrades. (WIP)
+    Added Q,W,E formation selection dropdown. Loads Q formation on startup, checks for changes and saves after each reset.
+    Added option to show spoilers for unreleased champions.
+    Added text showing current progress when loading new definitions.
+
+    Known issues:
+        Item auto selection in list when the min or max level saved setting isn't tied to an upgrade, or if not actively selecting an upgrade.
+
 May 02, 2023 - v.0.1.0
     BrivGemFarm LevelUp - This Addon will allow to set up maximum champion level settings for BrivGemFarm.
     Missing features :

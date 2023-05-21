@@ -1,8 +1,20 @@
 # BrivGemFarm_LevelUp
 ## Description:
 This Addon will allow to set up maximum champion level settings for the Briv Gem Farm addon.  
-It performs the best using **x100** upgrade settings, although in some cases **x25** is preferred to prevent a champion from getting upgrades that would end up being detrimental to performance.
+
+**For each champion:**  
+* Min level is the minimum level for a champion after a reset before waiting for Shandie dash.  
+* Max level is the maximum level for a champion when minimum leveling is complete or after 5s on z1.
+
+It performs the best using **x100** upgrade settings, although in some cases **x25** is preferred to prevent a champion from getting upgrades that would end up being detrimental to performance.  
+If you have set upgrade settings to next upgrade mode, Briv may not achieve level 170 in time.
+It is recommended to set his min level to 80 instead at the expense of a small increase in stacks consumption.
 ## Briv stacking:
 **For stacking purposes:**  
-If you're setting Briv's MinLevel to less than level 110 so that he gets Unnatural Haste but not Healing Phlo, set up MaxLevel to 170 and under.  
-After stacking, Briv will be leveled back to level 170 to receive MetalBorn.
+
+During stack restarts, Briv gets more stacks as he is able to survive longer.
+Sometimes it is undesirable to get many stacks because the simulation takes longer to complete.
+Select a maximum level in the dropdown list, so he won't receive as many health upgrades.
+
+If you're setting Briv's min level to less than level 110 so that he gets Unnatural Haste but not Healing Phlo, set up MaxLevel to 170 and under.
+After stacking, Briv will be leveled back to level 170 and obtain his MetalBorn upgrade.

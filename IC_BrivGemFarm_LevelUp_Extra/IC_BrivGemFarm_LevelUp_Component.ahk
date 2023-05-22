@@ -42,8 +42,8 @@ Gui, ICScriptHub:Add, Text, x+15 y+-18 w90 vBrivGemFarm_LevelUp_Changes
 Gui, ICScriptHub:Add, Button, x+15 y+-18 Hidden vBrivGemFarm_LevelUp_Undo gBrivGemFarm_LevelUp_Undo, Undo
 Gui, ICScriptHub:Add, Text, x20 y+15 w450 R2 vBrivGemFarm_LevelUp_Text, % "No settings."
 Gui, ICScriptHub:Add, Button, x20 y+10 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
-Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No settings."
-Gui, ICScriptHub:Add, CheckBox, x20 y+20 vBrivGemFarm_LevelUp_Spoilers gBrivGemFarm_LevelUp_Spoilers, Show spoilers
+Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R2 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
+Gui, ICScriptHub:Add, CheckBox, x20 y+10 vBrivGemFarm_LevelUp_Spoilers gBrivGemFarm_LevelUp_Spoilers, Show spoilers
 
 ; Switch names
 BrivGemFarm_LevelUp_Name()
@@ -205,19 +205,30 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadDefinitions
     }
 
+    ; Allows to click on the button to manually load hero definitions
+    OnHeroDefinesFailed()
+    {
+        GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadDefinitions
+    }
+
     /*  LoadSettings - Load GUI settings
         Parameters:    default: bool - If true, load default settings with specific values for speed champs
 
         Returns:
     */
-    LoadSettings(default := false)
+    LoadSettings(default := false, save := false)
     {
-        save := false
         settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
-        if (!IsObject(settings) OR default OR !IsObject(settings.BrivGemFarm_LevelUp_Settings))
+        if (!IsObject(settings))
+            settings := {}
+        if (default OR !IsObject(settings.BrivGemFarm_LevelUp_Settings))
         {
-            settings := this.LoadDefaultSettings()
-            if (!IsObject(settings) OR !IsObject(settings.BrivGemFarm_LevelUp_Settings))
+            settings.BrivGemFarm_LevelUp_Settings := this.LoadDefaultMinMaxSettings()
+            for k, v in settings.BrivGemFarm_LevelUp_Settings.minLevels
+                this.TempSettings.minLevels[k] := v
+            for k, v in settings.BrivGemFarm_LevelUp_Settings.maxLevels
+                this.TempSettings.maxLevels[k] := v
+            if (!default)
                 save := true
         }
         if (settings.ShowSpoilers == "")
@@ -226,9 +237,10 @@ Class IC_BrivGemFarm_LevelUp_Component
             save := true
         }
         this.Settings := settings
-        this.UndoTempSettings()
         if (save)
             this.SaveSettings()
+        else
+            this.UndoTempSettings()
         if (default)
             this.Update("Default settings loaded.")
         else
@@ -237,9 +249,9 @@ Class IC_BrivGemFarm_LevelUp_Component
 
     ; Load default settings to be used by IC_BrivGemFarm_LevelUp_Functions.ahk
     ; Speed champs have specific values that limit leveling to the minimum required to obtain all their speed abilities
-    LoadDefaultSettings()
+    LoadDefaultMinMaxSettings()
     {
-        settings := {}, minLevels := {}, maxLevels := {}
+        minLevels := {}, maxLevels := {}
         Loop, 126
         {
             minLevels[k] := 0, maxLevels[k] := 1
@@ -266,8 +278,8 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[113] := 1, maxLevels[113] := 1400 ; Egbert
         minLevels[94] := 1, maxLevels[94] := 2640 ; Rust
         minLevels[30] := 1, maxLevels[30] := 2020 ; Azaka
-        settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
-        return settings
+
+        return {minLevels:minLevels, maxLevels:maxLevels}
     }
 
     ; Update min/max values for champions added after default settings have been initialized

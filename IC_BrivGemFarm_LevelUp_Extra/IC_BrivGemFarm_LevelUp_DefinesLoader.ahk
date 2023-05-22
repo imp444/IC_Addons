@@ -191,7 +191,12 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
         {
             heroDefsLoaded := create ? g_DefinesLoader.CreateHeroDefs(silent) : g_DefinesLoader.ReadHeroDefs(silent)
             if (heroDefsLoaded == -1 AND silent == true)
-                this.UpdateLoading("WARNING: Could not load Hero definitions. Click on 'load definitions' to resume.")
+            {
+                this.UpdateLoading("WARNING: Could not load Hero definitions. Click on 'load definitions' to resume.`nThe location of this file should be in your game folder.")
+                this.Stop()
+                g_BrivGemFarm_LevelUp.OnHeroDefinesFailed()
+                return
+            }
             else if (heroDefsLoaded != 1)
             {
                 this.PauseOrResume(1)

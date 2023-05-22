@@ -1,3 +1,7 @@
+May 22, 2023 - v.0.2.1
+    Fixed settings not saving properly.
+    Fixed hero definitions loading for non-Steam users.
+
 May 22, 2023 - v.0.2.0
     Added list of upgrades for each champion to help choosing specific upgrades. (WIP)
     Added Q,W,E formation selection dropdown. Loads Q formation on startup, checks for changes and saves after each reset.

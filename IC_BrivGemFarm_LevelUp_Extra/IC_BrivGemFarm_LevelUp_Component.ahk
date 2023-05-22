@@ -221,15 +221,23 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
         if (!IsObject(settings))
             settings := {}
-        if (default OR !IsObject(settings.BrivGemFarm_LevelUp_Settings))
+        if (!IsObject(settings.BrivGemFarm_LevelUp_Settings))
         {
             settings.BrivGemFarm_LevelUp_Settings := this.LoadDefaultMinMaxSettings()
             for k, v in settings.BrivGemFarm_LevelUp_Settings.minLevels
                 this.TempSettings.minLevels[k] := v
             for k, v in settings.BrivGemFarm_LevelUp_Settings.maxLevels
                 this.TempSettings.maxLevels[k] := v
-            if (!default)
-                save := true
+            save := true
+        }
+        else if (default) ; Load defaultsettings as temp settings into GUI
+        {
+            levelSettings := this.LoadDefaultMinMaxSettings()
+            for k, v in levelSettings.minLevels
+                this.TempSettings.minLevels[k] := v
+            for k, v in levelSettings.maxLevels
+                this.TempSettings.maxLevels[k] := v
+            this.LoadFormation(this.GetFormationFromGUI())
         }
         if (settings.ShowSpoilers == "")
         {
@@ -239,7 +247,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         this.Settings := settings
         if (save)
             this.SaveSettings()
-        else
+        else if (!default)
             this.UndoTempSettings()
         if (default)
             this.Update("Default settings loaded.")
@@ -252,10 +260,6 @@ Class IC_BrivGemFarm_LevelUp_Component
     LoadDefaultMinMaxSettings()
     {
         minLevels := {}, maxLevels := {}
-        Loop, 126
-        {
-            minLevels[k] := 0, maxLevels[k] := 1
-        }
         minLevels[58] := 170, maxLevels[58] := 1300 ; Briv
         minLevels[47] := 120, maxLevels[47] := 120 ; Shandie
         minLevels[91] := 260, maxLevels[91] := 350 ; Widdle 260 310 350
@@ -278,7 +282,6 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[113] := 1, maxLevels[113] := 1400 ; Egbert
         minLevels[94] := 1, maxLevels[94] := 2640 ; Rust
         minLevels[30] := 1, maxLevels[30] := 2020 ; Azaka
-
         return {minLevels:minLevels, maxLevels:maxLevels}
     }
 
@@ -421,14 +424,12 @@ Class IC_BrivGemFarm_LevelUp_Component
     ; Update the text that shows the last time cached_definitions.json was loaded
     UpdateLastUpdated(lastUpdateString := "", save := false)
     {
-        this.Settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
-        if (!IsObject(this.Settings))
-            this.Settings := {}
+        settings := this.Settings
         if (lastUpdateString != "")
         {
-            this.Settings.LastUpdateString := lastUpdateString
+            settings.LastUpdateString := lastUpdateString
             if (save)
-                g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, this.Settings)
+                g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         }
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_DefinitionsStatus, % this.Settings.LastUpdateString
     }

@@ -1,3 +1,6 @@
+May 25, 2023 -
+    Spoilers now update as soon the champion would be able to be unlocked, after a GUI change
+
 May 22, 2023 - v.0.2.1
     Fixed settings not saving properly.
     Fixed default settings and undo button behavior

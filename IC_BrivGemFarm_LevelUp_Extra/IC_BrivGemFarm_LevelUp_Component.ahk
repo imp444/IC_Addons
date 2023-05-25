@@ -611,8 +611,8 @@ Class IC_BrivGemFarm_LevelUp_Seat
             dt .= A_LoopField
         EnvAdd, dt, 7, H
         EnvAdd, dt, -12, D
-        EnvSub, dt, A_NowUTC, D
-        return dt >= 0
+        EnvSub, dt, A_NowUTC, S
+        return dt > 0
     }
 
     ; Adds a single champion data to his seat's container

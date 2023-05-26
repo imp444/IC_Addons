@@ -1,3 +1,6 @@
+May 26, 2023 -
+    Min/max values are refreshed after a champion's upgrade list has been closed without a selected upgrade
+
 May 25, 2023 -
     Spoilers now update as soon the champion would be able to be unlocked, after a GUI change
 

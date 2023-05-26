@@ -1,4 +1,7 @@
-﻿CB_SETITEMHEIGHT := 0x0153
+﻿CBN_SELENDCANCEL := 10
+WM_COMMAND := 0x0111
+CB_SETITEMHEIGHT := 0x0153
+CB_GETDROPPEDSTATE := 0x0157
 CB_SETDROPPEDWIDTH := 0x0160
 
 GUIFunctions.AddTab("BrivGF LevelUp")
@@ -44,6 +47,46 @@ Gui, ICScriptHub:Add, Text, x20 y+15 w450 R2 vBrivGemFarm_LevelUp_Text, % "No se
 Gui, ICScriptHub:Add, Button, x20 y+10 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
 Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R2 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
 Gui, ICScriptHub:Add, CheckBox, x20 y+10 vBrivGemFarm_LevelUp_Spoilers gBrivGemFarm_LevelUp_Spoilers, Show spoilers
+
+OnMessage(WM_COMMAND, "CheckComboStatus")
+
+; Refresh min/max values after a ComboBox sends a selection cancel event to the parent tab
+CheckComboStatus(W)
+{
+    global
+    GuiControlGet, CurrentTab,, ModronTabControl, Tab
+    if (CurrentTab != "BrivGF LevelUp")
+        return
+    seat_ID := 0
+    Loop, 12
+    {
+        ctrlH := HBrivGemFarmLevelUpMinLevel_%A_Index%
+        SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlH%
+        if (Errorlevel)
+        {
+            seat_ID := A_Index
+            break
+        }
+        ctrlH := HBrivGemFarmLevelUpMaxLevel_%A_Index%
+        SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlH%
+        if (Errorlevel)
+        {
+            seat_ID := A_Index
+            break
+        }
+    }
+    if (seat_ID)
+    {
+        if ((W >> 16) & 0xFFFF == CBN_SELENDCANCEL)
+        {
+            choice := % DDL_BrivGemFarmLevelUpName_%seat_ID%
+            if (choice == "Briv") ; After %choice%, ErrorLevel is set to 1 for an unknown reason
+                GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_5, % "|" . choice
+            else
+                GuiControl, ICScriptHub:ChooseString, %choice%, % "|" . choice
+        }
+    }
+}
 
 ; Switch names
 BrivGemFarm_LevelUp_Name()

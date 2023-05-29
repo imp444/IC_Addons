@@ -320,11 +320,16 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[95] := 100, maxLevels[95] := 250 ; Vi 100 250
         minLevels[70] := 90, maxLevels[70] := 90 ; Ezmeralda 90 315
         minLevels[12] := 65, maxLevels[12] := 65 ; Arkhan
-        minLevels[4] := 1, maxLevels[4] := 2150 ; Jarlaxle
-        minLevels[39] := 1, maxLevels[39] := 3440 ; Paultin
-        minLevels[113] := 1, maxLevels[113] := 1400 ; Egbert
-        minLevels[94] := 1, maxLevels[94] := 2640 ; Rust
+        minLevels[4] := 1, maxLevels[4] := 2050 ; Jarlaxle
+        minLevels[39] := 1, maxLevels[39] := 2930 ; Paultin
+        minLevels[103] := 1, maxLevels[103] := 2000 ; Valentine
+        minLevels[124] := 1, maxLevels[124] := 890 ; Evandra
+        minLevels[113] := 1, maxLevels[113] := 1370 ; Egbert
+        minLevels[94] := 1, maxLevels[94] := 2520 ; Rust
         minLevels[30] := 1, maxLevels[30] := 2020 ; Azaka
+        minLevels[118] := 0, maxLevels[118] := 60 ; Fen
+        minLevels[40] := 0, maxLevels[40] := 215 ; Black Viper
+        minLevels[97] := 0, maxLevels[97] := 80 ; Tatyana
         return {minLevels:minLevels, maxLevels:maxLevels}
     }
 

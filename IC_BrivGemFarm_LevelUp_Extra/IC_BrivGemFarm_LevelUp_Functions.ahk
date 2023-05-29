@@ -139,6 +139,40 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
     }
 
+    /*  StackRestart - Stops progress and wwitches to appropriate party to prepare for stacking Briv's SteelBones.
+                       Falls back from a boss zone if necessary.
+
+    Parameters:
+
+    Returns:
+    */
+    ; Stops progress and switches to appropriate party to prepare for stacking Briv's SteelBones.
+    StackFarmSetup()
+    {
+        if (!g_SF.KillCurrentBoss() ) ; Previously/Alternatively FallBackFromBossZone()
+            g_SF.FallBackFromBossZone()
+        inputValues := "{w}" ; Stack farm formation hotkey
+        g_SF.DirectedInput(,, inputValues )
+        g_SF.WaitForTransition( inputValues )
+        g_SF.ToggleAutoProgress( 0 , false, true )
+        StartTime := A_TickCount
+        ElapsedTime := 0
+        counter := 0
+        sleepTime := 50
+        g_SharedData.LoopString := "Setting stack farm formation."
+        while ( !g_SF.IsCurrentFormation(g_SF.Memory.GetFormationByFavorite( 2 )) AND ElapsedTime < 5000 )
+        {
+            this.DoPartySetupMax(2)
+            ElapsedTime := A_TickCount - StartTime
+            if (ElapsedTime > (counter * sleepTime)) ; input limiter..
+            {
+                g_SF.DirectedInput(,,inputValues)
+                counter++
+            }
+        }
+        return
+    }
+
     /*  DoPartySetupMin - When gem farm is started or an adventure is reloaded, this is called to set up the primary party.
                         This will only level champs to the minium target specified in BrivGemFarm_LevelUp_Settings.json.
                         It will wait for Shandie dash if necessary.
@@ -157,11 +191,18 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             if (g_SF.IsChampInFormation(champID, formationFavorite1) AND g_SF.Memory.ReadChampLvlByID(champID) < minLevels[champID])
                 keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
         }
+        keyspam1 := [], keyspam2 := []
+        Loop, % keyspam.Length() / 2 ; Split speed champions leveling in half
+            keyspam2.Push(keyspam.Pop())
         setupDone := False
         StartTime := A_TickCount
+        index := 0
         while(!setupDone)
         {
-            g_SF.DirectedInput(,, keyspam*) ; level up all champs once
+            if (Mod(index++, 2))
+                g_SF.DirectedInput(,, keyspam*) ; level up half of all speed champions once
+            else
+                g_SF.DirectedInput(,, keyspam2*) ; level up the other half once
             for champID, targetLevel in minLevels
             {
                 if (g_SF.IsChampInFormation(champID, formationFavorite1))
@@ -170,16 +211,27 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                     Fkey := "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}"
                     if (level >= targetLevel)
                     {
-                        for k, v in keyspam
+                        if (Mod(index++, 2))
                         {
-                            if (v == Fkey)
-                                keyspam.Delete(k)
+                            for k, v in keyspam
+                            {
+                                if (v == Fkey)
+                                    keyspam.Delete(k)
+                            }
+                        }
+                        else
+                        {
+                            for k, v in keyspam2
+                            {
+                                if (v == Fkey)
+                                    keyspam2.Delete(k)
+                            }
                         }
                     }
                 }
             }
             g_SF.SetFormation(g_BrivUserSettings) ; switch to E formation if necessary
-            if (keyspam.Length() == 0 OR (A_TickCount - StartTime) > 5000)
+            if ((keyspam.Length() == 0 AND keyspam2.Length() == 0) OR (A_TickCount - StartTime) > 5000)
                 setupDone := true
             Sleep, 20
         }
@@ -193,12 +245,12 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 
         Returns: bool - True if all champions in Q formation are at or past their target level, false otherwise
     */
-    DoPartySetupMax()
+    DoPartySetupMax(formation := 1)
     {
-        formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
+        formationFavorite := g_SF.Memory.GetFormationByFavorite( formation )
         for champID, targetLevel in g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels
         {
-            if (g_SF.IsChampInFormation(champID, formationFavorite1))
+            if (g_SF.IsChampInFormation(champID, formationFavorite))
             {
                 if (champID == 58 AND g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[58] <= 170) ; If briv level is set to less than 170, he doesn't get MetalBorn - Level him back after stacking
                 {
@@ -252,6 +304,8 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         {
             this.ToggleAutoProgress(0)
             this.SetFormation()
+            while(!g_BrivGemFarm.DoPartySetupMax() AND !this.IsDashActive() AND ElapsedTime < timeout)
+                g_BrivGemFarm.DoPartySetupMax()
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
             percentageReducedSleep := Max(Floor((1-(ElapsedTime/estimate))*estimate/10), 15)

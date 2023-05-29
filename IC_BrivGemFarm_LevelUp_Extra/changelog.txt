@@ -1,12 +1,18 @@
+May 29, 2023 - v.0.2.2
+    Updated min/max default settings.
+    Updated min leveling logic to prevent undesirable leveling past target level from happening.
+    Champions max leveling will now start while waiting for Shandie's dash.
+    Champions in the stack formation (W) will be leveled to their max level right before stacking (including Tatyana when used for online stacking).
+
 May 26, 2023 -
     Min/max values are refreshed after a champion's upgrade list has been closed without a selected upgrade
 
 May 25, 2023 -
-    Spoilers now update as soon the champion would be able to be unlocked, after a GUI change
+    Spoilers now update as soon the champion would be able to be unlocked, after a GUI change.
 
 May 22, 2023 - v.0.2.1
     Fixed settings not saving properly.
-    Fixed default settings and undo button behavior
+    Fixed default settings and undo button behavior.
     Fixed hero definitions loading for non-Steam users.
 
 May 22, 2023 - v.0.2.0

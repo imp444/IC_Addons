@@ -211,7 +211,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                     Fkey := "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}"
                     if (level >= targetLevel)
                     {
-                        if (Mod(index++, 2))
+                        if (Mod(index, 2))
                         {
                             for k, v in keyspam
                             {

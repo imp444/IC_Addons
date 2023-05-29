@@ -1,3 +1,6 @@
+May 29, 2023 - v.0.2.3
+    Corrected bug during min leveling.	
+
 May 29, 2023 - v.0.2.2
     Updated min/max default settings.
     Updated min leveling logic to prevent undesirable leveling past target level from happening.

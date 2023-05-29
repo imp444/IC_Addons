@@ -199,7 +199,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         index := 0
         while(!setupDone)
         {
-            if (Mod(index++, 2))
+            if (Mod(++index, 2))
                 g_SF.DirectedInput(,, keyspam*) ; level up half of all speed champions once
             else
                 g_SF.DirectedInput(,, keyspam2*) ; level up the other half once
@@ -211,21 +211,15 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                     Fkey := "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}"
                     if (level >= targetLevel)
                     {
-                        if (Mod(index, 2))
+                        for k, v in keyspam
                         {
-                            for k, v in keyspam
-                            {
-                                if (v == Fkey)
-                                    keyspam.Delete(k)
-                            }
+                            if (v == Fkey)
+                                keyspam.Delete(k)
                         }
-                        else
+                        for k, v in keyspam2
                         {
-                            for k, v in keyspam2
-                            {
-                                if (v == Fkey)
-                                    keyspam2.Delete(k)
-                            }
+                            if (v == Fkey)
+                                keyspam2.Delete(k)
                         }
                     }
                 }

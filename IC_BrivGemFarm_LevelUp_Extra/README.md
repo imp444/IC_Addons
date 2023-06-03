@@ -29,5 +29,10 @@ Show unreleased champions in their respective seat.
 Level up Briv and Shandie before other champions after resetting.  
 This is useful when using the in-game next upgrade/double arrow setting as leveling champions that multipy the amount of quest items received has a side effect of causing the area to be completed before Briv gets his jump ability at level 80.
 
+
 * **Maximum simultaneous F keys inputs during MinLevel** (default: 4)  
 Maximum number of champions being leveled up during the intial leveling to minLevel. This can help if input lag causes champions to be overleveled during the initial leveling.
+
+
+* **MinLevel timeout (ms)** (default: 5000)  
+Timeout before stopping the initial champion leveling. If set to 0, only a single leveling loop will be done before starting maximum leveling.

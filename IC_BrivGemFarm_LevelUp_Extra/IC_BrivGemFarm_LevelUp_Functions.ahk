@@ -228,7 +228,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 }
             }
             g_SF.SetFormation(g_BrivUserSettings) ; Switch to E formation if necessary
-            if (keyspam.Length() == 0 OR (A_TickCount - StartTime) > 5000)
+            if (keyspam.Length() == 0 OR (A_TickCount - StartTime) > g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ])
                 setupDone := true
             Sleep, 30
         }
@@ -329,6 +329,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
         g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ] := settings.ForceBrivShandie
         g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
+        g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] := settings.MinLevelTimeout
         if (updateMaxLevels)
             this.UpdateMaxLevels := true
     }

@@ -12,23 +12,27 @@ global g_DefinesLoader := new IC_BrivGemFarm_LevelUp_DefinesLoader
 ; Add GUI fields to this addon's tab.
 Gui, ICScriptHub:Tab, BrivGF LevelUp
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, Text, , BrivGemFarm LevelUp Settings
+Gui, ICScriptHub:Add, GroupBox, x+5 w465 h560 vMinMaxSettings, BrivGemFarm LevelUp Settings
 Gui, ICScriptHub:Font, w400
-Gui, ICScriptHub:Add, Text, x13 y+15, Seat
+Gui, ICScriptHub:Add, Text, x23 y100, Seat
 Gui, ICScriptHub:Add, Text, x+51, Name
 Gui, ICScriptHub:Add, Text, x+64, MinLevel
 Gui, ICScriptHub:Add, Text, x+31, MaxLevel
 
 ; Create minLevel, maxLevel, order buttons/edits
+leftAlign := 25
+xSpacing := 15
+ySpacing := 10
+
 Loop, 12
 {
-    AddSeat(15, 10, A_Index)
+    AddSeat(xSpacing, ySpacing, A_Index)
 }
 ; Add settings for the next seat
 AddSeat(xSpacing, ySpacing, seat)
 {
     global
-    Gui, ICScriptHub:Add, Text, Center x%xSpacing% y+%ySpacing% w15, % seat
+    Gui, ICScriptHub:Add, Text, Center x%leftAlign% y+%ySpacing% w15, % seat
     GUIFunctions.UseThemeTextColor("InputBoxTextColor")
     Gui, ICScriptHub:Add, DropDownList , vDDL_BrivGemFarmLevelUpName_%seat% gBrivGemFarm_LevelUp_Name x+%xSpacing% y+-16 w111
     Gui, ICScriptHub:Add, ComboBox, Limit6 hwndHBrivGemFarmLevelUpMinLevel_%seat% vCombo_BrivGemFarmLevelUpMinLevel_%seat% gBrivGemFarm_LevelUp_MinMax_Clamp x+%xSpacing% w60
@@ -36,22 +40,26 @@ AddSeat(xSpacing, ySpacing, seat)
     GUIFunctions.UseThemeTextColor()
 }
 
-Gui, ICScriptHub:Add, Text, x20 y+20, Formation
+Gui, ICScriptHub:Add, Text, x%leftAlign% y+20, Formation
 Gui, ICScriptHub:Add, DropDownList, x+10 y+-17 w35 AltSubmit Disabled hwndBrivGemFarm_LevelUp_LoadFormation vBrivGemFarm_LevelUp_LoadFormation gBrivGemFarm_LevelUp_LoadFormation, Q||W|E
 PostMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BrivGemFarm_LevelUp_LoadFormation%
-Gui, ICScriptHub:Add, Button, x+20 Disabled vBrivGemFarm_LevelUp_Default gBrivGemFarm_LevelUp_Default, Default Settings
-Gui, ICScriptHub:Add, Button, x+20 Hidden vBrivGemFarm_LevelUp_Save gBrivGemFarm_LevelUp_Save, Save
-Gui, ICScriptHub:Add, Text, x+15 y+-18 w90 vBrivGemFarm_LevelUp_Changes
-Gui, ICScriptHub:Add, Button, x+15 y+-18 Hidden vBrivGemFarm_LevelUp_Undo gBrivGemFarm_LevelUp_Undo, Undo
-Gui, ICScriptHub:Add, Text, x20 y+15 w450 R2 vBrivGemFarm_LevelUp_Text, % "No settings."
-Gui, ICScriptHub:Add, Button, x20 y+10 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
-Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R2 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
-Gui, ICScriptHub:Add, CheckBox, x20 y+10 vBrivGemFarm_LevelUp_Spoilers gBrivGemFarm_LevelUp_Spoilers, Show spoilers
-Gui, ICScriptHub:Add, CheckBox, x20 y+10 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
+Gui, ICScriptHub:Add, Button, x+%xSpacing% Disabled vBrivGemFarm_LevelUp_Default gBrivGemFarm_LevelUp_Default, Default Settings
+Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Save gBrivGemFarm_LevelUp_Save, Save
+Gui, ICScriptHub:Add, Text, x+%xSpacing% y+-18 w90 vBrivGemFarm_LevelUp_Changes
+Gui, ICScriptHub:Add, Button, x+%xSpacing% y+-18 Hidden vBrivGemFarm_LevelUp_Undo gBrivGemFarm_LevelUp_Undo, Undo
+Gui, ICScriptHub:Add, Text, x%leftAlign% y+%ySpacing% w450 R2 vBrivGemFarm_LevelUp_Text, % "No settings."
+Gui, ICScriptHub:Add, CheckBox, x%leftAlign% y+%ySpacing% vBrivGemFarm_LevelUp_Spoilers gBrivGemFarm_LevelUp_Spoilers, Show spoilers
+Gui, ICScriptHub:Add, CheckBox, x%leftAlign% y+5 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, x20 y+10 w25 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs  gBrivGemFarm_LevelUp_MaxSimultaneousInputs
+Gui, ICScriptHub:Add, Edit, x%leftAlign% y+%ySpacing% w40 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18, Maximum simultaneous F keys inputs during MinLevel
+GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+Gui, ICScriptHub:Add, Edit, x%leftAlign% y+%ySpacing% w40 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
+GUIFunctions.UseThemeTextColor()
+Gui, ICScriptHub:Add, Text, x+5 y+-18, MinLevel timeout (ms)
+Gui, ICScriptHub:Add, Button, x13 y+35 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
+Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R2 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
 
 OnMessage(WM_COMMAND, "CheckComboStatus")
 
@@ -251,6 +259,26 @@ BrivGemFarm_LevelUp_MaxSimultaneousInputs()
     g_BrivGemFarm_LevelUp.SaveSettings()
 }
 
+; Maximum number of simultaneous F keys inputs during MinLevel
+BrivGemFarm_LevelUp_MinLevelTimeout()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    minLevelTimeout := BrivGemFarm_LevelUp_MinLevelTimeout
+    if minLevelTimeout is not integer
+    {
+        minLevelTimeout := !minLevelTimeout ? 0 : 5000
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % minLevelTimeout
+    }
+    else if (minLevelTimeout < 0)
+    {
+        minLevelTimeout := 0
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % minLevelTimeout
+    }
+    g_BrivGemFarm_LevelUp.Settings.MinLevelTimeout := minLevelTimeout
+    g_BrivGemFarm_LevelUp.SaveSettings()
+}
+
 g_BrivGemFarm_LevelUp.Init()
 
 /*  IC_BrivGemFarm_LevelUp_Component
@@ -271,6 +299,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         this.LoadSettings()
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % g_BrivGemFarm_LevelUp.Settings.ForceBrivShandie
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % g_BrivGemFarm_LevelUp.Settings.MaxSimultaneousInputs
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % g_BrivGemFarm_LevelUp.Settings.MinLevelTimeout
         g_DefinesLoader.Start()
     }
 
@@ -331,6 +360,11 @@ Class IC_BrivGemFarm_LevelUp_Component
         if (settings.MaxSimultaneousInputs == "")
         {
             settings.MaxSimultaneousInputs := 4
+            save := true
+        }
+        if (settings.MinLevelTimeout == "")
+        {
+            settings.MinLevelTimeout := 5000
             save := true
         }
         this.Settings := settings

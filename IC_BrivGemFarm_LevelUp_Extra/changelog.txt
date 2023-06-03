@@ -1,8 +1,14 @@
+June 04, 2023 - v.0.3.1
+    Added a MinLevel Timeout setting. The initial champion leveling will stop after this value has been reached. If set to 0, only a single leveling loop will be done before starting maximum leveling.
+
 June 03, 2023 - v.0.3.0
     Added automated checks for new definitions on start.
     Added a checkbox setting to force Briv/Shandie to be leveled up to minLevel before other champions.
     Added a setting for maximum number of F keys inputs at the same time during initial leveling.
     Swapped Virgil with Nahara for initial leveling priorities.
+
+May 29, 2023 - v.0.2.3
+    Corrected bug during min leveling.
 
 May 29, 2023 - v.0.2.2
     Updated min/max default settings.

@@ -18,3 +18,16 @@ Select a maximum level in the dropdown list, so he won't receive as many health 
 
 If you're setting Briv's min level to less than level 110 so that he gets Unnatural Haste but not Healing Phlo, set up MaxLevel to 170 and under.
 After stacking, Briv will be leveled back to level 170 and obtain his MetalBorn upgrade.
+
+## Settings:
+
+* **Show spoilers** (default: unchecked)   
+Show unreleased champions in their respective seat.
+
+
+* **Level up Briv/Shandie to MinLevel first** (default: unchecked)   
+Level up Briv and Shandie before other champions after resetting.  
+This is useful when using the in-game next upgrade/double arrow setting as leveling champions that multipy the amount of quest items received has a side effect of causing the area to be completed before Briv gets his jump ability at level 80.
+
+* **Maximum simultaneous F keys inputs during MinLevel** (default: 4)  
+Maximum number of champions being leveled up during the intial leveling to minLevel. This can help if input lag causes champions to be overleveled during the initial leveling.

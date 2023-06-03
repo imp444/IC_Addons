@@ -47,6 +47,11 @@ Gui, ICScriptHub:Add, Text, x20 y+15 w450 R2 vBrivGemFarm_LevelUp_Text, % "No se
 Gui, ICScriptHub:Add, Button, x20 y+10 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
 Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R2 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
 Gui, ICScriptHub:Add, CheckBox, x20 y+10 vBrivGemFarm_LevelUp_Spoilers gBrivGemFarm_LevelUp_Spoilers, Show spoilers
+Gui, ICScriptHub:Add, CheckBox, x20 y+10 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
+GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+Gui, ICScriptHub:Add, Edit, x20 y+10 w25 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs  gBrivGemFarm_LevelUp_MaxSimultaneousInputs
+GUIFunctions.UseThemeTextColor()
+Gui, ICScriptHub:Add, Text, x+5 y+-18, Maximum simultaneous F keys inputs during MinLevel
 
 OnMessage(WM_COMMAND, "CheckComboStatus")
 
@@ -94,7 +99,7 @@ BrivGemFarm_LevelUp_Name()
     global
     Gui, ICScriptHub:Submit, NoHide
     local name := % %A_GuiControl%
-    heroDefs := g_DefinesLoader.HeroDefines
+    heroDefs := g_DefinesLoader.HeroDefines.hero_defines
     for k, v in heroDefs
     {
         if (v.name == name)
@@ -217,6 +222,35 @@ BrivGemFarm_LevelUp_Spoilers()
         IC_BrivGemFarm_LevelUp_Seat.Seats[A_Index].ToggleSpoilers(showSpoilers)
 }
 
+; Force Briv/Shandie MinLevel
+BrivGemFarm_LevelUp_ForceBrivShandie()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    g_BrivGemFarm_LevelUp.Settings.ForceBrivShandie := BrivGemFarm_LevelUp_ForceBrivShandie
+    g_BrivGemFarm_LevelUp.SaveSettings()
+}
+
+; Maximum number of simultaneous F keys inputs during MinLevel
+BrivGemFarm_LevelUp_MaxSimultaneousInputs()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    maxSimultaneousInputs := BrivGemFarm_LevelUp_MaxSimultaneousInputs
+    if maxSimultaneousInputs is not integer
+    {
+        maxSimultaneousInputs := 1
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % maxSimultaneousInputs
+    }
+    else if (maxSimultaneousInputs < 1)
+    {
+        maxSimultaneousInputs := 1
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % maxSimultaneousInputs
+    }
+    g_BrivGemFarm_LevelUp.Settings.MaxSimultaneousInputs := maxSimultaneousInputs
+    g_BrivGemFarm_LevelUp.SaveSettings()
+}
+
 g_BrivGemFarm_LevelUp.Init()
 
 /*  IC_BrivGemFarm_LevelUp_Component
@@ -235,6 +269,8 @@ Class IC_BrivGemFarm_LevelUp_Component
     {
         this.TempSettings := {}
         this.LoadSettings()
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % g_BrivGemFarm_LevelUp.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % g_BrivGemFarm_LevelUp.Settings.MaxSimultaneousInputs
         g_DefinesLoader.Start()
     }
 
@@ -285,6 +321,16 @@ Class IC_BrivGemFarm_LevelUp_Component
         if (settings.ShowSpoilers == "")
         {
             settings.ShowSpoilers := false
+            save := true
+        }
+        if (settings.ForceBrivShandie == "")
+        {
+            settings.ForceBrivShandie := false
+            save := true
+        }
+        if (settings.MaxSimultaneousInputs == "")
+        {
+            settings.MaxSimultaneousInputs := 4
             save := true
         }
         this.Settings := settings
@@ -338,7 +384,7 @@ Class IC_BrivGemFarm_LevelUp_Component
     {
         save := false
         levelSettings := this.Settings.BrivGemFarm_LevelUp_Settings
-        for heroID in g_DefinesLoader.HeroDefines
+        for heroID in g_DefinesLoader.HeroDefines.hero_defines
         {
             if levelSettings.minLevels[heroID] == ""
             {
@@ -359,7 +405,7 @@ Class IC_BrivGemFarm_LevelUp_Component
     UpdateTempSettings()
     {
         Gui, ICScriptHub:Submit, NoHide
-        heroDefs := g_DefinesLoader.HeroDefines
+        heroDefs := g_DefinesLoader.HeroDefines.hero_defines
         Loop, 12
         {
             seat_id = % A_Index
@@ -398,7 +444,7 @@ Class IC_BrivGemFarm_LevelUp_Component
     {
         Gui, ICScriptHub:Submit, NoHide
         formation := []
-        heroDefs := g_DefinesLoader.HeroDefines
+        heroDefs := g_DefinesLoader.HeroDefines.hero_defines
         Loop, 12
         {
             seat_id = % A_Index
@@ -436,7 +482,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            SharedRunData.LoadMinMaxLevels()
+            SharedRunData.UpdateSettingsFromFile(applyTempSettings)
         }
     }
 
@@ -473,13 +519,14 @@ Class IC_BrivGemFarm_LevelUp_Component
     UpdateLastUpdated(lastUpdateString := "", save := false)
     {
         settings := this.Settings
-        if (lastUpdateString != "")
+        if (lastUpdateString == "")
+            lastUpdateString := settings.LastUpdateString
+        if (save)
         {
             settings.LastUpdateString := lastUpdateString
-            if (save)
-                g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
+            g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         }
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_DefinitionsStatus, % this.Settings.LastUpdateString
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_DefinitionsStatus, % lastUpdateString
     }
 
     ; Loads formation from champIDs into the GUI, defaults to Q formation
@@ -501,7 +548,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         {
             if (v <= 0 OR v == "")
                 continue
-            champData := g_DefinesLoader.HeroDefines[v]
+            champData := g_DefinesLoader.HeroDefines.hero_defines[v]
             seat_id := champData.seat_id
             name := champData.name
             seats.Delete(seat_id)
@@ -592,13 +639,13 @@ Class IC_BrivGemFarm_LevelUp_Seat
         global
         seat := this.ID
         heroData := this.HeroDataByName[name]
-        upgrades := heroData.upgrades
+        upgrades := heroData.upgradesList
         GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
         GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
         GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % "|" . upgrades
         GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, % "|" . upgrades
         if(heroData.cachedSize == "")
-            heroData.cachedSize := DropDownSize(heroData.upgrades)
+            heroData.cachedSize := DropDownSize(heroData.upgradesList)
         SetMinMaxComboWidth(seat, heroData.cachedSize)
         Sleep, 1
         GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % g_BrivGemFarm_LevelUp.TempSettings.minLevels[k]
@@ -681,7 +728,7 @@ Class IC_BrivGemFarm_LevelUp_Seat
     ; Performs additional functions after definitions have been fully loaded
     OnHeroDefinesFinished()
     {
-        for ID, heroData in g_DefinesLoader.HeroDefines
+        for ID, heroData in g_DefinesLoader.HeroDefines.hero_defines
             IC_BrivGemFarm_LevelUp_Seat.Seats[heroData.seat_id].HeroDataByID[ID] := heroData
         for seatID, seat in IC_BrivGemFarm_LevelUp_Seat.Seats
             seat.UpdateNames()

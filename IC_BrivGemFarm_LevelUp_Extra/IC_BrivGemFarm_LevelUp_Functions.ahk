@@ -16,11 +16,11 @@ class IC_BrivGemFarm_LevelUp_Functions
     ; Returns true if the two objects have identical key/value pairs
     AreObjectsEqual(obj1 := "", obj2 := "")
     {
-        if (obj1.Length() != obj2.Length())
+        if (obj1.Count() != obj2.Count())
             return false
         for k, v in obj1
         {
-            if (obj2[k] != v)
+            if (IsObject(v) AND !this.AreObjectsEqual(obj2[k], v) OR !IsObject(v) AND obj2[k] != v AND obj2.HasKey(k))
                 return false
         }
         return true
@@ -36,7 +36,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     ;The primary loop for gem farming using Briv and modron.
     GemFarm()
     {
-        g_SharedData.LoadMinMaxLevels()
+        g_SharedData.UpdateSettingsFromFile(true)
         static lastResetCount := 0
         g_SharedData.TriggerStart := true
         g_SF.Hwnd := WinExist("ahk_exe " . g_UserSettings[ "ExeName"])
@@ -75,7 +75,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SharedData.StackFail := this.CheckForFailedConv()
                 g_SF.WaitForFirstGold()
                 setupMaxDone := false
-                this.DoPartySetupMin()
+                this.DoPartySetupMin(g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ])
                 lastResetCount := g_SF.Memory.ReadResetsCount()
                 g_SF.Memory.ActiveEffectKeyHandler.Refresh()
                 worstCase := g_BrivUserSettings[ "AutoCalculateWorstCase" ]
@@ -135,6 +135,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SharedData.StackFail := StackFailStates.FAILED_TO_PROGRESS ; 3
                 g_SharedData.StackFailStats.TALLY[g_SharedData.StackFail] += 1
             }
+
             Sleep, 20 ; here to keep the script responsive.
         }
     }
@@ -174,35 +175,39 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     }
 
     /*  DoPartySetupMin - When gem farm is started or an adventure is reloaded, this is called to set up the primary party.
-                        This will only level champs to the minium target specified in BrivGemFarm_LevelUp_Settings.json.
-                        It will wait for Shandie dash if necessary.
+                          This will only level champs to the minium target specified in BrivGemFarm_LevelUp_Settings.json.
+                          It will wait for Shandie dash if necessary.
+                          It will only level up at a time the number of champions specified in the MaxSimultaneousInputs setting
+        Parameters:       forceBrivShandie: bool - If true, force Briv/Shandie to minLevel before leveling other champions
+
+        Returns:
     */
-    DoPartySetupMin()
+    DoPartySetupMin(forceBrivShandie := false)
     {
         g_SharedData.LoopString := "Leveling champions to the minimum level"
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
         minLevels := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].minLevels
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         g_SF.DirectedInput(,, "{q}") ; switch to Briv in slot 5
-        champIDs := [58, 47, 91, 28, 75, 102, 52, 115, 89, 114, 98, 79, 81, 95] ; speed champs
+        if (forceBrivShandie)
+            champIDs := [58, 47]
+        else
+            champIDs := [58, 47, 91, 28, 75, 115, 52, 102, 89, 114, 98, 79, 81, 95] ; speed champs
         keyspam := []
         for k, champID in champIDs
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite1) AND g_SF.Memory.ReadChampLvlByID(champID) < minLevels[champID])
                 keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
         }
-        keyspam1 := [], keyspam2 := []
-        Loop, % keyspam.Length() / 2 ; Split speed champions leveling in half
-            keyspam2.Push(keyspam.Pop())
         setupDone := False
         StartTime := A_TickCount
         index := 0
         while(!setupDone)
         {
-            if (Mod(++index, 2))
-                g_SF.DirectedInput(,, keyspam*) ; level up half of all speed champions once
-            else
-                g_SF.DirectedInput(,, keyspam2*) ; level up the other half once
+            maxKeyspam := [] ; Maximum number of champions leveled up every loop
+            Loop % Min(g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ], keyspam.Length())
+                maxKeyspam.Push(keyspam[A_Index])
+            g_SF.DirectedInput(,, maxKeyspam*) ; Level up speed champions once
             for champID, targetLevel in minLevels
             {
                 if (g_SF.IsChampInFormation(champID, formationFavorite1))
@@ -214,21 +219,21 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                         for k, v in keyspam
                         {
                             if (v == Fkey)
-                                keyspam.Delete(k)
-                        }
-                        for k, v in keyspam2
-                        {
-                            if (v == Fkey)
-                                keyspam2.Delete(k)
+                            {
+                                keyspam.RemoveAt(k)
+                                break
+                            }
                         }
                     }
                 }
             }
-            g_SF.SetFormation(g_BrivUserSettings) ; switch to E formation if necessary
-            if ((keyspam.Length() == 0 AND keyspam2.Length() == 0) OR (A_TickCount - StartTime) > 5000)
+            g_SF.SetFormation(g_BrivUserSettings) ; Switch to E formation if necessary
+            if (keyspam.Length() == 0 OR (A_TickCount - StartTime) > 5000)
                 setupDone := true
-            Sleep, 20
+            Sleep, 30
         }
+        if (forceBrivShandie)
+            return this.DoPartySetupMin()
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
@@ -315,14 +320,17 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
 {
     UpdateMaxLevels := false ; Update max level immediately
 
-    ; Load new leveling settings from the GUI settings file
-    LoadMinMaxLevels()
+    ; Load settings from the GUI settings file
+    UpdateSettingsFromFile(updateMaxLevels := false)
     {
         settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Functions.SettingsPath)
         if (!IsObject(settings))
-            return
+            return false
         g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
-        this.UpdateMaxLevels := true
+        g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ] := settings.ForceBrivShandie
+        g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
+        if (updateMaxLevels)
+            this.UpdateMaxLevels := true
     }
 
     ; Save full Q,W,E formations to BrivGemFarm_LevelUp_Settings.json

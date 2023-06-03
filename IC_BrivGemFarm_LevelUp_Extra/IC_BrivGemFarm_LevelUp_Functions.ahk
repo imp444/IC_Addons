@@ -179,10 +179,11 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                           It will wait for Shandie dash if necessary.
                           It will only level up at a time the number of champions specified in the MaxSimultaneousInputs setting
         Parameters:       forceBrivShandie: bool - If true, force Briv/Shandie to minLevel before leveling other champions
+                          timeout: integer - Time in ms before abandoning the initial leveling
 
         Returns:
     */
-    DoPartySetupMin(forceBrivShandie := false)
+    DoPartySetupMin(forceBrivShandie := false, timeout := "")
     {
         g_SharedData.LoopString := "Leveling champions to the minimum level"
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
@@ -201,6 +202,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
         setupDone := False
         StartTime := A_TickCount
+        if (timeout := "")
+            timeout := g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ]
         index := 0
         while(!setupDone)
         {
@@ -228,12 +231,13 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 }
             }
             g_SF.SetFormation(g_BrivUserSettings) ; Switch to E formation if necessary
-            if (keyspam.Length() == 0 OR (A_TickCount - StartTime) > g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ])
+            dt := A_TickCount - StartTime
+            if (keyspam.Length() == 0 OR dt >= timeout)
                 setupDone := true
             Sleep, 30
         }
-        if (forceBrivShandie)
-            return this.DoPartySetupMin()
+        if (forceBrivShandie AND dt < timeout) ; remaining time > 0
+            return this.DoPartySetupMin(false, g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] - dt)
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )

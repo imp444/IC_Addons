@@ -35,4 +35,4 @@ Maximum number of champions being leveled up during the intial leveling to minLe
 
 
 * **MinLevel timeout (ms)** (default: 5000)  
-Timeout before stopping the initial champion leveling. If set to 0, only a single leveling loop will be done before starting maximum leveling.
+Timeout before stopping the initial champion leveling. If set to 0, minimum leveling will be skipped.

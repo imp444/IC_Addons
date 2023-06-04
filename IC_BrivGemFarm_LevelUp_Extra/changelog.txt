@@ -1,5 +1,5 @@
-June 04, 2023 - v.0.3.2
-    Added a MinLevel Timeout setting. The initial champion leveling will stop after this value has been reached. If set to 0, only a single leveling loop will be done before starting maximum leveling.
+June 04, 2023 - v.0.3.3
+    Added a MinLevel Timeout setting. The initial champion leveling will stop after this value has been reached. If set to 0, minimum leveling will be skipped.
 
 June 03, 2023 - v.0.3.0
     Added automated checks for new definitions on start.

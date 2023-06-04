@@ -200,12 +200,12 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             if (g_SF.IsChampInFormation(champID, formationFavorite1) AND g_SF.Memory.ReadChampLvlByID(champID) < minLevels[champID])
                 keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
         }
-        setupDone := False
-        StartTime := A_TickCount
-        if (timeout := "")
+        StartTime := A_TickCount, ElapsedTime := 0
+        if (timeout == "")
             timeout := g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ]
+        timeout := timeout == "" ? 5000 : timeout
         index := 0
-        while(!setupDone)
+        while(keyspam.Length() != 0 AND ElapsedTime < timeout)
         {
             maxKeyspam := [] ; Maximum number of champions leveled up every loop
             Loop % Min(g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ], keyspam.Length())
@@ -231,13 +231,11 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 }
             }
             g_SF.SetFormation(g_BrivUserSettings) ; Switch to E formation if necessary
-            dt := A_TickCount - StartTime
-            if (keyspam.Length() == 0 OR dt >= timeout)
-                setupDone := true
             Sleep, 30
+            ElapsedTime := A_TickCount - StartTime
         }
-        if (forceBrivShandie AND dt < timeout) ; remaining time > 0
-            return this.DoPartySetupMin(false, g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] - dt)
+        if (forceBrivShandie AND ElapsedTime < timeout) ; remaining time > 0
+            return this.DoPartySetupMin(false, g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] - ElapsedTime)
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )

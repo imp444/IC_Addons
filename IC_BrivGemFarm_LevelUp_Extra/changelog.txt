@@ -1,16 +1,21 @@
-June 04, 2023 - v.0.3.3
+June 07, 2023 - v0.3.4
+    Added default upgrade settings for BBEG.
+    Fixed ultimate upgrade icon not showing.
+    Fixed specialization upgrade padding.
+
+June 04, 2023 - v0.3.3
     Added a MinLevel Timeout setting. The initial champion leveling will stop after this value has been reached. If set to 0, minimum leveling will be skipped.
 
-June 03, 2023 - v.0.3.0
+June 03, 2023 - v0.3.0
     Added automated checks for new definitions on start.
     Added a checkbox setting to force Briv/Shandie to be leveled up to minLevel before other champions.
     Added a setting for maximum number of F keys inputs at the same time during initial leveling.
     Swapped Virgil with Nahara for initial leveling priorities.
 
-May 29, 2023 - v.0.2.3
+May 29, 2023 - v0.2.3
     Corrected bug during min leveling.
 
-May 29, 2023 - v.0.2.2
+May 29, 2023 - v0.2.2
     Updated min/max default settings.
     Updated min leveling logic to prevent undesirable leveling past target level from happening.
     Champions max leveling will now start while waiting for Shandie's dash.
@@ -22,12 +27,12 @@ May 26, 2023 -
 May 25, 2023 -
     Spoilers now update as soon the champion would be able to be unlocked, after a GUI change.
 
-May 22, 2023 - v.0.2.1
+May 22, 2023 - v0.2.1
     Fixed settings not saving properly.
     Fixed default settings and undo button behavior.
     Fixed hero definitions loading for non-Steam users.
 
-May 22, 2023 - v.0.2.0
+May 22, 2023 - v0.2.0
     Added list of upgrades for each champion to help choosing specific upgrades. (WIP)
     Added Q,W,E formation selection dropdown. Loads Q formation on startup, checks for changes and saves after each reset.
     Added option to show spoilers for unreleased champions.
@@ -36,7 +41,7 @@ May 22, 2023 - v.0.2.0
     Known issues:
         Item auto selection in list when the min or max level saved setting isn't tied to an upgrade, or if not actively selecting an upgrade.
 
-May 02, 2023 - v.0.1.0
+May 02, 2023 - v0.1.0
     BrivGemFarm LevelUp - This Addon will allow to set up maximum champion level settings for BrivGemFarm.
     Missing features :
         Settings are currently not saved in profiles.

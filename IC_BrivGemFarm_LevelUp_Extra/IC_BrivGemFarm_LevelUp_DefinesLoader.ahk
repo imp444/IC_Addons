@@ -302,21 +302,17 @@ Class IC_BrivGemFarm_LevelUp_HeroData
 
     BuildUpgrades(data)
     {
-        upgrades := {}
-        maxUpgradeLevelW := 0
+        upgrades := {}, maxUpgradeLevelDigits := 0, listContents := "", specializations := {}
         for upgradeKey, upgrade in data
         {
             level := upgrade.required_level
             if (level == "")
                 continue
-            maxUpgradeLevelW := Max(maxUpgradeLevelW, 2 * StrLen(level))
+            maxUpgradeLevelDigits := Max(maxUpgradeLevelDigits, StrLen(level))
         }
-        listContents := ""
-        specializations := {}
         for upgradeKey, upgrade in data
         {
-            level := upgrade.required_level
-            levelStr := level
+            level := levelStr := upgrade.required_level
             if (level == "")
                 continue
             s := ""
@@ -348,12 +344,12 @@ Class IC_BrivGemFarm_LevelUp_HeroData
                     s := "++ " . data[split[3]].name . " + " split[2] . "%"
             }
             p := "" ; Longest number has no padding before ':'
-            Loop, % maxUpgradeLevelW - 2 * StrLen(level) + StrLen(level) - StrLen(levelStr)
+            Loop, % 2 * (maxUpgradeLevelDigits - StrLen(level)) ; 2 pixels per digit
                 p .= " "
             listContents .= levelStr . p . ": " . s . "|"
         }
         Sort, listContents, N D|
-        this.UpgradesList := RegExReplace(listContents, "((\d)+)(\.)(\d)+", "$1  ")
+        this.UpgradesList := RegExReplace(listContents, "((\d)+)(\.)(\d)+", "$1") ; Remove specialization sort string
         return upgrades
     }
 }

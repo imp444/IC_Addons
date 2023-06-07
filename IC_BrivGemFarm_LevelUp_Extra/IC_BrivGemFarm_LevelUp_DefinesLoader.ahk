@@ -329,7 +329,7 @@ Class IC_BrivGemFarm_LevelUp_HeroData
             }
             else if (upgrade.name)
                 s .= "★  " . upgrade.name
-            else if (upgrade.effect)
+            if (upgrade.effect)
             {
                 split := StrSplit(upgrade.effect, ",")
                 if (split[1] == "health_add")

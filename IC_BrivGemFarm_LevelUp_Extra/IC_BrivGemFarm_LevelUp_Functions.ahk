@@ -251,14 +251,11 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         static champIDs := [47, 91, 28, 75, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95] ; speed champs without Briv
 
         formationFavorite := g_SF.Memory.GetFormationByFavorite( formation )
-        for champID, targetLevel in g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels
+        for k, champID in champIDs
         {
-            for k, v in champIDs
-                if (v != champID)
-                    continue
             if (g_SF.IsChampInFormation(champID, formationFavorite))
             {
-                if (g_SF.Memory.ReadChampLvlByID(champID) < targetLevel)
+                if (g_SF.Memory.ReadChampLvlByID(champID) < g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[champID])
                 {
                     g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; level up single champ once
                     return false
@@ -267,9 +264,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
         for champID, targetLevel in g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels
         {
-            for k, v in champIDs
-                if (v == champID)
-                    continue
             if (g_SF.IsChampInFormation(champID, formationFavorite))
             {
                 if (champID == 58 AND g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[58] <= 170) ; If briv level is set to less than 170, he doesn't get MetalBorn - Level him back after stacking

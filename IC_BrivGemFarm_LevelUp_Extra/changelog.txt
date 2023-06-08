@@ -1,3 +1,6 @@
+June 08, 2023 - v0.3.5
+    Added BBEG in the champion list that prioritizes speed champions for min leveling.
+
 June 07, 2023 - v0.3.4
     Added default upgrade settings for BBEG.
     Fixed ultimate upgrade icon not showing.

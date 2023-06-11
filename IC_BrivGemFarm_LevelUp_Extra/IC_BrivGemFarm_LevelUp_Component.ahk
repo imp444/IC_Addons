@@ -599,15 +599,19 @@ Class IC_BrivGemFarm_LevelUp_Component
     ; Returns one of the in-game formations that are saved by the gem farming script after each reset
     GetSavedFormation(formation := 1)
     {
-        savedFormations := this.Settings.SavedFormations
-        if (!IsObject(savedFormations))
+        try ; avoid thrown errors when comobject is not available.
+        {
+            SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
+            SharedRunData.SaveFormations()
+            savedFormations := this.Settings.SavedFormations := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath).SavedFormations
+        }
+        catch
+        {
+            noGameSave := true
+        }
+        if (noGameSave OR !IsObject(savedFormations))
         {
             g_SF.Memory.OpenProcessReader()
-            try ; avoid thrown errors when comobject is not available.
-            {
-                SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-                SharedRunData.SaveFormations()
-            }
             return g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formation), true) ; without empty slots
         }
         Switch formation

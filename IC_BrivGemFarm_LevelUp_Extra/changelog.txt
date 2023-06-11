@@ -3,6 +3,7 @@ June 11, 2023 - v0.3.6
     Updated default min/max settings for BBEG, Sentry.
     Added loopstring during max champion leveling.
     Fixed creating hero definitions file if not existing.
+    Fixed Q/W/E formation not immediately being loaded after a change.
 
 June 08, 2023 - v0.3.5
     Added BBEG in the champion list that prioritizes speed champions for min leveling.

@@ -358,6 +358,9 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         static lastFormations := ""
         static lastFormationsNotSaved := true
 
+        CurrentObjID := g_SF.Memory.ReadCurrentObjID() ; VerifyAdventureLoaded()
+        if (CurrentObjID == "" OR CurrentObjID <= 0)
+            return
         settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Functions.SettingsPath)
         if (!IsObject(settings))
             settings := {}

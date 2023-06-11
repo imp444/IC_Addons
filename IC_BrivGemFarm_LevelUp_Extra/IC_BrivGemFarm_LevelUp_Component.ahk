@@ -13,7 +13,7 @@ global g_HeroDefines := IC_BrivGemFarm_LevelUp_HeroData
 ; Add GUI fields to this addon's tab.
 Gui, ICScriptHub:Tab, BrivGF LevelUp
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, x+5 w463 h645 vMinMaxSettingsGroup, BrivGemFarm LevelUp Settings
+Gui, ICScriptHub:Add, GroupBox, x+5 w463 h700 vMinMaxSettingsGroup, BrivGemFarm LevelUp Settings
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, Text, x23 y100, Seat
 Gui, ICScriptHub:Add, Text, x+51, Name
@@ -73,7 +73,13 @@ Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w40 Limit5 vBrivGemFarm_
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18, MinLevel timeout (ms)
 
-Gui, ICScriptHub:Add, Text, xs+15 y+20 w445 R2 hwndBrivGemFarm_LevelUp_Text vBrivGemFarm_LevelUp_Text, % "Status: No settings."
+Gui, ICScriptHub:Font, w700
+Gui, ICScriptHub:Add, GroupBox, xs+15 y690 w449 h45 vMaxSettingsGroup, Fail Run Recovery Settings
+Gui, ICScriptHub:Font, w400
+Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_LevelToSoftCapFailedConversion gBrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, Level champions to soft cap after failed conversion
+Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% vBrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv gBrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, Briv included
+
+Gui, ICScriptHub:Add, Text, xs+15 y+25 w445 R2 hwndBrivGemFarm_LevelUp_Text vBrivGemFarm_LevelUp_Text, % "Status: No settings."
 Gui, ICScriptHub:Add, Button, x13 y+20 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
 Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R2 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
 
@@ -317,6 +323,22 @@ BrivGemFarm_LevelUp_MinLevelTimeout()
     g_BrivGemFarm_LevelUp.TempSettings.AddSetting("MinLevelTimeout", minLevelTimeout)
 }
 
+; Level champions to soft cap after a failed conversion to reach stack zone faster
+BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("LevelToSoftCapFailedConversion", BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion)
+}
+
+; Level champions to soft cap after a failed conversion to reach stack zone faster (Briv is excluded, desireable for early stacking)
+BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("LevelToSoftCapFailedConversionBriv", BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv)
+}
+
 ; Load new definitions
 BrivGemFarm_LevelUp_LoadDefinitions()
 {
@@ -329,8 +351,8 @@ Gui, IC_BrivGemFarm_LevelUp_TempSettings:New, -MaximizeBox -Resize
 GUIFunctions.LoadTheme("IC_BrivGemFarm_LevelUp_TempSettings")
 GUIFunctions.UseThemeBackgroundColor()
 GUIFunctions.UseThemeTextColor()
-Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, GroupBox, w295 h295, BrivGemFarm LevelUp Settings
-Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, ListView, xp+15 yp+25 w265 h250 NoSortHdr vBrivTempSettingsID , Setting|Current|New
+Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, GroupBox, w330 h310, BrivGemFarm LevelUp Settings
+Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, ListView, xp+15 yp+24 w300 h270 NoSortHdr vBrivTempSettingsID , Setting|Current|New
 GUIFunctions.UseThemeListViewBackgroundColor("BrivTempSettingsID")
 
 g_BrivGemFarm_LevelUp.Init()
@@ -359,6 +381,8 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         g_DefinesLoader.Start()
     }
 
@@ -446,6 +470,8 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % defaultSettings.ForceBrivShandie
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % defaultSettings.MinLevelTimeout
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % defaultSettings.LevelToSoftCapFailedConversionBriv
             this.LoadFormation(this.GetFormationFromGUI())
         }
         if (save)
@@ -467,6 +493,8 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.MinLevelTimeout := 5000
         settings.DefaultMinLevel := 0
         settings.DefaultMaxLevel := 1
+        settings.LevelToSoftCapFailedConversion := true
+        settings.LevelToSoftCapFailedConversionBriv := false
         minLevels := {}, maxLevels := {}
         minLevels[58] := 170, maxLevels[58] := 1300 ; Briv
         minLevels[47] := 120, maxLevels[47] := 120 ; Shandie
@@ -534,6 +562,8 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         this.TempSettings.Reset()
         this.LoadFormation(this.GetFormationFromGUI())
         this.Update("Settings loaded.")
@@ -881,7 +911,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             {
                 if (IsObject(v))
                     continue
-                if (k == "ShowSpoilers" OR k == "ForceBrivShandie")
+                if (k == "ShowSpoilers" OR k == "ForceBrivShandie" OR k == "LevelToSoftCapFailedConversion" OR k == "LevelToSoftCapFailedConversionBriv")
                 {
                     saved := g_BrivGemFarm_LevelUp.Settings[k] ? "Yes" : "No"
                     v := v ? "Yes" : "No"

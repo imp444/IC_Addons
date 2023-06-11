@@ -71,6 +71,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             return -1
         g_PreviousZoneStartTime := A_TickCount
         g_SharedData.StackFail := 0
+        g_SF.CalcLastUpgradeLevels()
         g_SharedData.UpdateSettingsFromFile(true)
         loop
         {
@@ -87,6 +88,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SharedData.StackFail := this.CheckForFailedConv()
                 g_SF.WaitForFirstGold()
                 setupMaxDone := false
+                setupFailedConversionDone := true
                 this.DoPartySetupMin(g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ])
                 lastResetCount := g_SF.Memory.ReadResetsCount()
                 g_SF.Memory.ActiveEffectKeyHandler.Refresh()
@@ -111,11 +113,17 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SF.ToggleAutoProgress( 1, true ) ; Toggle autoprogress to skip boss bag
             if (g_SF.Memory.ReadResetting())
                 this.ModronResetCheck()
+            needToStack := g_SF.Memory.ReadSBStacks() < (g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ])
             ; If briv level is set to less than 170, he doesn't get MetalBorn - Level him back after stacking
-            if (g_SF.Memory.ReadChampLvlByID(58) < 170 AND g_SF.Memory.ReadSBStacks() >= (g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]))
+            if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < 170 )
                 setupMaxDone := false
+            ; Check for failed stack conversion
+            if (g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
+                setupFailedConversionDone := false
             if (!setupMaxDone)
                 setupMaxDone := this.DoPartySetupMax() ; Level up all champs to the specified max level
+            else if (!setupFailedConversionDone)
+                setupFailedConversionDone := this.DoPartySetupFailedConversion() ; Level up all champs to soft cap (including Briv if option checked)
             if (g_SharedData.UpdateMaxLevels)
             {
                 setupMaxDone := false, g_SharedData.UpdateMaxLevels := false
@@ -295,11 +303,36 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
         return true
     }
+
+    /*  DoPartySetupFailedConversion - Level up all champs to soft cap after a failed conversion.
+        If the setting LevelToSoftCapFailedConversionBriv is set to true, also level Briv.
+
+        Returns: bool - True if all champions in Q formation are soft capped, false otherwise
+    */
+    DoPartySetupFailedConversion(formationIndex := 1)
+    {
+        formation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formationIndex), true) ; without empty slots
+        for k, champID in formation
+        {
+            if (g_SF.IsChampInFormation(champID, formation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversionBriv" ]))
+            {
+                if (g_SF.Memory.ReadChampLvlByID(champID) < g_SF.LastUpgradeLevelByID[champID])
+                {
+                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to soft cap (" . g_SF.LastUpgradeLevelByID[champID] . ")"
+                    g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; level up single champ once
+                    return false
+                }
+            }
+        }
+        return true
+    }
 }
 
 ; Overrides IC_BrivSharedFunctions_Class, check for compatibility
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
+    LastUpgradeLevelByID := ""
+
     ;================================
     ;Functions mostly for gem farming
     ;================================
@@ -342,6 +375,24 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         g_PreviousZoneStartTime := A_TickCount
         return
     }
+
+    ; Retrieves the required level of the last upgrade of every champion
+    CalcLastUpgradeLevels()
+    {
+        obj := {}
+        Loop, % this.Memory.ReadChampListSize()
+        {
+            champID := A_Index, maxUpgradeLevel := 0
+            Loop, % this.Memory.ReadHeroUpgradesSize(champID)
+            {
+                requiredLevel := this.Memory.ReadHeroUpgradeRequiredLevel(champID, A_Index - 1)
+                if (requiredLevel != 9999)
+                    maxUpgradeLevel := Max(requiredLevel, maxUpgradeLevel)
+            }
+            obj[champID] := maxUpgradeLevel
+        }
+        this.LastUpgradeLevelByID := obj
+    }
 }
 
 ; Overrides IC_SharedData_Class, check for compatibility
@@ -357,9 +408,11 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
             return false
         g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
         this.FillMissingDefaultSettings(settings.DefaultMinLevel, settings.DefaultMaxLevel)
-        g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ] := settings.ForceBrivShandie
+        g_BrivUserSettingsFromAddons[ "ForceBrivShLevelToSoftCapFailedConversionBrivandie" ] := settings.ForceBrivShandie
         g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
         g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] := settings.MinLevelTimeout
+        g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion
+        g_BrivUserSettingsFromAddons[ "" ] := settings.LevelToSoftCapFailedConversionBriv
         if (updateMaxLevels)
             this.UpdateMaxLevels := true
     }
@@ -376,16 +429,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
             if levelSettings.maxLevels[champID] == ""
             {
                 if (maxLevel == "Last")
-                {
-                    maxUpgradeLevel := 0
-                    Loop, % g_SF.Memory.ReadHeroUpgradesSize(champID)
-                    {
-                        requiredLevel := g_SF.Memory.ReadHeroUpgradeRequiredLevel(champID, A_Index - 1)
-                        if (requiredLevel != 9999)
-                            maxUpgradeLevel := Max(requiredLevel, maxUpgradeLevel)
-                    }
-                    levelSettings.maxLevels[champID] := maxUpgradeLevel
-                }
+                    levelSettings.maxLevels[champID] := g_SF.LastUpgradeLevelByID[champID]
                 else
                     levelSettings.maxLevels[champID] := (maxLevel == "") ? 1 : maxLevel
             }

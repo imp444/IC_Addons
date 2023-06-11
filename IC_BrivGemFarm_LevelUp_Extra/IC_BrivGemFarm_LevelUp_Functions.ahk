@@ -25,6 +25,18 @@ class IC_BrivGemFarm_LevelUp_Functions
         }
         return true
     }
+
+    ; Creates a deep clone of an object
+    ObjFullyClone(obj)
+    {
+        nobj := obj.Clone()
+        for k,v in nobj
+        {
+            if IsObject(v)
+                nobj[k] := this.ObjFullyClone(v)
+        }
+        return nobj
+    }
 }
 
 ; Overrides IC_BrivGemFarm_Class, check for compatibility
@@ -36,7 +48,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     ;The primary loop for gem farming using Briv and modron.
     GemFarm()
     {
-        g_SharedData.UpdateSettingsFromFile(true)
         static lastResetCount := 0
         g_SharedData.TriggerStart := true
         g_SF.Hwnd := WinExist("ahk_exe " . g_UserSettings[ "ExeName"])
@@ -60,6 +71,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             return -1
         g_PreviousZoneStartTime := A_TickCount
         g_SharedData.StackFail := 0
+        g_SharedData.UpdateSettingsFromFile(true)
         loop
         {
             g_SharedData.LoopString := "Main Loop"
@@ -344,11 +356,40 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         if (!IsObject(settings))
             return false
         g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
+        this.FillMissingDefaultSettings(settings.DefaultMinLevel, settings.DefaultMaxLevel)
         g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ] := settings.ForceBrivShandie
         g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
         g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] := settings.MinLevelTimeout
         if (updateMaxLevels)
             this.UpdateMaxLevels := true
+    }
+
+    ; Update min/max values for champions added after default settings have been initialized
+    FillMissingDefaultSettings(minLevel := 0, maxLevel := "Last")
+    {
+        levelSettings := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ]
+        Loop, % g_SF.Memory.ReadChampListSize()
+        {
+            champID := A_Index
+            if levelSettings.minLevels[champID] == ""
+                levelSettings.minLevels[champID] := (minLevel == "") ? 0 : minLevel
+            if levelSettings.maxLevels[champID] == ""
+            {
+                if (maxLevel == "Last")
+                {
+                    maxUpgradeLevel := 0
+                    Loop, % g_SF.Memory.ReadHeroUpgradesSize(champID)
+                    {
+                        requiredLevel := g_SF.Memory.ReadHeroUpgradeRequiredLevel(champID, A_Index - 1)
+                        if (requiredLevel != 9999)
+                            maxUpgradeLevel := Max(requiredLevel, maxUpgradeLevel)
+                    }
+                    levelSettings.maxLevels[champID] := maxUpgradeLevel
+                }
+                else
+                    levelSettings.maxLevels[champID] := (maxLevel == "") ? 1 : maxLevel
+            }
+        }
     }
 
     ; Save full Q,W,E formations to BrivGemFarm_LevelUp_Settings.json

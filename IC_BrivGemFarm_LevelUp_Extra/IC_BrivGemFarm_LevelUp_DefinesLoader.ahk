@@ -295,6 +295,9 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
 ; Class that contains the data of a champion
 Class IC_BrivGemFarm_LevelUp_HeroData
 {
+    static HeroDataByID := {}
+
+    LastUpgradeLevel := ""
     UpgradesList := ""
 
     __New(id, heroData)
@@ -304,18 +307,21 @@ Class IC_BrivGemFarm_LevelUp_HeroData
         this.Seat_id := heroData.seat_id
         this.Allow_time_gate := heroData.allow_time_gate
         this.Upgrades := this.BuildUpgrades(heroData.upgrades)
+        IC_BrivGemFarm_LevelUp_HeroData.HeroDataByID[id] := this
     }
 
     BuildUpgrades(data)
     {
-        upgrades := {}, maxUpgradeLevelDigits := 0, listContents := "", specializations := {}
+        upgrades := {}, lastUpgradeLevel := 0, maxUpgradeLevelDigits := 0, listContents := "", specializations := {}
         for upgradeKey, upgrade in data
         {
             level := upgrade.required_level
             if (level == "")
                 continue
+            lastUpgradeLevel := Max(level, lastUpgradeLevel)
             maxUpgradeLevelDigits := Max(maxUpgradeLevelDigits, StrLen(level))
         }
+        this.LastUpgradeLevel := lastUpgradeLevel
         for upgradeKey, upgrade in data
         {
             level := levelStr := upgrade.required_level

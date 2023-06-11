@@ -8,11 +8,12 @@ GUIFunctions.AddTab("BrivGF LevelUp")
 
 global g_BrivGemFarm_LevelUp := new IC_BrivGemFarm_LevelUp_Component
 global g_DefinesLoader := new IC_BrivGemFarm_LevelUp_DefinesLoader
+global g_HeroDefines := IC_BrivGemFarm_LevelUp_HeroData
 
 ; Add GUI fields to this addon's tab.
 Gui, ICScriptHub:Tab, BrivGF LevelUp
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, x+5 w465 h560 vMinMaxSettings, BrivGemFarm LevelUp Settings
+Gui, ICScriptHub:Add, GroupBox, x+5 w463 h645 vMinMaxSettingsGroup, BrivGemFarm LevelUp Settings
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, Text, x23 y100, Seat
 Gui, ICScriptHub:Add, Text, x+51, Name
@@ -43,22 +44,37 @@ AddSeat(xSpacing, ySpacing, seat)
 Gui, ICScriptHub:Add, Text, x%leftAlign% y+20, Formation
 Gui, ICScriptHub:Add, DropDownList, x+10 y+-17 w35 AltSubmit Disabled hwndBrivGemFarm_LevelUp_LoadFormation vBrivGemFarm_LevelUp_LoadFormation gBrivGemFarm_LevelUp_LoadFormation, Q||W|E
 PostMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BrivGemFarm_LevelUp_LoadFormation%
-Gui, ICScriptHub:Add, Button, x+%xSpacing% Disabled vBrivGemFarm_LevelUp_Default gBrivGemFarm_LevelUp_Default, Default Settings
+Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% y+-17 vBrivGemFarm_LevelUp_ShowSpoilers gBrivGemFarm_LevelUp_ShowSpoilers, Show spoilers
+
+Gui, ICScriptHub:Font, w700
+Gui, ICScriptHub:Add, GroupBox, xs+15 y500 w449 h80 vDefaultSettingsGroup, Default Settings
+Gui, ICScriptHub:Font, w400
+Gui, ICScriptHub:Add, Button, xs+%leftAlign% yp+20 Disabled vBrivGemFarm_LevelUp_Default gBrivGemFarm_LevelUp_Default, Load default settings
 Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Save gBrivGemFarm_LevelUp_Save, Save
-Gui, ICScriptHub:Add, Text, x+%xSpacing% y+-18 w90 vBrivGemFarm_LevelUp_Changes
-Gui, ICScriptHub:Add, Button, x+%xSpacing% y+-18 Hidden vBrivGemFarm_LevelUp_Undo gBrivGemFarm_LevelUp_Undo, Undo
-Gui, ICScriptHub:Add, Text, x%leftAlign% y+%ySpacing% w450 R2 vBrivGemFarm_LevelUp_Text, % "No settings."
-Gui, ICScriptHub:Add, CheckBox, x%leftAlign% y+%ySpacing% vBrivGemFarm_LevelUp_Spoilers gBrivGemFarm_LevelUp_Spoilers, Show spoilers
-Gui, ICScriptHub:Add, CheckBox, x%leftAlign% y+5 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
+Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Changes gBrivGemFarm_LevelUp_Changes, Show unsaved changes
+Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Undo gBrivGemFarm_LevelUp_Undo, Undo
+Gui, ICScriptHub:Add, Text, xs+%leftAlign% y+%ySpacing%, Default min level:
+Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MinRadioGroup vBrivGemFarm_LevelUp_MinRadio0 gBrivGemFarm_LevelUp_MinDefault, 0
+Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MinRadioGroup vBrivGemFarm_LevelUp_MinRadio1 gBrivGemFarm_LevelUp_MinDefault, 1
+Gui, ICScriptHub:Add, Text, x+5, |   Default max level:
+Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MaxRadioGroup vBrivGemFarm_LevelUp_MaxRadio1 gBrivGemFarm_LevelUp_MaxDefault, 1
+Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MaxRadioGroup vBrivGemFarm_LevelUp_MaxRadioLast gBrivGemFarm_LevelUp_MaxDefault, Last upgrade
+
+Gui, ICScriptHub:Font, w700
+Gui, ICScriptHub:Add, GroupBox, xs+15 y585 w449 h100 vMinSettingsGroup, Min Settings
+Gui, ICScriptHub:Font, w400
+Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, x%leftAlign% y+%ySpacing% w40 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
+Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w40 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18, Maximum simultaneous F keys inputs during MinLevel
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, x%leftAlign% y+%ySpacing% w40 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
+Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w40 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18, MinLevel timeout (ms)
-Gui, ICScriptHub:Add, Button, x13 y+35 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
+
+Gui, ICScriptHub:Add, Text, xs+15 y+20 w445 R2 hwndBrivGemFarm_LevelUp_Text vBrivGemFarm_LevelUp_Text, % "Status: No settings."
+Gui, ICScriptHub:Add, Button, x13 y+20 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
 Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R2 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
 
 OnMessage(WM_COMMAND, "CheckComboStatus")
@@ -161,8 +177,17 @@ BrivGemFarm_LevelUp_MinMax_Clamp()
     clamped := clamped > 999999 ? 999999 : clamped
     if (clamped != value)
         GuiControl, ICScriptHub:Text, %A_GuiControl%, % clamped
-    Gui, ICScriptHub:Submit, NoHide
-    g_BrivGemFarm_LevelUp.UpdateTempSettings()
+    split := StrSplit(A_GuiControl, "_")
+    heroId := IC_BrivGemFarm_LevelUp_Seat.Seats[split[3]].GetCurrentHeroData().id
+    Switch split[2]
+    {
+        Case "BrivGemFarmLevelUpMinLevel":
+            g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "minLevels", heroId], clamped)
+        Case "BrivGemFarmLevelUpMaxLevel":
+            g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "maxLevels", heroId], clamped)
+        Default:
+            return
+    }
 }
 
 ; Load formation to the GUI
@@ -175,10 +200,20 @@ BrivGemFarm_LevelUp_LoadFormation()
     GuiControl, ICScriptHub:Enable, BrivGemFarm_LevelUp_LoadFormation
 }
 
+; Spoilers
+BrivGemFarm_LevelUp_ShowSpoilers()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    showSpoilers := BrivGemFarm_LevelUp_ShowSpoilers
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("ShowSpoilers", showSpoilers)
+    g_BrivGemFarm_LevelUp.ToggleSpoilers(showSpoilers) ; Effect is immediate
+}
+
 ; Default settings button
 BrivGemFarm_LevelUp_Default()
 {
-    MsgBox, 4, , Restore Default settings?, 5
+    MsgBox, 4, , Restore Default settings?, 10
     IfMsgBox, No
         Return
     IfMsgBox, Timeout
@@ -191,43 +226,49 @@ BrivGemFarm_LevelUp_Default()
 ; Save settings button
 BrivGemFarm_LevelUp_Save()
 {
-    MsgBox, 4, , Save changes?, 5
+    MsgBox, 4, , Save and apply changes?, 10
     IfMsgBox, No
         Return
     IfMsgBox, Timeout
         Return
+    Gui, IC_BrivGemFarm_LevelUp_TempSettings:Hide
     Gui, ICScriptHub:Submit, NoHide
     g_BrivGemFarm_LevelUp.SaveSettings(true)
+}
+
+; TempsSettings changes
+BrivGemFarm_LevelUp_Changes()
+{
+    g_BrivGemFarm_LevelUp.TempSettings.ReloadTempSettingsDisplay()
+    Gui, IC_BrivGemFarm_LevelUp_TempSettings:Show
 }
 
 ; Undo temp settings button
 BrivGemFarm_LevelUp_Undo()
 {
-    MsgBox, 4, , Undo all changes?, 5
+    MsgBox, 4, , Undo all changes?, 10
     IfMsgBox, No
         Return
     IfMsgBox, Timeout
         Return
     g_BrivGemFarm_LevelUp.UndoTempSettings()
+    Gui, IC_BrivGemFarm_LevelUp_TempSettings:Hide
 }
 
-; Load new definitions
-BrivGemFarm_LevelUp_LoadDefinitions()
-{
-    GuiControl, ICScriptHub:Disable, BrivGemFarm_LevelUp_LoadDefinitions
-    g_DefinesLoader.Start(false, true)
-}
-
-; Spoilers
-BrivGemFarm_LevelUp_Spoilers()
+BrivGemFarm_LevelUp_MinDefault()
 {
     global
     Gui, ICScriptHub:Submit, NoHide
-    showSpoilers := BrivGemFarm_LevelUp_Spoilers
-    g_BrivGemFarm_LevelUp.Settings.ShowSpoilers := showSpoilers
-    g_BrivGemFarm_LevelUp.SaveSettings()
-    Loop, 12
-        IC_BrivGemFarm_LevelUp_Seat.Seats[A_Index].ToggleSpoilers(showSpoilers)
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("DefaultMinLevel", BrivGemFarm_LevelUp_MinRadio0 ? 0 : 1)
+    g_BrivGemFarm_LevelUp.FillMissingDefaultSettings()
+}
+
+BrivGemFarm_LevelUp_MaxDefault()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("DefaultMaxLevel", BrivGemFarm_LevelUp_MaxRadio1 ? 1 : "Last")
+    g_BrivGemFarm_LevelUp.FillMissingDefaultSettings()
 }
 
 ; Force Briv/Shandie MinLevel
@@ -235,8 +276,7 @@ BrivGemFarm_LevelUp_ForceBrivShandie()
 {
     global
     Gui, ICScriptHub:Submit, NoHide
-    g_BrivGemFarm_LevelUp.Settings.ForceBrivShandie := BrivGemFarm_LevelUp_ForceBrivShandie
-    g_BrivGemFarm_LevelUp.SaveSettings()
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("ForceBrivShandie", BrivGemFarm_LevelUp_ForceBrivShandie)
 }
 
 ; Maximum number of simultaneous F keys inputs during MinLevel
@@ -255,8 +295,7 @@ BrivGemFarm_LevelUp_MaxSimultaneousInputs()
         maxSimultaneousInputs := 1
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % maxSimultaneousInputs
     }
-    g_BrivGemFarm_LevelUp.Settings.MaxSimultaneousInputs := maxSimultaneousInputs
-    g_BrivGemFarm_LevelUp.SaveSettings()
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("MaxSimultaneousInputs", maxSimultaneousInputs)
 }
 
 ; Maximum number of simultaneous F keys inputs during MinLevel
@@ -275,9 +314,24 @@ BrivGemFarm_LevelUp_MinLevelTimeout()
         minLevelTimeout := 0
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % minLevelTimeout
     }
-    g_BrivGemFarm_LevelUp.Settings.MinLevelTimeout := minLevelTimeout
-    g_BrivGemFarm_LevelUp.SaveSettings()
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("MinLevelTimeout", minLevelTimeout)
 }
+
+; Load new definitions
+BrivGemFarm_LevelUp_LoadDefinitions()
+{
+    GuiControl, ICScriptHub:Disable, BrivGemFarm_LevelUp_LoadDefinitions
+    g_DefinesLoader.Start(false, true)
+}
+
+; Temp settings ListView
+Gui, IC_BrivGemFarm_LevelUp_TempSettings:New, -MaximizeBox -Resize
+GUIFunctions.LoadTheme("IC_BrivGemFarm_LevelUp_TempSettings")
+GUIFunctions.UseThemeBackgroundColor()
+GUIFunctions.UseThemeTextColor()
+Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, GroupBox, w295 h295, BrivGemFarm LevelUp Settings
+Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, ListView, xp+15 yp+25 w265 h250 NoSortHdr vBrivTempSettingsID , Setting|Current|New
+GUIFunctions.UseThemeListViewBackgroundColor("BrivTempSettingsID")
 
 g_BrivGemFarm_LevelUp.Init()
 
@@ -290,24 +344,39 @@ Class IC_BrivGemFarm_LevelUp_Component
     static SettingsPath := A_LineFile . "\..\BrivGemFarm_LevelUp_Settings.json"
 
     Settings := ""
-    TempSettings := ""
+    TempSettings := new IC_BrivGemFarm_LevelUp_Component._IC_BrivGemFarm_LevelUp_TempSettings
 
     ; GUI startup
     Init()
     {
-        this.TempSettings := {}
         this.LoadSettings()
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % g_BrivGemFarm_LevelUp.Settings.ForceBrivShandie
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % g_BrivGemFarm_LevelUp.Settings.MaxSimultaneousInputs
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % g_BrivGemFarm_LevelUp.Settings.MinLevelTimeout
+        ; Preload settings into the GUI
+        defaultMinLevel := this.Settings.DefaultMinLevel
+        defaultMaxLevel := this.Settings.DefaultMaxLevel
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinRadio%defaultMinLevel%, 1
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxRadio%defaultMaxLevel%, 1
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % this.Settings.ShowSpoilers
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
         g_DefinesLoader.Start()
     }
 
     ; Performs additional functions after definitions have been fully loaded
     OnHeroDefinesFinished()
     {
-        this.FillMissingDefaultSettings()
         this.UndoTempSettings()
+        levelSettings := this.Settings.BrivGemFarm_LevelUp_Settings
+        for heroID in g_HeroDefines.HeroDataByID
+        {
+            if (!levelSettings.minLevels.HasKey(heroID))
+                levelSettings.minLevels[heroID] := this.Settings.DefaultMinLevel
+            if (!levelSettings.maxLevels.HasKey(heroID))
+            {
+                heroData := g_HeroDefines.HeroDataByID[heroID]
+                levelSettings.maxLevels[heroID] := this.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1
+            }
+        }
         GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadFormation
         GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_Default
         GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadDefinitions
@@ -321,57 +390,66 @@ Class IC_BrivGemFarm_LevelUp_Component
 
     /*  LoadSettings - Load GUI settings
         Parameters:    default: bool - If true, load default settings with specific values for speed champs
+                       save: bool - If true, save settings to file
 
         Returns:
     */
     LoadSettings(default := false, save := false)
     {
-        settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
-        if (!IsObject(settings))
-            settings := {}
-        if (!IsObject(settings.BrivGemFarm_LevelUp_Settings))
+        if (this.Settings == "") ; Init
         {
-            settings.BrivGemFarm_LevelUp_Settings := this.LoadDefaultMinMaxSettings()
-            for k, v in settings.BrivGemFarm_LevelUp_Settings.minLevels
-                this.TempSettings.minLevels[k] := v
-            for k, v in settings.BrivGemFarm_LevelUp_Settings.maxLevels
-                this.TempSettings.maxLevels[k] := v
-            save := true
+            settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
+            if (!IsObject(settings))
+            {
+                settings := {}
+                save := true
+            }
+            this.Settings := settings
         }
-        else if (default) ; Load defaultsettings as temp settings into GUI
+        defaultSettings := this.LoadDefaultSettings()
+        for k, v in defaultSettings ; Fill missing default settings
         {
-            levelSettings := this.LoadDefaultMinMaxSettings()
-            for k, v in levelSettings.minLevels
-                this.TempSettings.minLevels[k] := v
-            for k, v in levelSettings.maxLevels
-                this.TempSettings.maxLevels[k] := v
+            if (!this.Settings.HasKey(k))
+            {
+                this.Settings[k] := v
+                save := true
+            }
+            else if (IsObject(v))
+            {
+                for k1, v1 in v
+                if (!this.Settings[k].HasKey(k1))
+                {
+                    this.Settings[k][k1] := v1
+                    save := true
+                }
+                else if (IsObject(v1))
+                {
+                    for k2, v2 in v1
+                    if (!this.Settings[k][k1].HasKey(k2))
+                    {
+                        this.Settings[k][k1][k2] := v2
+                        save := true
+                    }
+                }
+            }
+        }
+        if (default) ; Load default settings as temp settings into the GUI
+        {
+            this.TempSettings.AddSetting("", defaultSettings)
+            defaultMinLevel := this.TempSettings.TempSettings.HasKey("DefaultMinLevel") ? this.TempSettings.TempSettings.DefaultMinLevel : this.Settings.DefaultMinLevel
+            defaultMaxLevel := this.TempSettings.TempSettings.HasKey("DefaultMaxLevel") ? this.TempSettings.TempSettings.DefaultMaxLevel : this.Settings.DefaultMaxLevel
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinRadio%defaultMinLevel%, 1
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxRadio%defaultMaxLevel%, 1
+            this.FillMissingDefaultSettings()
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % defaultSettings.ShowSpoilers
+            this.ToggleSpoilers(defaultSettings.ShowSpoilers)
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % defaultSettings.ForceBrivShandie
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % defaultSettings.MinLevelTimeout
             this.LoadFormation(this.GetFormationFromGUI())
         }
-        if (settings.ShowSpoilers == "")
-        {
-            settings.ShowSpoilers := false
-            save := true
-        }
-        if (settings.ForceBrivShandie == "")
-        {
-            settings.ForceBrivShandie := false
-            save := true
-        }
-        if (settings.MaxSimultaneousInputs == "")
-        {
-            settings.MaxSimultaneousInputs := 4
-            save := true
-        }
-        if (settings.MinLevelTimeout == "")
-        {
-            settings.MinLevelTimeout := 5000
-            save := true
-        }
-        this.Settings := settings
         if (save)
             this.SaveSettings()
-        else if (!default)
-            this.UndoTempSettings()
         if (default)
             this.Update("Default settings loaded.")
         else
@@ -380,8 +458,15 @@ Class IC_BrivGemFarm_LevelUp_Component
 
     ; Load default settings to be used by IC_BrivGemFarm_LevelUp_Functions.ahk
     ; Speed champs have specific values that limit leveling to the minimum required to obtain all their speed abilities
-    LoadDefaultMinMaxSettings()
+    LoadDefaultSettings()
     {
+        settings := {}
+        settings.ShowSpoilers := false
+        settings.ForceBrivShandie := false
+        settings.MaxSimultaneousInputs := 4
+        settings.MinLevelTimeout := 5000
+        settings.DefaultMinLevel := 0
+        settings.DefaultMaxLevel := 1
         minLevels := {}, maxLevels := {}
         minLevels[58] := 170, maxLevels[58] := 1300 ; Briv
         minLevels[47] := 120, maxLevels[47] := 120 ; Shandie
@@ -412,65 +497,44 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[118] := 0, maxLevels[118] := 60 ; Fen
         minLevels[40] := 0, maxLevels[40] := 215 ; Black Viper
         minLevels[97] := 0, maxLevels[97] := 80 ; Tatyana
-        return {minLevels:minLevels, maxLevels:maxLevels}
+        settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
+        return settings
     }
 
-    ; Update min/max values for champions added after default settings have been initialized
+    ; Reset min/max values for other champions
     FillMissingDefaultSettings()
     {
-        save := false
-        levelSettings := this.Settings.BrivGemFarm_LevelUp_Settings
-        for heroID in g_DefinesLoader.HeroDefines.hero_defines
+        defaultLevelSettings := this.LoadDefaultSettings().BrivGemFarm_LevelUp_Settings
+        settings := {}, minLevels := {}, maxLevels := {}
+        for heroID in g_HeroDefines.HeroDataByID
         {
-            if levelSettings.minLevels[heroID] == ""
+            if (!defaultLevelSettings.minLevels.HasKey(heroID))
+                minLevels[heroID] := this.TempSettings.TempSettings.HasKey("DefaultMinLevel") ? this.TempSettings.TempSettings.DefaultMinLevel : this.Settings.DefaultMinLevel
+            if (!defaultLevelSettings.maxLevels.HasKey(heroID))
             {
-                levelSettings.minLevels[heroID] := 0
-                save := true
-            }
-            if levelSettings.maxLevels[heroID] == ""
-            {
-                levelSettings.maxLevels[heroID] := 1
-                save := true
+                heroData := g_HeroDefines.HeroDataByID[heroID]
+                maxLevels[heroID] := (this.TempSettings.TempSettings.HasKey("DefaultMaxLevel") ? this.TempSettings.TempSettings.DefaultMaxLevel : this.Settings.DefaultMaxLevel) == "Last" ? heroData.lastUpgradeLevel : 1
             }
         }
-        if (save)
-            this.SaveSettings()
-    }
-
-    ; Update temporary min/max level settings
-    UpdateTempSettings()
-    {
-        Gui, ICScriptHub:Submit, NoHide
-        heroDefs := g_DefinesLoader.HeroDefines.hero_defines
-        Loop, 12
-        {
-            seat_id = % A_Index
-            if (DDL_BrivGemFarmLevelUpName_%seat_id% == "")
-                continue
-            champID := 0
-            for k, v in heroDefs
-            {
-                if (v.name == DDL_BrivGemFarmLevelUpName_%seat_id%)
-                {
-                    champID := k
-                    break
-                }
-            }
-            if (champID == 0)
-                continue
-            this.TempSettings.minLevels[champID] := Combo_BrivGemFarmLevelUpMinLevel_%seat_id%
-            this.TempSettings.maxLevels[champID] := Combo_BrivGemFarmLevelUpMaxLevel_%seat_id%
-        }
-        this.Update()
+        settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
+        this.TempSettings.AddSetting("", settings)
+        this.LoadFormation(this.GetFormationFromGUI())
     }
 
     ; Restore last saved settings
     UndoTempSettings()
     {
-        for k, v in this.Settings.BrivGemFarm_LevelUp_Settings.minLevels
-            this.TempSettings.minLevels[k] := v
-        for k, v in this.Settings.BrivGemFarm_LevelUp_Settings.maxLevels
-            this.TempSettings.maxLevels[k] := v
+        defaultMinLevel := this.Settings.DefaultMinLevel
+        defaultMaxLevel := this.Settings.DefaultMaxLevel
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinRadio%defaultMinLevel%, 1
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxRadio%defaultMaxLevel%, 1
+        showSpoilers := this.Settings.ShowSpoilers
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % showSpoilers
+        this.ToggleSpoilers(showSpoilers)
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        this.TempSettings.Reset()
         this.LoadFormation(this.GetFormationFromGUI())
         this.Update("Settings loaded.")
     }
@@ -505,14 +569,25 @@ Class IC_BrivGemFarm_LevelUp_Component
     */
     SaveSettings(applyTempSettings := false)
     {
-        settings := this.Settings
         if (applyTempSettings)
         {
-            for k, v in this.TempSettings.minLevels
-                settings.BrivGemFarm_LevelUp_Settings.minLevels[k] := v
-            for k, v in this.TempSettings.maxLevels
-                settings.BrivGemFarm_LevelUp_Settings.maxLevels[k] := v
+            this.TempSettings.Apply()
             this.Update("Settings saved.")
+        }
+        ; Delete redundant min/max values from file
+        settings := IC_BrivGemFarm_LevelUp_Functions.ObjFullyClone(this.Settings)
+        defaultLevelSettings := this.LoadDefaultSettings().BrivGemFarm_LevelUp_Settings
+        levelSettings := settings.BrivGemFarm_LevelUp_Settings
+        for heroID in g_HeroDefines.HeroDataByID
+        {
+            if (!defaultLevelSettings.minLevels.HasKey(heroID) AND levelSettings.minLevels[heroID] == this.Settings.DefaultMinLevel)
+                settings.BrivGemFarm_LevelUp_Settings.minLevels.Delete(heroID)
+            if (!defaultLevelSettings.maxLevels.HasKey(heroID))
+            {
+                heroData := g_HeroDefines.HeroDataByID[heroID]
+                if (levelSettings.maxLevels[heroID] == (this.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1))
+                    settings.BrivGemFarm_LevelUp_Settings.maxLevels.Delete(heroID)
+            }
         }
         g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         try ; avoid thrown errors when comobject is not available.
@@ -531,22 +606,18 @@ Class IC_BrivGemFarm_LevelUp_Component
     {
         if (!g_BrivUserSettings[ "Fkeys" ])
             text := "WARNING: F keys disabled. This Addon uses them to level up champions.`nEnable them both in the script (BrivGemFarm tab) and in the game (Settings -> General)."
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, % text
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, % "Status: " . text
         this.UpdateLastUpdated()
-        ; Temp changes
-        changed := !IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(this.Settings.BrivGemFarm_LevelUp_Settings.minLevels, this.TempSettings.minLevels)
-        if (!changed)
-            changed := !IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(this.Settings.BrivGemFarm_LevelUp_Settings.maxLevels, this.TempSettings.maxLevels)
-        if (changed)
+        if (this.TempSettings.Haschanges())
         {
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Changes, Unsaved changes.
             GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Save
+            GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Changes
             GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Undo
         }
         else
         {
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Changes
             GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Save
+            GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Changes
             GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Undo
         }
     }
@@ -626,6 +697,223 @@ Class IC_BrivGemFarm_LevelUp_Component
                 return formation
         }
     }
+
+    ; Toggle all seats's spoilers on/off
+    ToggleSpoilers(value)
+    {
+        Loop, 12
+            IC_BrivGemFarm_LevelUp_Seat.Seats[A_Index].ToggleSpoilers(value)
+    }
+
+    ; Returns saved min/max settings
+    GetLevelSettings()
+    {
+        return this.Settings.BrivGemFarm_LevelUp_Settings
+    }
+
+    /*  _IC_BrivGemFarm_LevelUp_TempSettings
+        Class that holds temporary settings from the GUI before they are saved and passed the game's instance
+
+    */
+    Class _IC_BrivGemFarm_LevelUp_TempSettings
+    {
+        TempSettings := {}
+
+        /*  AddSetting - Assing a value to a temporary setting
+            Parameters:  key - An array of strings keys used to register this parameter using the same data structure than the one in Settings
+                         value - Value of the setting
+            Returns:
+        */
+        AddSetting(key, value)
+        {
+            static recursionDepth := 0
+
+            Gui, ICScriptHub:Submit, NoHide
+            update := false, ++recursionDepth
+            if (IsObject(value))
+            {
+                for k, v in value
+                {
+                    if (IsObject(v) AND !IsObject(key))
+                        key := []
+                    keyNext := key.Clone()
+                    keyNext.Push(k)
+                    this.AddSetting(keyNext, v)
+                }
+                update := true
+            }
+            else if (IsObject(key))
+            {
+                if key.Length() ; Array
+                {
+                    lastKey := key[key.Length()]
+                    if (this.GetSettingsObject(key)[lastKey] == value) ; Same value
+                    {
+                        tempSettingsObject := this.GetTempSettingsObject(key)
+                        if (IsObject(tempSettingsObject))
+                            this.DeleteTempSettingsObject(key, tempSettingsObject) ; Remove key
+                        else
+                            return --recursionDepth
+                    }
+                    else
+                        this.SetTempSettingsObject(key, value) ; Add
+                }
+                else
+                    return --recursionDepth
+                update := true
+            }
+            else
+            {
+                if (value == g_BrivGemFarm_LevelUp.Settings[key]) ; Same value
+                {
+                    if (this.TempSettings.HasKey(key))
+                        this.TempSettings.Delete(key) ; Remove key
+                    else
+                        return --recursionDepth
+                }
+                else
+                    this.TempSettings[key] := value ; Add
+                update := true
+            }
+            if (update AND --recursionDepth == 0) ; Only refresh after a change when all values have been added
+            {
+                this.ReloadTempSettingsDisplay()
+                g_BrivGemFarm_LevelUp.Update()
+            }
+        }
+
+        ; Returns the setting object found at the last key in keys
+        GetSettingsObject(keys)
+        {
+            obj := g_BrivGemFarm_LevelUp.Settings
+            Loop, % keys.Length() - 1
+                obj := obj[keys[A_Index]]
+            return obj
+        }
+
+        ; Returns the temporary setting object found at the last key in keys
+        GetTempSettingsObject(keys)
+        {
+            obj := this.TempSettings
+            Loop, % keys.Length() - 1
+                obj := obj[keys[A_Index]]
+            return obj
+        }
+
+        ; Assigns a value to the temporary setting object found at the last key in keys
+        SetTempSettingsObject(keys, value)
+        {
+            obj := this.TempSettings
+            Loop, % keys.Length() - 1
+            {
+                if (!obj.HasKey(keys[A_Index]))
+                    obj[keys[A_Index]] := {}
+                obj := obj[keys[A_Index]]
+            }
+            lastKey := keys[keys.Length()]
+            obj[lastKey] := value
+            return obj
+        }
+
+        ; Deletes the temporary setting object found at the last key in keys
+        DeleteTempSettingsObject(keys, obj)
+        {
+            obj.Delete(keys[keys.MaxIndex()])
+            if (obj.Count() == 0)
+            {
+                for k, v in this.TempSettings
+                {
+                    for k1, v1 in v
+                        if (v1.Count() == 0)
+                            v.Delete(k1)
+                    if (v.Count() == 0)
+                        this.TempSettings.Delete(k)
+                }
+            }
+        }
+
+        ; Returns temporary min/max settings
+        GetLevelTempSettings()
+        {
+            return this.TempSettings.BrivGemFarm_LevelUp_Settings
+        }
+
+        ; Returns true if there is at least one unsaved temporary setting
+        HasChanges()
+        {
+            return this.TempSettings.Count()
+        }
+
+        ; Apply temporary settings
+        Apply()
+        {
+            for k, v in this.TempSettings
+            {
+                if (IsObject(v))
+                    continue
+                g_BrivGemFarm_LevelUp.Settings[k] := v
+            }
+            for k, v in this.TempSettings
+            {
+                if (!IsObject(v))
+                    continue
+                for k1, v1 in v
+                    for k2, v2 in v1
+                        g_BrivGemFarm_LevelUp.Settings[k][k1][k2]:= v2
+            }
+            this.Reset()
+        }
+
+        ; Reset temporary settings
+        Reset()
+        {
+            this.TempSettings := {}
+            this.ReloadTempSettingsDisplay()
+        }
+
+        ; Build the listview with settings / min/Max settings, showing current (saved) and new (unsaved) values
+        ReloadTempSettingsDisplay()
+        {
+            restore_gui_on_return := GUIFunctions.LV_Scope("IC_BrivGemFarm_LevelUp_TempSettings", "BrivTempSettingsID")
+            Gui, IC_BrivGemFarm_LevelUp_TempSettings:ListView, BrivTempSettingsID
+            LV_Delete()
+            for k, v in this.TempSettings
+            {
+                if (IsObject(v))
+                    continue
+                if (k == "ShowSpoilers" OR k == "ForceBrivShandie")
+                {
+                    saved := g_BrivGemFarm_LevelUp.Settings[k] ? "Yes" : "No"
+                    v := v ? "Yes" : "No"
+                }
+                else
+                    saved := g_BrivGemFarm_LevelUp.Settings[k]
+                LV_Add(, k, saved, v)
+            }
+            for k, v in this.TempSettings ; Min/Max
+            {
+                if (!IsObject(v))
+                    continue
+                for k1, v1 in v
+                {
+                    for k2, v2 in v1
+                    {
+                        heroData := g_HeroDefines.HeroDataByID[k2]
+                        showSpoilers := this.TempSettings.HasKey("ShowSpoilers") ? this.TempSettings.ShowSpoilers : g_BrivGemFarm_LevelUp.Settings.ShowSpoilers
+                        if (!showSpoilers AND IC_BrivGemFarm_LevelUp_Seat.IsSpoiler(heroData.allow_time_gate))
+                            continue
+                        heroName := heroData.name
+                        minMaxFormat := k1 == "minLevels" ? "MinLevel " : k1 == "maxLevels" ? "MaxLevel" : k1
+                        settingName := minMaxFormat . " [ " . heroName . " ] "
+                        saved := g_BrivGemFarm_LevelUp.Settings[k][k1][k2]
+                        LV_Add(, settingName, saved, v2)
+                    }
+                }
+            }
+            Loop % LV_GetCount("Col") ; Resize columns
+                LV_ModifyCol(A_Index, "AutoHdr")
+        }
+    }
 }
 
 ; Functions used to update min/max upgrade values of each seat
@@ -688,18 +976,21 @@ Class IC_BrivGemFarm_LevelUp_Seat
             heroData.cachedSize := DropDownSize(heroData.upgradesList)
         SetMinMaxComboWidth(seat, heroData.cachedSize)
         Sleep, 1
-        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % g_BrivGemFarm_LevelUp.TempSettings.minLevels[k]
-        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, % g_BrivGemFarm_LevelUp.TempSettings.maxLevels[k]
+        levelSettings := g_BrivGemFarm_LevelUp.GetLevelSettings()
+        levelTempSettings := g_BrivGemFarm_LevelUp.TempSettings.GetLevelTempSettings()
+        minLevel := levelTempSettings.minLevels.HasKey(k) ? levelTempSettings.minLevels[k] : levelSettings.minLevels[k]
+        minLevel := minLevel != "" ? minlevel : g_BrivGemFarm_LevelUp.Settings.DefaultMinLevel
+        maxLevel := levelTempSettings.maxLevels.HasKey(k) ? levelTempSettings.maxLevels[k] : levelSettings.maxLevels[k]
+        maxLevel := maxLevel != "" ? maxlevel : g_BrivGemFarm_LevelUp.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1
+        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % minLevel
+        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, % maxLevel
         GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
         GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
     }
 
     ; Updates the list of champions names for this lot
-    UpdateNames()
+    UpdateNames(showSpoilers := false)
     {
-        global
-        showSpoilers := g_BrivGemFarm_LevelUp.Settings.ShowSpoilers
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Spoilers, % showSpoilers
         names := "|"
         for ID, heroData in this.HeroDataByID
         {
@@ -715,19 +1006,20 @@ Class IC_BrivGemFarm_LevelUp_Seat
     {
         if (!this.HasSpoiler)
             return
-        names := "|"
-        for ID, heroData in this.HeroDataByID
-        {
-            if (value OR !this.IsSpoiler(heroData.allow_time_gate))
-                names .= heroData.name . "|"
-        }
         seat := this.ID
         choice := DDL_BrivGemFarmLevelUpName_%seat% ; Remember the current name selection
-        GuiControl, ICScriptHub:, DDL_BrivGemFarmLevelUpName_%seat%, % names
+        this.UpdateNames(value)
         GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_%seat%, % choice
         Gui, ICScriptHub:Submit, NoHide
         if (choice != DDL_BrivGemFarmLevelUpName_%seat%)
             this.DeleteContents()
+    }
+
+    GetCurrentHeroData()
+    {
+        id := this.ID
+        name := DDL_BrivGemFarmLevelUpName_%id%
+        return this.HeroDataByName[name]
     }
 
     ; Static methods
@@ -771,7 +1063,7 @@ Class IC_BrivGemFarm_LevelUp_Seat
         for ID, heroData in g_DefinesLoader.HeroDefines.hero_defines
             IC_BrivGemFarm_LevelUp_Seat.Seats[heroData.seat_id].HeroDataByID[ID] := heroData
         for seatID, seat in IC_BrivGemFarm_LevelUp_Seat.Seats
-            seat.UpdateNames()
+            seat.UpdateNames(g_BrivGemFarm_LevelUp.Settings.ShowSpoilers)
         g_BrivGemFarm_LevelUp.OnHeroDefinesFinished()
     }
 }

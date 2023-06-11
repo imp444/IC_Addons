@@ -16,7 +16,7 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
 
     Start(params*)
     {
-        if (this.CheckForDefsChange(params*))
+        if (!FileExist(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath) OR this.CheckForDefsChange(params*))
         {
             if (params.Count())
                 params[2] := true
@@ -124,7 +124,13 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
             this.UpdateLoading("Loading new definitions...")
             defs := this.CachedHeroDefines
             if (defs == "")
-                return IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL
+            {
+                fileName := this.FindCachedDefinitionsPath()
+                FileRead, contents, %fileName%
+                defs := this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
+                if (defs == "")
+                    return IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL
+            }
             state := IC_BrivGemFarm_LevelUp_DefinesLoader.HERO_DEFS
             return IC_BrivGemFarm_LevelUp_DefinesLoader.HERO_DEFS
         }

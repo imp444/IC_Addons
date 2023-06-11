@@ -1,7 +1,8 @@
-June 09, 2023 - v0.3.6
+June 11, 2023 - v0.3.6
     Added Melf in the champion list that prioritizes speed champions for min leveling.
     Updated default min/max settings for BBEG, Sentry.
     Added loopstring during max champion leveling.
+    Fixed creating hero definitions file if not existing.
 
 June 08, 2023 - v0.3.5
     Added BBEG in the champion list that prioritizes speed champions for min leveling.

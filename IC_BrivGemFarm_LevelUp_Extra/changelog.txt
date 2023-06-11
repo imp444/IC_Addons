@@ -1,3 +1,7 @@
+June 09, 2023 - v0.3.6
+    Added Melf in the champion list that prioritizes speed champions for min leveling.
+    Updated default min/max settings for BBEG, Sentry.
+
 June 08, 2023 - v0.3.5
     Added BBEG in the champion list that prioritizes speed champions for min leveling.
     Speed champions will be now prioritized for max leveling (except for Briv so other champions get leveled properly if Briv is set to higher levels)

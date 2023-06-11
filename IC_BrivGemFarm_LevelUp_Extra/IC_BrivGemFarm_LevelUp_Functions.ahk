@@ -193,7 +193,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (forceBrivShandie)
             champIDs := [58, 47]
         else
-            champIDs := [58, 47, 91, 28, 75, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95] ; speed champs
+            champIDs := [58, 47, 91, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95] ; speed champs
         keyspam := []
         for k, champID in champIDs
         {
@@ -248,7 +248,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     */
     DoPartySetupMax(formation := 1)
     {
-        static champIDs := [47, 91, 28, 75, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95] ; speed champs without Briv
+        static champIDs := [47, 91, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95] ; speed champs without Briv
 
         formationFavorite := g_SF.Memory.GetFormationByFavorite( formation )
         for k, champID in champIDs

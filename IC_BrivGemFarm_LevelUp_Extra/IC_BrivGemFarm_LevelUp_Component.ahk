@@ -389,8 +389,9 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[28] := 90, maxLevels[28] := 200 ; Deekin 90 200
         minLevels[75] := 220, maxLevels[75] := 360 ; Hew Maan 40 200 220 360
         minLevels[102] := 90, maxLevels[102] := 250 ; Nahara
-        minLevels[125] := 0, maxLevels[125] := 370 ; BBEG
-        minLevels[52] := 80, maxLevels[52] := 80 ; Sentry
+        minLevels[125] := 1, maxLevels[125] := 370 ; BBEG
+        minLevels[52] := 80, maxLevels[52] := 280 ; Sentry
+        minLevels[59] := 70, maxLevels[59] := 100 ; Melf
         minLevels[115] := 100, maxLevels[115] := 100 ; Virgil
         minLevels[89] := 1, maxLevels[89] := 1 ; D'hani
         minLevels[114] := 1, maxLevels[114] := 1 ; Kent

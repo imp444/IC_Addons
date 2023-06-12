@@ -16,7 +16,7 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
 
     Start(params*)
     {
-        if (!FileExist(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath) OR this.CheckForDefsChange(params*))
+        if (this.CheckForDefsChange(params*) OR !FileExist(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath))
         {
             if (params.Count())
                 params[2] := true
@@ -53,19 +53,37 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
         g_BrivGemFarm_LevelUp.UpdateLastUpdated(text)
     }
 
-    ; Retrieves cached_definitions path. If silent = false, prompts a choose dialog if path not found
+    ; Retrieves cached_definitions path. If silent = false, prompts a Yes/No dialog if new path / path not found
     ; Saves the last known valid path
     FindCachedDefinitionsPath(silent := true)
     {
         static fileName := "cached_definitions.json"
+        static rootCachedPath := "\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . fileName
 
         settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
-        if (settings.LastCachedPath == "" OR !FileExist(settings.LastCachedPath))
+        if (settings.LastCachedPath == "" OR !FileExist(settings.LastCachedPath) OR !silent)
         {
             exePath := % g_UserSettings[ "InstallPath" ] ; Steam
-            cachedPath := % exePath . "\..\IdleDragons_Data\StreamingAssets\downloaded_files\" . fileName
-            if (!FileExist(cachedPath) AND !silent) ; Try to find cached_definitions folder
-                FileSelectFile, cachedPath, 1, % "\..\..\..\..\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . fileName, %fileName%, %fileName%
+            cachedPath := % exePath . "\..\..\" . rootCachedPath
+            if (silent)
+            {
+                if (!FileExist(cachedPath)) ; Try to find cached_definitions path
+                {
+                    Loop Files, rootCachedPath, R  ; Recurse into subfolders.
+                    {
+                        cachedPath = %A_LoopFileFullPath%
+                        break
+                    }
+                }
+            }
+            else ; Clicked on "Load Definitions"
+            {
+                MsgBox, 4, , Load file from new location?
+                IfMsgBox, Yes
+                    FileSelectFile, cachedPath, 1, % "\..\..\..\..\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . fileName, %fileName%, %fileName%
+                IfMsgBox, No
+                    return cachedPath
+            }
             settings.LastCachedPath := cachedPath
             g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         }
@@ -78,7 +96,7 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
     CheckForDefsChange(params*)
     {
         this.UpdateLoading("Checking for new definitions...")
-        fileName := this.FindCachedDefinitionsPath()
+        fileName := this.FindCachedDefinitionsPath(params*)
         fileExists := FileExist(fileName)
         if (fileExists)
         {
@@ -111,11 +129,10 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
     }
 
     /*  CreateHeroDefs - Create definitions with upgrade levels from cached_definitions.json
-        Parameters:      silent: bool - If true, doesn't prompt the dialog to choose the file if not found
 
         Returns:         object - Definitions used to build the GUI
     */
-    CreateHeroDefs(silent := true)
+    CreateHeroDefs()
     {
         static state := IC_BrivGemFarm_LevelUp_DefinesLoader.FILE_LOAD
         static index := 0
@@ -129,9 +146,9 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
             defs := this.CachedHeroDefines
             if (defs == "")
             {
-                if (!FileExist(this.FindCachedDefinitionsPath(silent)))
+                fileName := this.FindCachedDefinitionsPath()
+                if (!FileExist(fileName))
                     return IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL
-                fileName := this.FindCachedDefinitionsPath(silent)
                 FileRead, contents, %fileName%
                 defs := this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
                 if (defs == "")
@@ -270,7 +287,7 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
         {
             if (!create)
                 this.HeroDefines := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath)
-            heroDefsLoaded := create OR !IsObject(this.HeroDefines) ? g_DefinesLoader.CreateHeroDefs(silent) : IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_SUCCESS
+            heroDefsLoaded := create OR !IsObject(this.HeroDefines) ? g_DefinesLoader.CreateHeroDefs() : IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_SUCCESS
             if (heroDefsLoaded == IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL)
             {
                 if (this.HeroDefines == "")
@@ -333,6 +350,7 @@ Class IC_BrivGemFarm_LevelUp_HeroData
         this.LastUpgradeLevel := lastUpgradeLevel
         for upgradeKey, upgrade in data
         {
+            ; upgradeData := new IC_BrivGemFarm_LevelUp_UpgradeData(upgradeKey, upgrade)
             level := levelStr := upgrade.required_level
             if (level == "")
                 continue
@@ -374,6 +392,21 @@ Class IC_BrivGemFarm_LevelUp_HeroData
         return upgrades
     }
 }
+
+;; Class that contains all upgrades data of a champion
+;Class IC_BrivGemFarm_LevelUp_UpgradeData
+;{
+;    __New(id, upgradeData)
+;    {
+;        this.ID := id
+;        this.Level := upgradeData.required_level
+;        this.Name := upgradeData.name
+;        this.Effect := upgradeData.effect
+;        if (upgradeData.specialization_name)
+;            this.Specialization := upgradeData.specialization_name
+;        this.ShortDescription := ""
+;    }
+;}
 
 ; Modified JSON class with parent/child key filters
 Class IC_BrivGemFarm_LevelUp_CachedDefinitionsReader extends JSON

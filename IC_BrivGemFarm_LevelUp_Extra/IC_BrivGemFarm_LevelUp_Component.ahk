@@ -748,7 +748,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GUIFunctions.AddToolTip("LoadFormationText", "Show current Q/W/E game formation.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_ShowSpoilers", "Show unreleased champions in their respective seat.")
         GUIFunctions.AddToolTip("DefaultMinLevelText", "Default min level for champions with no default values.")
-        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinRadio0", "Don't initilally put the champion on the field.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinRadio0", "Don't initially put the champion on the field.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinRadio1", "Put the champion on the field at level 1.")
         GUIFunctions.AddToolTip("DefaultMaxLevelText", "Default max level for champions with no default values.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxRadio1", "Put the champion on the field and don't level them.")

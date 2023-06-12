@@ -1,6 +1,6 @@
 June 12, 2023 - v0.4.0
     New features:
-        Added a button to show a window displaying current unsaved settings.
+        Added a button to show a window displaying current/unsaved settings.
         Added buttons to change default min/max values for champions with no default settings (mostly non speed/gold-find champions) - min: level 0/1 - max: level 1/Last upgrade (previously always min:0 - max:1)
         Added failed conversion recovery setting to level champions to soft cap when Briv gets below 50 stacks in order to speed up reaching the minimum stack zone.
         Added tooltips for several controls.
@@ -8,6 +8,7 @@ June 12, 2023 - v0.4.0
         Settings under the "Min Settings" section are only applied after saving.
     Fixes:
         Fixed loading definitions file if path not found.
+        Improved search for cached_definitions file.
 
 June 11, 2023 - v0.3.6
     Added Melf in the champion list that prioritizes speed champions for min leveling.

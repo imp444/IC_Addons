@@ -17,8 +17,8 @@ Gui, ICScriptHub:Add, GroupBox, x+5 w463 h700 vMinMaxSettingsGroup, BrivGemFarm 
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, Text, x23 y100, Seat
 Gui, ICScriptHub:Add, Text, x+51, Name
-Gui, ICScriptHub:Add, Text, x+64, MinLevel
-Gui, ICScriptHub:Add, Text, x+31, MaxLevel
+Gui, ICScriptHub:Add, Text, x+64 vMinLevelText, MinLevel
+Gui, ICScriptHub:Add, Text, x+31 vMaxLevelText, MaxLevel
 
 ; Create minLevel, maxLevel, order buttons/edits
 leftAlign := 25
@@ -41,7 +41,7 @@ AddSeat(xSpacing, ySpacing, seat)
     GUIFunctions.UseThemeTextColor()
 }
 
-Gui, ICScriptHub:Add, Text, x%leftAlign% y+20, Formation
+Gui, ICScriptHub:Add, Text, x%leftAlign% y+20 vLoadFormationText, Formation
 Gui, ICScriptHub:Add, DropDownList, x+10 y+-17 w35 AltSubmit Disabled hwndBrivGemFarm_LevelUp_LoadFormation vBrivGemFarm_LevelUp_LoadFormation gBrivGemFarm_LevelUp_LoadFormation, Q||W|E
 PostMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BrivGemFarm_LevelUp_LoadFormation%
 Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% y+-17 vBrivGemFarm_LevelUp_ShowSpoilers gBrivGemFarm_LevelUp_ShowSpoilers, Show spoilers
@@ -53,12 +53,12 @@ Gui, ICScriptHub:Add, Button, xs+%leftAlign% yp+20 Disabled vBrivGemFarm_LevelUp
 Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Save gBrivGemFarm_LevelUp_Save, Save
 Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Changes gBrivGemFarm_LevelUp_Changes, Show unsaved changes
 Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Undo gBrivGemFarm_LevelUp_Undo, Undo
-Gui, ICScriptHub:Add, Text, xs+%leftAlign% y+%ySpacing%, Default min level:
-Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MinRadioGroup vBrivGemFarm_LevelUp_MinRadio0 gBrivGemFarm_LevelUp_MinDefault, 0
-Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MinRadioGroup vBrivGemFarm_LevelUp_MinRadio1 gBrivGemFarm_LevelUp_MinDefault, 1
-Gui, ICScriptHub:Add, Text, x+5, |   Default max level:
-Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MaxRadioGroup vBrivGemFarm_LevelUp_MaxRadio1 gBrivGemFarm_LevelUp_MaxDefault, 1
-Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MaxRadioGroup vBrivGemFarm_LevelUp_MaxRadioLast gBrivGemFarm_LevelUp_MaxDefault, Last upgrade
+Gui, ICScriptHub:Add, Text, xs+%leftAlign% y+%ySpacing% vDefaultMinLevelText, Default min level:
+Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MinRadio0 gBrivGemFarm_LevelUp_MinDefault, 0
+Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MinRadio1 gBrivGemFarm_LevelUp_MinDefault, 1
+Gui, ICScriptHub:Add, Text, x+5 vDefaultMaxLevelText, |   Default max level:
+Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MaxRadio1 gBrivGemFarm_LevelUp_MaxDefault, 1
+Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MaxRadioLast gBrivGemFarm_LevelUp_MaxDefault, Last upgrade
 
 Gui, ICScriptHub:Font, w700
 Gui, ICScriptHub:Add, GroupBox, xs+15 y585 w449 h100 vMinSettingsGroup, Min Settings
@@ -383,6 +383,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
+        this.AddToolTips()
         g_DefinesLoader.Start()
     }
 
@@ -739,6 +740,26 @@ Class IC_BrivGemFarm_LevelUp_Component
     GetLevelSettings()
     {
         return this.Settings.BrivGemFarm_LevelUp_Settings
+    }
+
+    ; Show tooltips on mouseover
+    AddToolTips()
+    {
+        GUIFunctions.AddToolTip("LoadFormationText", "Show current Q/W/E game formation.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_ShowSpoilers", "Show unreleased champions in their respective seat.")
+        GUIFunctions.AddToolTip("DefaultMinLevelText", "Default min level for champions with no default values.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinRadio0", "Don't initilally put the champion on the field.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinRadio1", "Put the champion on the field at level 1.")
+        GUIFunctions.AddToolTip("DefaultMaxLevelText", "Default max level for champions with no default values.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxRadio1", "Put the champion on the field and don't level them.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxRadioLast", "Level the champion until soft cap.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_ForceBrivShandie", "Level up Briv and Shandie before other champions after resetting.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxSimultaneousInputs", "Maximum number of champions being leveled during the intial leveling to minLevel.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinLevelTimeout", "Timeout before stopping the initial champion leveling. If set to 0, minimum leveling will be skipped.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion", "Level champions to soft cap after failed conversion if Briv has lower than 50 Sprint stacks.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv", "Level Briv to soft cap after failed conversion if Briv has lower than 50 Sprint stacks.")
+        GUIFunctions.AddToolTip("MinLevelText", "Minimum level for every champion in the formation before progressing/waiting for Shandie's Dash.")
+        GUIFunctions.AddToolTip("MaxLevelText", "Maximum level for every champion in the formation before leveling stops.")
     }
 
     /*  _IC_BrivGemFarm_LevelUp_TempSettings

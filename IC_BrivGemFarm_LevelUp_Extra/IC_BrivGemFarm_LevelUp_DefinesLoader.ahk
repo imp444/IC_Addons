@@ -84,6 +84,7 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
                 IfMsgBox, No
                     return cachedPath
             }
+            Sleep, 10
             settings.LastCachedPath := cachedPath
             g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         }

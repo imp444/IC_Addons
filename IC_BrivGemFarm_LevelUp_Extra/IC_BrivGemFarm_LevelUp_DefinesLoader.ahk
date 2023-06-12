@@ -78,29 +78,33 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
     CheckForDefsChange(params*)
     {
         this.UpdateLoading("Checking for new definitions...")
-        settings := g_BrivGemFarm_LevelUp.Settings
-        fileName := this.FindCachedDefinitionsPath(params*)
-        FileRead, contents, %fileName%
-        RegExMatch(contents, "(\d)+", checksum, InStr(contents, "checksum")) ; Check file checksum
-        if (settings.LastChecksum == "" OR settings.LastChecksum != checksum)
+        fileName := this.FindCachedDefinitionsPath()
+        fileExists := FileExist(fileName)
+        if (fileExists)
         {
-            settings.LastChecksum := checksum
-            tableChecksums := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetTableChecksums(contents) ; Check table_checksums
-            if (settings.LastTableChecksums == "" OR !IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(settings.LastTableChecksums, tableChecksums))
+            FileRead, contents, %fileName%
+            RegExMatch(contents, "(\d)+", checksum, InStr(contents, "checksum")) ; Check file checksum
+            settings := g_BrivGemFarm_LevelUp.Settings
+            if (settings.LastChecksum == "" OR settings.LastChecksum != checksum)
             {
-                this.UpdateLoading("New definitions found")
-                settings.LastTableChecksums := tableChecksums
+                settings.LastChecksum := checksum
+                tableChecksums := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetTableChecksums(contents) ; Check table_checksums
+                if (settings.LastTableChecksums == "" OR !IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(settings.LastTableChecksums, tableChecksums))
+                {
+                    this.UpdateLoading("New definitions found")
+                    settings.LastTableChecksums := tableChecksums
+                    g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
+                    this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
+                    return true
+                }
                 g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
-                this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
-                return true
             }
-            g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         }
         if (params.Count())
         {
             if (!params[2])
                 this.UpdateLoading()
-            else
+            else if (fileExists)
                 this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
         }
         return false
@@ -125,7 +129,9 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
             defs := this.CachedHeroDefines
             if (defs == "")
             {
-                fileName := this.FindCachedDefinitionsPath()
+                if (!FileExist(this.FindCachedDefinitionsPath(silent)))
+                    return IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL
+                fileName := this.FindCachedDefinitionsPath(silent)
                 FileRead, contents, %fileName%
                 defs := this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
                 if (defs == "")
@@ -265,9 +271,12 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
             if (!create)
                 this.HeroDefines := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath)
             heroDefsLoaded := create OR !IsObject(this.HeroDefines) ? g_DefinesLoader.CreateHeroDefs(silent) : IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_SUCCESS
-            if (heroDefsLoaded == IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL AND silent == true)
+            if (heroDefsLoaded == IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL)
             {
-                this.UpdateLoading("WARNING: Could not load Hero definitions. Click on 'load definitions' to resume.`nThe location of this file should be in your game folder.")
+                if (this.HeroDefines == "")
+                    this.UpdateLoading("WARNING: Could not load cached_definitions. Click on 'load definitions' to resume.`nThis file should be located in your game folder.")
+                else
+                    this.UpdateLoading()
                 this.Stop()
                 g_BrivGemFarm_LevelUp.OnHeroDefinesFailed()
                 return

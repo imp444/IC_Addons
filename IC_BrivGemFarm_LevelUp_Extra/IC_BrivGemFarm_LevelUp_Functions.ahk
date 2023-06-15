@@ -254,6 +254,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             Sleep, 30
             ElapsedTime := A_TickCount - StartTime
         }
+        this.DirectedInput(hold := 0,, keyspam*) ; keysup
         if (forceBrivShandie AND ElapsedTime < timeout) ; remaining time > 0
             return this.DoPartySetupMin(false, g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] - ElapsedTime)
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.

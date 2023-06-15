@@ -1,5 +1,6 @@
 June 15, 2023 - v0.4.1
     Fixed unloading TempSettings theme.
+    Fixed F key spam after DoPartySetupMin().
 
 June 12, 2023 - v0.4.0
     New features:

@@ -354,6 +354,7 @@ GUIFunctions.UseThemeTextColor()
 Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, GroupBox, w330 h310, BrivGemFarm LevelUp Settings
 Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, ListView, xp+15 yp+24 w300 h270 NoSortHdr vBrivTempSettingsID , Setting|Current|New
 GUIFunctions.UseThemeListViewBackgroundColor("BrivTempSettingsID")
+GUIFunctions.LoadTheme()
 
 g_BrivGemFarm_LevelUp.Init()
 

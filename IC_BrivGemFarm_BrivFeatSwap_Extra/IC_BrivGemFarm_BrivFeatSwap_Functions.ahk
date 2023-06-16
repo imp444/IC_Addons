@@ -86,7 +86,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "") ; Not refreshed if for DoDashWait() is skipped
             this.Memory.ActiveEffectKeyHandler.Refresh()
         ;only send input messages if necessary
-        if (brivBenched != "" AND g_SharedData.BrivFeatSwap_savedQSKipAmount != "" AND g_SharedData.BrivFeatSwap_savedWSKipAmount != "" AND g_SharedData.BrivFeatSwap_savedESKipAmount != "")
+        if (brivBenched != "" AND g_SharedData.BrivFeatSwap_savedQSKipAmount != "" AND g_SharedData.BrivFeatSwap_savedESKipAmount != "")
         {
             if (brivBenched AND g_SharedData.BrivFeatSwap_UpdateSkipAmount() == g_SharedData.BrivFeatSwap_savedQSKipAmount)
                 brivBenched := false

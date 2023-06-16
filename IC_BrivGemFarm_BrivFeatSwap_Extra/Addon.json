@@ -1,0 +1,14 @@
+{
+	"Name":"BrivGemFarm Briv Feat Swap",
+	"Version": "v1.0.0",
+    "Includes" : "IC_BrivGemFarm_BrivFeatSwap_Component.ahk",
+    "Author" : "ImpEGamer",
+    "Url" : "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_BrivFeatSwap_Extra",
+    "Info" : "This Addon will allow to use Briv in E formation so you can take advantage of the \"save feats with formation\" feature to have hybrid jump setups using the Wasting Haste feat (lock at 4J).",
+    "Dependencies" : [
+        {
+            "Name":"Briv Gem Farm",
+            "Version":"v1.3.0"
+        }
+    ]
+}

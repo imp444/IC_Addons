@@ -74,7 +74,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            SharedRunData.BrivFeatSwap_UpdateSkipAmount()
             GuiControl, ICScriptHub:Text, BrivFeatSwapQValue, % SharedRunData.BrivFeatSwap_savedQSKipAmount
             GuiControl, ICScriptHub:Text, BrivFeatSwapWValue, % SharedRunData.BrivFeatSwap_savedWSKipAmount
             GuiControl, ICScriptHub:Text, BrivFeatSwapEValue, % SharedRunData.BrivFeatSwap_savedESKipAmount

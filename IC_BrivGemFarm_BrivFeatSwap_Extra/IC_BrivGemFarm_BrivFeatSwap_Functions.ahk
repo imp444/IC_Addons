@@ -77,8 +77,6 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     ; a method to swap formations and cancel briv's jump animation.
     SetFormation(settings := "")
     {
-        static brivBenched := ""
-
         if(settings != "")
         {
             this.Settings := settings
@@ -86,50 +84,38 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "") ; Not refreshed if for DoDashWait() is skipped
             this.Memory.ActiveEffectKeyHandler.Refresh()
         ;only send input messages if necessary
-        if (brivBenched != "" AND g_SharedData.BrivFeatSwap_savedQSKipAmount != "" AND g_SharedData.BrivFeatSwap_savedESKipAmount != "")
-        {
-            if (brivBenched AND g_SharedData.BrivFeatSwap_UpdateSkipAmount() == g_SharedData.BrivFeatSwap_savedQSKipAmount)
-                brivBenched := false
-            if (!brivBenched AND g_SharedData.BrivFeatSwap_UpdateSkipAmount() == g_SharedData.BrivFeatSwap_savedESKipAmount)
-                brivBenched := true
-        }
         ;check to bench briv
-        if (!brivBenched AND this.BenchBrivConditions(this.Settings))
+        if (this.BenchBrivConditions(this.Settings))
         {
-            if brivBenched != ""
-                g_SharedData.BrivFeatSwap_UpdateSkipAmount(1)
             this.DirectedInput(,,["{e}"]*)
+            g_SharedData.BrivFeatSwap_UpdateSkipAmount(3)
             g_SharedData.SwapsMadeThisRun++
-            brivBenched := true
             return
         }
         ;check to unbench briv
-        if (brivBenched AND this.UnBenchBrivConditions(this.Settings))
+        if (this.UnBenchBrivConditions(this.Settings))
         {
-            g_SharedData.BrivFeatSwap_UpdateSkipAmount(3)
             this.DirectedInput(,,["{q}"]*)
+            g_SharedData.BrivFeatSwap_UpdateSkipAmount(1)
             g_SharedData.SwapsMadeThisRun++
-            brivBenched := false
             return
         }
         isFormation2 := this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2))
         isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( this.Memory.ReadCurrentZone(), 50) == 0 ? 50 : Mod( this.Memory.ReadCurrentZone(), 50)] == 0
         ; check to swap briv from favorite 2 to favorite 3 (W to E)
-        if (!brivBenched AND isFormation2 AND isWalkZone)
+        if (isFormation2 AND isWalkZone)
         {
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(2)
             this.DirectedInput(,,["{e}"]*)
             g_SharedData.SwapsMadeThisRun++
-            brivBenched := true
             return
         }
         ; check to swap briv from favorite 2 to favorite 1 (W to Q)
-        if (!brivBenched AND isFormation2 AND !isWalkZone)
+        if (isFormation2 AND !isWalkZone)
         {
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(2)
             this.DirectedInput(,,["{q}"]*)
             g_SharedData.SwapsMadeThisRun++
-            brivBenched := false
             return
         }
     }

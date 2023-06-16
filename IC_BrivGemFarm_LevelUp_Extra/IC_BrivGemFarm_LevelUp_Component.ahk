@@ -81,7 +81,7 @@ Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% vBrivGemFarm_LevelUp_LevelToSoftCap
 
 Gui, ICScriptHub:Add, Text, xs+15 y+25 w445 R2 hwndBrivGemFarm_LevelUp_Text vBrivGemFarm_LevelUp_Text, % "Status: No settings."
 Gui, ICScriptHub:Add, Button, x13 y+20 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
-Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R2 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
+Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R3 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
 
 OnMessage(WM_COMMAND, "CheckComboStatus")
 

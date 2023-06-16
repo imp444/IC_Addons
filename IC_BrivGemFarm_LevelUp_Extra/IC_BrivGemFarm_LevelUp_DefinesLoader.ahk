@@ -1,6 +1,8 @@
 ﻿; Functions used to load hero definitions into the GUI
 class IC_BrivGemFarm_LevelUp_DefinesLoader
 {
+    static cachedFileName := "cached_definitions.json"
+    static rootCachedPath := "\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . IC_BrivGemFarm_LevelUp_DefinesLoader.cachedFileName
     static DEFS_LOAD_FAIL := -1
     static FILE_LOAD := 0
     static HERO_DEFS := 1
@@ -57,19 +59,18 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
     ; Saves the last known valid path
     FindCachedDefinitionsPath(silent := true)
     {
-        static fileName := "cached_definitions.json"
-        static rootCachedPath := "\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . fileName
-
         settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
         if (settings.LastCachedPath == "" OR !FileExist(settings.LastCachedPath) OR !silent)
         {
+            fileName := this.cachedFileName
             exePath := % g_UserSettings[ "InstallPath" ] ; Steam
-            cachedPath := % exePath . "\..\..\" . rootCachedPath
+            cachedPath := % exePath . "\..\..\" . this.rootCachedPath
             if (silent)
             {
                 if (!FileExist(cachedPath)) ; Try to find cached_definitions path
                 {
-                    Loop Files, rootCachedPath, R  ; Recurse into subfolders.
+                    this.UpdateLoading(this.Status . " Searching for " . fileName)
+                    Loop Files, this.rootCachedPath, R  ; Recurse into subfolders.
                     {
                         cachedPath = %A_LoopFileFullPath%
                         break
@@ -80,7 +81,7 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
             {
                 MsgBox, 4, , Load file from new location?
                 IfMsgBox, Yes
-                    FileSelectFile, cachedPath, 1, % "\..\..\..\..\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . fileName, %fileName%, %fileName%
+                    FileSelectFile, cachedPath, 1, % rootCachedPath, %fileName%, %fileName%
                 IfMsgBox, No
                     return cachedPath
             }
@@ -292,7 +293,7 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
             if (heroDefsLoaded == IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL)
             {
                 if (this.HeroDefines == "")
-                    this.UpdateLoading("WARNING: Could not load cached_definitions. Click on 'load definitions' to resume.`nThis file should be located in your game folder.")
+                    this.UpdateLoading("WARNING: Could not load cached_definitions. Click on 'load definitions' to resume.`nThis file should be located in your game folder under: " . this.rootCachedPath)
                 else
                     this.UpdateLoading()
                 this.Stop()

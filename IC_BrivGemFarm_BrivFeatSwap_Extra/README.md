@@ -16,4 +16,4 @@ Enable/Disable the Addon in Addon Management to turn it on/off. It should start/
 
 **(9J/4J)**
 
-![99J4J](/Images/8-4j_tt_setup.png)
+![9J4J](/Images/9-4j_tt_setup.png)

@@ -74,6 +74,18 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
 ; Overrides IC_BrivSharedFunctions_Class, check for compatibility
 class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
+    static BrivFeatSwap_Initialized := false
+
+    ; Update target values from file on launch
+    BrivFeatSwap_Init()
+    {
+        settings := g_SF.LoadObjectFromJSON(A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json")
+        if (!IsObject(settings))
+            return false
+        g_SharedData.UpdateTargetAmounts(settings.targetQ, settings.targetE)
+        return true
+    }
+
     ; a method to swap formations and cancel briv's jump animation.
     SetFormation(settings := "")
     {
@@ -81,41 +93,38 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         {
             this.Settings := settings
         }
+        if (!this.BrivFeatSwap_Initialized) ;only send input messages if necessary
+            this.BrivFeatSwap_Initialized := this.BrivFeatSwap_Init()
         if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "") ; Not refreshed if for DoDashWait() is skipped
             this.Memory.ActiveEffectKeyHandler.Refresh()
-        ;only send input messages if necessary
         ;check to bench briv
-        if (this.BenchBrivConditions(this.Settings))
+        if (g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetE" ] AND this.BenchBrivConditions(this.Settings))
         {
             this.DirectedInput(,,["{e}"]*)
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(3)
-            g_SharedData.SwapsMadeThisRun++
             return
         }
         ;check to unbench briv
-        if (this.UnBenchBrivConditions(this.Settings))
+        if (g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetQ" ] AND this.UnBenchBrivConditions(this.Settings))
         {
             this.DirectedInput(,,["{q}"]*)
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(1)
-            g_SharedData.SwapsMadeThisRun++
             return
         }
         isFormation2 := this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2))
         isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( this.Memory.ReadCurrentZone(), 50) == 0 ? 50 : Mod( this.Memory.ReadCurrentZone(), 50)] == 0
         ; check to swap briv from favorite 2 to favorite 3 (W to E)
-        if (isFormation2 AND isWalkZone)
+        if (g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetE" ] AND isFormation2 AND isWalkZone)
         {
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(2)
             this.DirectedInput(,,["{e}"]*)
-            g_SharedData.SwapsMadeThisRun++
             return
         }
         ; check to swap briv from favorite 2 to favorite 1 (W to Q)
-        if (isFormation2 AND !isWalkZone)
+        if (g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetQ" ] AND isFormation2 AND !isWalkZone)
         {
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(2)
             this.DirectedInput(,,["{q}"]*)
-            g_SharedData.SwapsMadeThisRun++
             return
         }
     }
@@ -159,5 +168,13 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
             Default:
                 return skipAmount
         }
+        this.SwapsMadeThisRun++
+    }
+
+    ; Update target values used to check for briv Q/E formation swaps
+    UpdateTargetAmounts(targetQ := 0, targetE := 0)
+    {
+        g_BrivUserSettingsFromAddons[ "TargetQ" ] := targetQ
+        g_BrivUserSettingsFromAddons[ "TargetE" ] := targetE
     }
 }

@@ -1,2 +1,5 @@
+June 18, 2023 - v1.1.0
+    Added settings to look for target Q/E skip values in order to reduce key spam.
+
 June 16, 2023 - v.1.0.0
     First release.

@@ -1,3 +1,5 @@
+#include *i %A_LineFile%\..\..\IC_BrivGemFarm_BrivFeatSwap_Extra\IC_BrivGemFarm_BrivFeatSwap_Functions.ahk
+
 ; Functions used by this addon
 class IC_BrivGemFarm_LevelUp_Functions
 {
@@ -7,10 +9,37 @@ class IC_BrivGemFarm_LevelUp_Functions
     ; Adds IC_BrivGemFarm_LevelUp_Addon.ahk to the startup of the Briv Gem Farm script.
     InjectAddon()
     {
+        if (IC_BrivGemFarm_LevelUp_Functions.CheckForBrivFeatSwapAddon()) ; Load Briv Feat Swap before this addon
+            IC_BrivGemFarm_BrivFeatSwap_Functions.InjectAddon()
         splitStr := StrSplit(A_LineFile, "\")
         addonDirLoc := splitStr[(splitStr.Count()-1)]
         addonLoc := "#include *i %A_LineFile%\..\..\" . addonDirLoc . "\IC_BrivGemFarm_LevelUp_Addon.ahk`n"
         FileAppend, %addonLoc%, %g_BrivFarmModLoc%
+    }
+
+    ; Returns true if the BrivGemFarm Briv Feat Swap addon is enabled in Addon Management or in the AddOnsIncluded.ahk file
+    CheckForBrivFeatSwapAddon()
+    {
+        static AddonManagementConfigFile := % A_LineFile . "\..\..\IC_Addon_Management\AddonManagement.json"
+        static AddOnsIncludedConfigFile := % A_LineFile . "\..\..\AddOnsIncluded.ahk"
+        static AddonName := "BrivGemFarm Briv Feat Swap"
+
+        if (FileExist(AddonManagementConfigFile)) ; Look for enabled BrivGemFarm Briv Feat Swap addon
+        {
+            AddonSettings:= g_SF.LoadObjectFromJSON(AddonManagementConfigFile)
+            for k, v in AddonSettings
+                if ((k == AddonName) AND v.Enabled)
+                    return true
+        }
+        else if (FileExist(AddOnsIncludedConfigFile)) ; Try in the AddOnsIncluded file
+        {
+            Loop, Read, %AddOnsIncludedConfigFile%
+            {
+                if InStr(A_LoopReadLine, "#include *i %A_LineFile%\..\IC_BrivGemFarm_BrivFeatSwap_Extra\IC_BrivGemFarm_BrivFeatSwap_Component.ahk")
+                    return true
+            }
+        }
+        return false
     }
 
     ; Returns true if the two objects have identical key/value pairs
@@ -67,6 +96,12 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_SF.GameStartFormation := g_BrivUserSettings[ "BrivJumpBuffer" ] > 0 ? 3 : 1
         g_SaveHelper.Init() ; slow call, loads briv dictionary (3+s)
         formationModron := g_SF.Memory.GetActiveModronFormation()
+        if (!IsObject(IC_BrivGemFarm_BrivFeatSwap_Class) AND IC_BrivGemFarm_LevelUp_Functions.CheckForBrivFeatSwapAddon())
+        {
+            str := "It looks like you are using BrivGemFarm Briv Feat Swap addon, but it is not loaded yet. Please try again.`n"
+            MsgBox, % str . "Try to move BrivGemFarm Briv Feat Swap before BrivGemFarm_LevelUp in Addon Management so this doesn't happen again."
+            return
+        }
         if (this.PreFlightCheck() == -1) ; Did not pass pre flight check.
             return -1
         g_PreviousZoneStartTime := A_TickCount
@@ -155,7 +190,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SharedData.StackFail := StackFailStates.FAILED_TO_PROGRESS ; 3
                 g_SharedData.StackFailStats.TALLY[g_SharedData.StackFail] += 1
             }
-
             Sleep, 20 ; here to keep the script responsive.
         }
     }

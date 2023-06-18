@@ -1,9 +1,13 @@
-; Functions that set affinities to processes
+; Functions that allow Q/E swaps with Briv in E formation
 class IC_BrivGemFarm_BrivFeatSwap_Functions
 {
+    static Injected := false
+
     ; Adds IC_BrivGemFarm_BrivFeatSwap_Addon.ahk to the startup of the Briv Gem Farm script.
     InjectAddon()
     {
+        if (this.Injected) ; Only once, can be set by BrivGemFarm_LevelUp
+            return
         splitStr := StrSplit(A_LineFile, "\")
         addonDirLoc := splitStr[(splitStr.Count()-1)]
         addonLoc := "#include *i %A_LineFile%\..\..\" . addonDirLoc . "\IC_BrivGemFarm_BrivFeatSwap_Addon.ahk`n"

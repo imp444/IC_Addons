@@ -401,8 +401,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         {
             this.ToggleAutoProgress(0)
             this.SetFormation()
-            while(!g_BrivGemFarm.DoPartySetupMax() AND !this.IsDashActive() AND ElapsedTime < timeout)
-                g_BrivGemFarm.DoPartySetupMax()
+            g_BrivGemFarm.DoPartySetupMax()
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
             percentageReducedSleep := Max(Floor((1-(ElapsedTime/estimate))*estimate/10), 15)

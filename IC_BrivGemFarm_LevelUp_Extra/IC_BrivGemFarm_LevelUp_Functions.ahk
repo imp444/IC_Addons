@@ -217,7 +217,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_SharedData.LoopString := "Setting stack farm formation."
         while ( !g_SF.IsCurrentFormation(g_SF.Memory.GetFormationByFavorite( 2 )) AND ElapsedTime < 5000 )
         {
-            this.DoPartySetupMax(2)
             ElapsedTime := A_TickCount - StartTime
             if (ElapsedTime > (counter * sleepTime)) ; input limiter..
             {
@@ -225,6 +224,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 counter++
             }
         }
+        while ( !this.DoPartySetupMax(2) AND ElapsedTime < 5000 )
+           ElapsedTime := A_TickCount - StartTime
         return
     }
 

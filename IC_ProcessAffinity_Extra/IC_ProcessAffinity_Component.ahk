@@ -72,9 +72,10 @@ Class IC_ProcessAffinity_Component
             GuiControl, ICScriptHub:, ProcessAffinityText, > 64 CPUs not supported.
             return
         }
-        GuiControl, Enable, ProcessAffinityLoad
-        GuiControl, Enable, ProcessAffinitySave
-        GuiControl, Enable, ProcessAffinityView
+        GuiControl, ICScriptHub:Enable, ProcessAffinityLoad
+        GuiControl, ICScriptHub:Enable, ProcessAffinitySave
+        GuiControl, ICScriptHub:Enable, ProcessAffinityView
+        IC_ProcessAffinity_Functions.Init(true)
         ProcessAffinityLoad()
         this.SaveSettings()
     }

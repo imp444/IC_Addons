@@ -18,8 +18,6 @@ class IC_ProcessAffinity_Functions
     ; Set affinity after clicking "Start Gem Farm"
     Init(isSH := false) ; 0:IC_BrivGemFarm_Run.ahk, 1:ICScriptHub.ahk
     {
-        if (!isSH)
-            g_SharedData.ProcessAffinityRunning := true
         EnvGet, ProcessorCount, NUMBER_OF_PROCESSORS
         this.ProcessorCount := ProcessorCount
         this.Affinity := affinity := this.LoadAffinitySettings(isSH)
@@ -106,11 +104,15 @@ class IC_ProcessAffinity_SharedFunctions_Class extends IC_BrivSharedFunctions_Cl
 ; Overrides IC_SharedData_Class, check for compatibility
 class IC_ProcessAffinity_SharedData_Class extends IC_SharedData_Class
 {
-    ProcessAffinityRunning := false
-
     ; Save new affinity
     ProcessAffinity_UpdateAffinity(affinity := 0)
     {
         IC_ProcessAffinity_Functions.UpdateAffinities(affinity)
+    }
+
+    ; Return true if the class has been updated by the addon
+    ProcessAffinityRunning()
+    {
+        return true
     }
 }

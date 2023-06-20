@@ -1,22 +1,31 @@
+#include %A_LineFile%\..\IC_ProcessAffinity_Functions.ahk
+
 GUIFunctions.AddTab("Process Affinity")
-
-global g_ProcessAffinity := new IC_ProcessAffinity_Component
-
 ; Add GUI fields to this addon's tab.
 Gui, ICScriptHub:Tab, Process Affinity
-Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, Text, , Core affinity:
-Gui, ICScriptHub:Font, w400
-Gui, ICScriptHub:Add, Button , Disabled x15 y+10 vProcessAffinityLoad gProcessAffinityLoad, Load
-Gui, ICScriptHub:Add, Button , Disabled x+10 vProcessAffinitySave gProcessAffinitySave, Save
-Gui, ICScriptHub:Add, Text, vProcessAffinityText x15 y+5 w125
+
+GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
+Gui, ICScriptHub:Add, Text, Section vProcessAffinityStatus, Status:
+Gui, ICScriptHub:Add, Text, x+5 w170 vProcessAffinityStatusText, Not Running
+GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
+
+Gui, ICScriptHub:Add, Text, xs ys+15 Hidden vProcessAffinityStatusWarning, WARNING: Addon was loaded too late. Stop/start Gem Farm to resume.
+GUIFunctions.UseThemeTextColor()
+
+xSpacing := 10
+Gui, ICScriptHub:Add, Button, xs ys+35 Disabled vProcessAffinityLoad gProcessAffinityLoad, Load
+Gui, ICScriptHub:Add, Button, x+%xSpacing% Disabled vProcessAffinitySave gProcessAffinitySave, Save
+Gui, ICScriptHub:Add, Text, x+%xSpacing% yp+5 w125 vProcessAffinityText
+
+GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
+Gui, ICScriptHub:Add, Text, vProcessAffinityCoreText xs ys+70, Core affinity:
+GUIFunctions.UseThemeTextColor()
 
 GUIFunctions.UseThemeTextColor("TableTextColor")
 EnvGet, ProcessorCount, NUMBER_OF_PROCESSORS
 hCols := Min(ProcessorCount + 1, 33)
-Gui, ICScriptHub:Add, ListView, AltSubmit Checked Disabled -Hdr -Multi R%hCols% x15 y+10 w120 vProcessAffinityView gProcessAffinityView, CoreID
+Gui, ICScriptHub:Add, ListView, AltSubmit Checked Disabled -Hdr -Multi R%hCols% xs y+10 w120 vProcessAffinityView gProcessAffinityView, CoreID
 GUIFunctions.UseThemeListViewBackgroundColor("ProcessAffinityView")
-IC_ProcessAffinity_Component.Init()
 
 ; Load button
 ProcessAffinityLoad()
@@ -25,14 +34,14 @@ ProcessAffinityLoad()
     LV_Delete()
     IC_ProcessAffinity_Component.ReloadCheckboxes()
     Sleep, 50
-    GuiControl, ICScriptHub:, ProcessAffinityText, Settings loaded.
+    GuiControl, ICScriptHub:Text, ProcessAffinityText, Settings loaded.
 }
 
 ; Save button
 ProcessAffinitySave()
 {
     IC_ProcessAffinity_Component.SaveSettings()
-    GuiControl, ICScriptHub:, ProcessAffinityText, Settings saved.
+    GuiControl, ICScriptHub:Text, ProcessAffinityText, Settings saved.
 }
 
 ; ViewList
@@ -45,7 +54,20 @@ ProcessAffinityView()
         else if (InStr(ErrorLevel, "c", true))
             IC_ProcessAffinity_Component.Update(A_EventInfo, 0)
     }
-    GuiControl, ICScriptHub:, ProcessAffinityText,
+    GuiControl, ICScriptHub:Text, ProcessAffinityText,
+}
+
+; Test to see if BrivGemFarm addon is avaialbe.
+if(IsObject(IC_BrivGemFarm_Component))
+{
+    IC_ProcessAffinity_Functions.InjectAddon()
+    global g_ProcessAffinity := new IC_ProcessAffinity_Component
+    IC_ProcessAffinity_Component.Init()
+}
+else
+{
+    GuiControl, ICScriptHub:Text, ProcessAffinityStatusWarning, WARNING: This addon needs IC_BrivGemFarm enabled.
+    GuiControl, ICScriptHub:Show, ProcessAffinityStatusWarning
 }
 
 /*  IC_ProcessAffinity_Component
@@ -57,11 +79,12 @@ ProcessAffinityView()
 */
 Class IC_ProcessAffinity_Component
 {
-    ; Start up GUI
+    TimerFunctions := ""
+
+    ; Start up the GUI
     Init()
     {
         EnvGet, ProcessorCount, NUMBER_OF_PROCESSORS
-        this.ProcessorCount := ProcessorCount
         if (ProcessorCount == 0)
         {
             GuiControl, ICScriptHub:, ProcessAffinityText, No cores found.
@@ -77,22 +100,69 @@ Class IC_ProcessAffinity_Component
         GuiControl, ICScriptHub:Enable, ProcessAffinityView
         IC_ProcessAffinity_Functions.Init(true)
         ProcessAffinityLoad()
-        this.SaveSettings()
+        this.SaveSettings(true)
+        this.CreateTimedFunctions()
+        this.Start()
+    }
+
+    ; Adds timed functions to be run when briv gem farm is started
+    CreateTimedFunctions()
+    {
+        this.TimerFunctions := {}
+        fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
+        this.TimerFunctions[fncToCallOnTimer] := 1000
+        g_BrivFarmAddonStartFunctions.Push(ObjBindMethod(this, "Start"))
+        g_BrivFarmAddonStopFunctions.Push(ObjBindMethod(this, "Stop"))
+    }
+
+    Start()
+    {
+        for k,v in this.TimerFunctions
+            SetTimer, %k%, %v%, 0
+    }
+
+    Stop()
+    {
+        for k,v in this.TimerFunctions
+        {
+            SetTimer, %k%, Off
+            SetTimer, %k%, Delete
+        }
+        GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Waiting for Gem Farm to start
+        GuiControl, ICScriptHub:Hide, ProcessAffinityStatusWarning
+    }
+
+    UpdateStatus()
+    {
+        try ; avoid thrown errors when comobject is not available.
+        {
+            SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
+            if (!SharedRunData.ProcessAffinityRunning)
+            {
+                this.Stop()
+                GuiControl, ICScriptHub:Show, ProcessAffinityStatusWarning
+                str := "ProcessAffinity addon was loaded after Briv Gem Farm started.`n"
+                MsgBox, % str . "If you want it enabled, press Stop/Start to retry."
+            }
+            else
+                GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Running
+        }
+        catch
+        {
+            GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Waiting for Gem Farm to start
+        }
     }
 
     ; Builds checkboxes for CoreAffinity
     ReloadCheckboxes()
     {
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
-        processorCount := this.ProcessorCount
-        this.LoadSettings()
+        processorCount := IC_ProcessAffinity_Functions.ProcessorCount
         LV_Add(, "All processors") ; Create unchecked boxes
-        loop, % processorCount
-        {
+        Loop, % processorCount
             LV_Add(, "CPU " . A_Index - 1)
-        }
-        settings := this.Settings["ProcessAffinityMask"]
-        loop, % processorCount ; Check boxes
+        settings := IC_ProcessAffinity_Functions.Affinity
+        Loop, % processorCount ; Check boxes
         {
             checked := (settings & (2 ** (A_Index - 1))) != 0
             if (checked)
@@ -101,30 +171,12 @@ Class IC_ProcessAffinity_Component
         LV_ModifyCol(, 1) ; Hide horizontal scroll bar
     }
 
-    ; Loads settings from the addon's setting.json file.
-    LoadSettings()
-    {
-        this.Settings := g_SF.LoadObjectFromJSON( A_LineFile . "\..\ProcessAffinitySettings.json")
-        if (!IsObject(this.Settings))
-            this.Settings := {}
-        if (this.Settings["ProcessAffinityMask"] == "")
-        {
-            coreMask := 0
-            loop, % this.ProcessorCount ; Sum up all bits
-            {
-                coreMask += 2 ** (A_Index - 1)
-            }
-            this.Settings["ProcessAffinityMask"] := coreMask
-        }
-    }
-
-     ; Saves settings to addon's setting.json file.
-    SaveSettings()
+    ; Saves settings to addon's setting.json file.
+    SaveSettings(firstSave := false)
     {
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
-        coreMask := 0
-        rowNumber := 1
-        loop ; Sum up all checked boxes as an integer || signed int for 64 cores
+        coreMask := 0, rowNumber := 1
+        Loop ; Sum up all checked boxes as an integer || signed int for 64 cores
         {
             nextChecked := LV_GetNext(RowNumber, "C")
             if (not nextChecked)
@@ -132,32 +184,32 @@ Class IC_ProcessAffinity_Component
             rowNumber := nextChecked
             coreMask += 2 ** (rowNumber - 2)
         }
-        if (coremask == 0)
+        if (coremask == 0 OR !firstSave AND (coremask == IC_ProcessAffinity_Functions.Affinity))
             return
-        if (!IsObject(this.Settings))
-            this.Settings := {}
-        this.Settings["ProcessAffinityMask"] := coremask
         ; g_SF.WriteObjectToJSON( A_LineFile . "\..\ProcessAffinitySettings.json", this.Settings ) doesn't work with 64 cores
         str := "{`n`t""ProcessAffinityMask"":""" . coremask . """`n}"
-        path := A_LineFile . "\..\ProcessAffinitySettings.json"
+        path := IC_ProcessAffinity_Functions.SettingsPath
         FileDelete, %path%
         FileAppend, % str, %path%
-        this.SetAllAffinities()
+        this.SetAllAffinities(coremask)
     }
 
     ; Sets the appropriate affinities to the game and scripts
-    SetAllAffinities()
+    SetAllAffinities(affinity := 0)
     {
-        ; Set affinity after starting the GUI
-        IC_ProcessAffinity_Functions.SetProcessAffinity(DllCall("GetCurrentProcessId"), 1) ; ICScriptHub.ahk
+        IC_ProcessAffinity_Functions.UpdateAffinities(affinity, true)
         ; Override ICScriptHub.ahk's "Launch Idle Champions" button to set the game's affinity, check for compatibility
         f := ObjBindMethod(g_ProcessAffinity, "Launch_Clicked_Affinity")
         GuiControl,ICScriptHub: +g, LaunchClickButton, % f
-        ; Set affinity if the game process exists
-        existingProcessID := g_UserSettings[ "ExeName"]
-        Process, Exist, %existingProcessID%
-        gamePID := ErrorLevel
-        IC_ProcessAffinity_Functions.SetProcessAffinity(gamePID) ; IdleDragons.exe
+        try ; avoid thrown errors when comobject is not available.
+        {
+            SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
+            SharedRunData.ProcessAffinity_UpdateAffinity(affinity)
+        }
+        catch
+        {
+            GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Waiting for Gem Farm to start
+        }
     }
 
     ; Set affinity after clicking ICScriptHub.ahk's "Launch Idle Champions" button
@@ -177,7 +229,7 @@ Class IC_ProcessAffinity_Component
             LV_Modify(1, "-Check")
         if (this.AreAllCoresChecked() AND (LV_GetNext(,"Checked") == 2))
             LV_Modify(1, "Check")
-        if (LV_GetNext(,"Checked") == 0) ; Disable save if no cores are selected
+        if (LV_GetNext(, "Checked") == 0) ; Disable save if no cores are selected
             GuiControl, Disable, ProcessAffinitySave
         else
             GuiControl, Enable, ProcessAffinitySave
@@ -189,10 +241,8 @@ Class IC_ProcessAffinity_Component
         if (!on AND !this.AreAllCoresChecked())
             return
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
-        loop % LV_GetCount() - 1 ; Skip the toggle all checkbox
-        {
+        Loop % LV_GetCount() - 1 ; Skip the toggle all checkbox
             LV_Modify(A_Index + 1, on ? "Check" : "-Check")
-        }
     }
 
     ; Returns true if all the core checkboxes are checked
@@ -200,7 +250,7 @@ Class IC_ProcessAffinity_Component
     {
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ProcessAffinityView")
         rowNumber := 1 ; This causes the first loop iteration to start the search at the top of the list.
-        loop
+        Loop
         {
             nextChecked := LV_GetNext(rowNumber, "C")
             if (nextChecked - rowNumber > 1) ; Skipped over an unchecked box
@@ -212,7 +262,3 @@ Class IC_ProcessAffinity_Component
         return false
     }
 }
-
-IC_ProcessAffinity_Functions.InjectAddon()
-
-#include %A_LineFile%\..\IC_ProcessAffinity_Functions.ahk

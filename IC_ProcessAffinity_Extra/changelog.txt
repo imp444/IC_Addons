@@ -1,3 +1,9 @@
+June 20, 2023 - v1.0.0
+    Fixed potential UI bug depending on addon order.
+    Fixed minor memory leak.
+    Added messages if the addon is not loaded before starting Gem Farm.
+    Added status display.
+
 April 21, 2023 - v.0.1.1
     Minor GUI improvements:
         Added Load button.

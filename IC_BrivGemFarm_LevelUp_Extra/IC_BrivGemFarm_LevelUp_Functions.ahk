@@ -182,7 +182,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SF.ToggleAutoProgress( 1 )
                 continue
             }
-
             g_SF.ToggleAutoProgress( 1 )
             if (g_SF.CheckifStuck())
             {
@@ -194,13 +193,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
     }
 
-    /*  StackRestart - Stops progress and wwitches to appropriate party to prepare for stacking Briv's SteelBones.
-                       Falls back from a boss zone if necessary.
-
-    Parameters:
-
-    Returns:
-    */
     ; Stops progress and switches to appropriate party to prepare for stacking Briv's SteelBones.
     StackFarmSetup()
     {
@@ -404,8 +396,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             g_BrivGemFarm.DoPartySetupMax()
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
-            percentageReducedSleep := Max(Floor((1-(ElapsedTime/estimate))*estimate/10), 15)
-            Sleep, %percentageReducedSleep%
+            Sleep, 30
         }
         g_PreviousZoneStartTime := A_TickCount
         return

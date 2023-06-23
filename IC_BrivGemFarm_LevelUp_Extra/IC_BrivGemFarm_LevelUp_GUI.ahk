@@ -7,19 +7,30 @@ CB_SETDROPPEDWIDTH := 0x0160
 GUIFunctions.AddTab("BrivGF LevelUp")
 ; Add GUI fields to this addon's tab.
 Gui, ICScriptHub:Tab, BrivGF LevelUp
+
+GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
+Gui, ICScriptHub:Add, Text, Section vBrivGemFarmLevelUpStatus, Status:
+Gui, ICScriptHub:Add, Text, x+5 w170 vBrivGemFarmLevelUpStatusText, Not Running
+
+GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
+Gui, ICScriptHub:Add, Text, xs ys+15 w500 vBrivGemFarmLevelUpStatusWarning,
+GUIFunctions.UseThemeTextColor() ; WARNING: Addon was loaded too late. Stop/start Gem Farm to resume.
+
+; Create minLevel, maxLevel, order buttons/edits
+xSection := 10
+ySection := 20
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, x+5 w463 h700 vMinMaxSettingsGroup, BrivGemFarm LevelUp Settings
+wMinMaxSettingsGroup := 465
+wGroup := wMinMaxSettingsGroup - 2 * xSection
+Gui, ICScriptHub:Add, GroupBox, Section xs w%wMinMaxSettingsGroup% h670 vMinMaxSettingsGroup, BrivGemFarm LevelUp Settings
 Gui, ICScriptHub:Font, w400
-Gui, ICScriptHub:Add, Text, x23 y100, Seat
+Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%ySection%, Seat
 Gui, ICScriptHub:Add, Text, x+51, Name
 Gui, ICScriptHub:Add, Text, x+64 vMinLevelText, MinLevel
 Gui, ICScriptHub:Add, Text, x+31 vMaxLevelText, MaxLevel
-
-; Create minLevel, maxLevel, order buttons/edits
-leftAlign := 25
+leftAlign := 12
 xSpacing := 15
 ySpacing := 10
-
 Loop, 12
 {
     AddSeat(xSpacing, ySpacing, A_Index)
@@ -28,7 +39,7 @@ Loop, 12
 AddSeat(xSpacing, ySpacing, seat)
 {
     global
-    Gui, ICScriptHub:Add, Text, Center x%leftAlign% y+%ySpacing% w15, % seat
+    Gui, ICScriptHub:Add, Text, Center xs+%leftAlign% y+%ySpacing% w15, % seat
     GUIFunctions.UseThemeTextColor("InputBoxTextColor")
     Gui, ICScriptHub:Add, DropDownList , vDDL_BrivGemFarmLevelUpName_%seat% gBrivGemFarm_LevelUp_Name x+%xSpacing% y+-16 w111
     Gui, ICScriptHub:Add, ComboBox, Limit6 hwndHBrivGemFarmLevelUpMinLevel_%seat% vCombo_BrivGemFarmLevelUpMinLevel_%seat% gBrivGemFarm_LevelUp_MinMax_Clamp x+%xSpacing% w60
@@ -36,16 +47,20 @@ AddSeat(xSpacing, ySpacing, seat)
     GUIFunctions.UseThemeTextColor()
 }
 
-Gui, ICScriptHub:Add, Text, x%leftAlign% y+20 vLoadFormationText, Formation
+Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySection% vLoadFormationText, Formation
 Gui, ICScriptHub:Add, DropDownList, x+10 y+-17 w35 AltSubmit Disabled hwndBrivGemFarm_LevelUp_LoadFormation vBrivGemFarm_LevelUp_LoadFormation gBrivGemFarm_LevelUp_LoadFormation, Q||W|E
 PostMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BrivGemFarm_LevelUp_LoadFormation%
 Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% y+-17 vBrivGemFarm_LevelUp_ShowSpoilers gBrivGemFarm_LevelUp_ShowSpoilers, Show spoilers
+GUIFunctions.UseThemeTextColor("ErrorTextColor", 700)
+Gui, ICScriptHub:Add, Text, x+%xSpacing% w220 vBrivGemFarm_LevelUp_NoFormationText,
+GUIFunctions.UseThemeTextColor()
 
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, xs+15 y500 w449 h80 vDefaultSettingsGroup, Default Settings
+Gui, ICScriptHub:Add, GroupBox, Section xs+%xSection% y+%ySection% w%wGroup% h80 vDefaultSettingsGroup, Default Settings
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, Button, xs+%leftAlign% yp+20 Disabled vBrivGemFarm_LevelUp_Default gBrivGemFarm_LevelUp_Default, Load default settings
-Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Save gBrivGemFarm_LevelUp_Save, Save
+Gui, ICScriptHub:Add, Text, x+%xSpacing% yp+5 w100 vBrivGemFarm_LevelUp_SettingsStatusText, % "No settings."
+Gui, ICScriptHub:Add, Button, xp yp-5 Hidden vBrivGemFarm_LevelUp_Save gBrivGemFarm_LevelUp_Save, Save
 Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Changes gBrivGemFarm_LevelUp_Changes, Show unsaved changes
 Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Undo gBrivGemFarm_LevelUp_Undo, Undo
 Gui, ICScriptHub:Add, Text, xs+%leftAlign% y+%ySpacing% vDefaultMinLevelText, Default min level:
@@ -56,7 +71,7 @@ Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MaxRadio1 gBrivGemFarm_Lev
 Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MaxRadioLast gBrivGemFarm_LevelUp_MaxDefault, Last upgrade
 
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, xs+15 y585 w449 h100 vMinSettingsGroup, Min Settings
+Gui, ICScriptHub:Add, GroupBox, Section xs y+%ySection% w%wGroup% h100 vMinSettingsGroup, Min Settings
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
@@ -69,13 +84,12 @@ GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18, MinLevel timeout (ms)
 
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, xs+15 y690 w449 h45 vMaxSettingsGroup, Fail Run Recovery Settings
+Gui, ICScriptHub:Add, GroupBox, Section xs y+%ySection% w%wGroup% h45 vMaxSettingsGroup, Fail Run Recovery Settings
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_LevelToSoftCapFailedConversion gBrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, Level champions to soft cap after failed conversion
 Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% vBrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv gBrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, Briv included
 
-Gui, ICScriptHub:Add, Text, xs+15 y+25 w445 R2 hwndBrivGemFarm_LevelUp_Text vBrivGemFarm_LevelUp_Text, % "Status: No settings."
-Gui, ICScriptHub:Add, Button, x13 y+20 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
+Gui, ICScriptHub:Add, Button, xs-%xSection% ys+70 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
 Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R3 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
 
 OnMessage(WM_COMMAND, "CheckComboStatus")

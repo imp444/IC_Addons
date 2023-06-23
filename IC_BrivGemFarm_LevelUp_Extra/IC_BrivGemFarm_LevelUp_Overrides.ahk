@@ -357,6 +357,12 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
 {
     UpdateMaxLevels := false ; Update max level immediately
 
+    ; Return true if the class has been updated by the addon
+    BrivGemFarmLevelUpRunning()
+    {
+        return true
+    }
+
     ; Load settings from the GUI settings file
     UpdateSettingsFromFile(updateMaxLevels := false)
     {

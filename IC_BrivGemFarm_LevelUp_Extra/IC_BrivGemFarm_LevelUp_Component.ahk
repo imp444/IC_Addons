@@ -20,6 +20,7 @@ Class IC_BrivGemFarm_LevelUp_Component
 
     Settings := ""
     TempSettings := new IC_BrivGemFarm_LevelUp_Component._IC_BrivGemFarm_LevelUp_TempSettings
+    TimerFunctions := ""
 
     ; GUI startup
     Init()
@@ -38,6 +39,97 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         this.AddToolTips()
         g_DefinesLoader.Start()
+        this.CreateTimedFunctions()
+        this.Start()
+    }
+
+    ; Adds timed functions to be run when briv gem farm is started
+    CreateTimedFunctions()
+    {
+        this.TimerFunctions := {}
+        fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
+        this.TimerFunctions[fncToCallOnTimer] := 3000
+        g_BrivFarmAddonStartFunctions.Push(ObjBindMethod(this, "Start"))
+        g_BrivFarmAddonStopFunctions.Push(ObjBindMethod(this, "Stop"))
+    }
+
+    Start()
+    {
+        for k,v in this.TimerFunctions
+            SetTimer, %k%, %v%, 0
+    }
+
+    Stop()
+    {
+        for k,v in this.TimerFunctions
+        {
+            SetTimer, %k%, Off
+            SetTimer, %k%, Delete
+        }
+        GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusText, Waiting for Gem Farm to start
+        GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusWarning,
+    }
+
+    ; Updates status string / warnings on a timer
+    ; Checks if the addon is running while BrivGemFarm is active, and if F keys are enabled
+    UpdateStatus()
+    {
+        static statuses := []
+        static statusIndex := 0
+        static fKeyWarning := false
+        static fKeyWarningMsg1 := "WARNING: F keys disabled. This Addon uses them to level up champions."
+        static fKeyWarningMsg2 := "Enable them both in the script (BrivGemFarm tab) and in the game (Settings -> General)."
+        static loadWarning := false
+        static loadWarningMsg := "WARNING: Addon was loaded too late. Stop/start Gem Farm to resume."
+
+        if (!g_BrivUserSettings[ "Fkeys" ]) ; F kets check
+        {
+            if (!fKeyWarning)
+            {
+                fKeyWarning := true
+                statuses.Push(fKeyWarningMsg1)
+                statuses.Push(fKeyWarningMsg2)
+            }
+        }
+        else if (fKeyWarning) ; Remove once resolved
+        {
+            Loop, 2
+            {
+                for k, v in statuses
+                    if ((v == fKeyWarningMsg1) OR (v == fKeyWarningMsg2))
+                        statuses.RemoveAt(k)
+            }
+            fKeyWarning := false
+        }
+        try ; avoid thrown errors when comobject is not available.
+        {
+            SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
+            if (!SharedRunData.BrivGemFarmLevelUpRunning) ; Addon running check
+            {
+                if (!loadWarning)
+                {
+                    loadWarning := true
+                    statuses.Push(loadWarningMsg)
+                    str := "BrivGemFarm LevelUp addon was loaded after Briv Gem Farm started.`n"
+                    MsgBox, % str . "If you want it enabled, press Stop/Start to retry."
+                }
+            }
+            else ; Remove once resolved
+            {
+                if (loadWarning)
+                    for k, v in statuses
+                        if (v == loadWarningMsg)
+                            statuses.RemoveAt(k)
+                GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusText, Running
+            }
+        }
+        catch
+        {
+            GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusText, Waiting for Gem Farm to start
+        }
+        ; Display all statuses one after the other, then start again from the beginning
+        statusIndex := statuses.Length() < statusIndex ? 1 : statusIndex
+        GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusWarning, % statuses[statusIndex++]
     }
 
     ; Performs additional functions after definitions have been fully loaded
@@ -131,9 +223,9 @@ Class IC_BrivGemFarm_LevelUp_Component
         if (save)
             this.SaveSettings()
         if (default)
-            this.Update("Default settings loaded.")
+            this.Update("", true)
         else
-            this.Update("Settings loaded.")
+            this.Update("Settings loaded.", true)
     }
 
     ; Load default settings to be used by IC_BrivGemFarm_LevelUp_Functions.ahk
@@ -220,7 +312,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         this.TempSettings.Reset()
         this.LoadFormation(this.GetFormationFromGUI())
-        this.Update("Settings loaded.")
+        this.Update("Settings loaded.", true)
     }
 
     ; Returns a list of champIDs from the current selected champions
@@ -286,14 +378,19 @@ Class IC_BrivGemFarm_LevelUp_Component
 
         Returns:
     */
-    Update(text := "")
+    Update(text := "", settingsText := false, invalidFormationText := false)
     {
-        if (!g_BrivUserSettings[ "Fkeys" ])
-            text := "WARNING: F keys disabled. This Addon uses them to level up champions.`nEnable them both in the script (BrivGemFarm tab) and in the game (Settings -> General)."
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_Text, % "Status: " . text
-        this.UpdateLastUpdated()
-        if (this.TempSettings.Haschanges())
+        if (settingsText)
+            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_SettingsStatusText, % text
+        else
         {
+            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_SettingsStatusText,
+            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_Text, % "Status: " . text
+        }
+        this.UpdateLastUpdated()
+        if (this.TempSettings.HasChanges())
+        {
+            GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_SettingsStatusText
             GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Save
             GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Changes
             GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Undo
@@ -303,7 +400,12 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Save
             GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Changes
             GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Undo
+            GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_SettingsStatusText
         }
+        if (invalidFormationText)
+            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_NoFormationText, % text
+        else
+            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_NoFormationText,
     }
 
     ; Update the text that shows the last time cached_definitions.json was loaded
@@ -328,10 +430,10 @@ Class IC_BrivGemFarm_LevelUp_Component
             formationIndex := formation.Length() == 0 ? 1 : formation
             formation := this.GetSavedFormation(formationIndex)
         }
-        if (formation.Length() == 0)
+        if (!IsObject(formation) OR formation.Length() == 0)
         {
             GuiControl, ICScriptHub:Choose, BrivGemFarm_LevelUp_LoadFormation, 0
-            this.Update("Invalid formation. Game closed?")
+            this.Update("Invalid formation. Game closed?",, true)
             return
         }
         seats := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

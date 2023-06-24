@@ -172,6 +172,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             champIDs := [58, 47]
         else
             champIDs := [58, 47, 91, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95] ; speed champs
+        if (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ]) ; Need to walk while Briv is in all formations
+            champIDs.RemoveAt(1)
         keyspam := []
         for k, champID in champIDs
         {
@@ -229,25 +231,36 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     {
         static champIDs := [47, 91, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95] ; speed champs without Briv
 
+        levelBriv := true ; Return value
         formationFavorite := g_SF.Memory.GetFormationByFavorite( formation )
+        levelSettings := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ]
+        if (g_SF.Memory.ReadChampLvlByID(58) < levelSettings.minLevels[58])
+        {
+            if (g_SF.Memory.ReadHighestZone() >= g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ]) ; Level Briv to be able to skip areas
+                this.DoPartySetupMin()
+            else
+                levelBriv := false
+        }
         for k, champID in champIDs
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite))
             {
-                if (g_SF.Memory.ReadChampLvlByID(champID) < g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[champID])
+                if (g_SF.Memory.ReadChampLvlByID(champID) < levelSettings.maxLevels[champID])
                 {
-                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[champID] . ")"
+                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . levelSettings.maxLevels[champID] . ")"
                     g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; Level up single champ once
                     return false
                 }
             }
         }
-        for champID, targetLevel in g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels
+        for champID, targetLevel in levelSettings.maxLevels
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite))
             {
                 if (champID == 58) ; Briv
                 {
+                    if (!levelBriv)
+                        continue
                     targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
                     if g_SF.Memory.ReadSBStacks() < targetStacks
                         targetLevel := g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] ; Level up Briv to BrivMinLevelStacking before stacking
@@ -260,7 +273,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 }
             }
         }
-        return true
+        return levelBriv
     }
 
     /*  DoPartySetupFailedConversion - Level up all champs to soft cap after a failed conversion.
@@ -371,12 +384,13 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
             return false
         g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
         this.FillMissingDefaultSettings(settings.DefaultMinLevel, settings.DefaultMaxLevel)
-        g_BrivUserSettingsFromAddons[ "ForceBrivShLevelToSoftCapFailedConversionBrivandie" ] := settings.ForceBrivShandie
+        g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ] := settings.ForceBrivShandie
         g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
         g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] := settings.MinLevelTimeout
         g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
+        g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ] := settings.BrivMinLevelArea
         g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion
-        g_BrivUserSettingsFromAddons[ "" ] := settings.LevelToSoftCapFailedConversionBriv
+        g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversionBriv" ] := settings.LevelToSoftCapFailedConversionBriv
         if (updateMaxLevels)
             this.UpdateMaxLevels := true
     }

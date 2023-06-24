@@ -81,16 +81,20 @@ Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_ForceB
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
 Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
 GUIFunctions.UseThemeTextColor()
-Gui, ICScriptHub:Add, Text, x+5 y+-18, Maximum simultaneous F keys inputs during MinLevel
+Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_MaxSimultaneousInputsText, Maximum simultaneous F keys inputs during MinLevel
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
 Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
 GUIFunctions.UseThemeTextColor()
-Gui, ICScriptHub:Add, Text, x+5 y+-18, MinLevel timeout (ms)
+Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_MinLevelTimeoutText, MinLevel timeout (ms)
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
 Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit6 vBrivGemFarm_LevelUp_BrivMinLevelStacking gBrivGemFarm_LevelUp_BrivMinLevelStacking
 GUIFunctions.UseThemeTextColor()
-Gui, ICScriptHub:Add, Text, x+5 y+-18, Briv MinLevel before stacking
-GuiControlGet, pos, ICScriptHub:Pos, BrivGemFarm_LevelUp_BrivMinLevelStacking
+Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_BrivMinLevelStackingText, Briv MinLevel before stacking
+GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit4 vBrivGemFarm_LevelUp_BrivMinLevelArea gBrivGemFarm_LevelUp_BrivMinLevelArea
+GUIFunctions.UseThemeTextColor()
+Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_BrivMinLevelAreaText, Minimum area to reach before leveling Briv
+GuiControlGet, pos, ICScriptHub:Pos, BrivGemFarm_LevelUp_BrivMinLevelArea
 GuiControlGet, posS, ICScriptHub:Pos, MinSettingsGroup
 newHeight := posY + posH - posSY + ySection
 GuiControl, ICScriptHub:Move, MinSettingsGroup, h%newHeight%
@@ -339,6 +343,26 @@ BrivGemFarm_LevelUp_BrivMinLevelStacking()
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelStacking, % beforeSubmit
     else
         g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelStacking", brivMinLevelStacking)
+}
+
+; BrivMinLevelArea
+BrivGemFarm_LevelUp_BrivMinLevelArea()
+{
+    global
+    local beforeSubmit := BrivGemFarm_LevelUp_BrivMinLevelArea
+    Gui, ICScriptHub:Submit, NoHide
+    local brivMinLevelArea := BrivGemFarm_LevelUp_BrivMinLevelArea
+    if brivMinLevelArea is not digit
+    {
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelArea, % beforeSubmit
+        return
+    }
+    else if (brivMinLevelArea < 1)
+    {
+        brivMinLevelArea := 1
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelArea, % brivMinLevelArea
+    }
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelArea", brivMinLevelArea)
 }
 
 ; Level champions to soft cap after a failed conversion to reach stack zone faster

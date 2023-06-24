@@ -38,18 +38,11 @@ Gui, ICScriptHub:Font, w400
 BrivGemFarm_BrivFeatSwap_Target()
 {
     global
+    local beforeSubmit := % %A_GuiControl%
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
-    if value is not integer
-    {
-        value := 0
-        GuiControl, ICScriptHub:Text, %A_GuiControl%, % value
-    }
-    else if (value < 0)
-    {
-        value := 0
-        GuiControl, ICScriptHub:Text, %A_GuiControl%, % value
-    }
+    if value is not digit
+        GuiControl, ICScriptHub:Text, %A_GuiControl%, % beforeSubmit
 }
 
 BrivGemFarm_BrivFeatSwap_Save()

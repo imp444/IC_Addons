@@ -174,6 +174,7 @@ BrivGemFarm_LevelUp_Name()
 BrivGemFarm_LevelUp_MinMax_Clamp()
 {
     global
+    local beforeSubmit := % %A_GuiControl%
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
     local clamped := value
@@ -182,8 +183,12 @@ BrivGemFarm_LevelUp_MinMax_Clamp()
         clamped := A_LoopField
         break
     }
-    if clamped is not integer
-        clamped := 0
+    if clamped is not digit
+    {
+        GuiControl, ICScriptHub:Text, %A_GuiControl%, % beforeSubmit
+        Gui, ICScriptHub:Submit, NoHide
+        return
+    }
     clamped := clamped <= 0 ? 0 : clamped
     clamped := clamped > 999999 ? 999999 : clamped
     if (clamped != value)
@@ -294,12 +299,13 @@ BrivGemFarm_LevelUp_ForceBrivShandie()
 BrivGemFarm_LevelUp_MaxSimultaneousInputs()
 {
     global
+    local beforeSubmit := BrivGemFarm_LevelUp_MaxSimultaneousInputs
     Gui, ICScriptHub:Submit, NoHide
-    maxSimultaneousInputs := BrivGemFarm_LevelUp_MaxSimultaneousInputs
-    if maxSimultaneousInputs is not integer
+    local maxSimultaneousInputs := BrivGemFarm_LevelUp_MaxSimultaneousInputs
+    if maxSimultaneousInputs is not digit
     {
-        maxSimultaneousInputs := 1
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % maxSimultaneousInputs
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % beforeSubmit
+        return
     }
     else if (maxSimultaneousInputs < 1)
     {
@@ -313,28 +319,22 @@ BrivGemFarm_LevelUp_MaxSimultaneousInputs()
 BrivGemFarm_LevelUp_MinLevelTimeout()
 {
     global
+    local beforeSubmit := BrivGemFarm_LevelUp_MinLevelTimeout
     Gui, ICScriptHub:Submit, NoHide
-    minLevelTimeout := BrivGemFarm_LevelUp_MinLevelTimeout
-    if minLevelTimeout is not integer
-    {
-        minLevelTimeout := !minLevelTimeout ? 0 : 5000
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % minLevelTimeout
-    }
-    else if (minLevelTimeout < 0)
-    {
-        minLevelTimeout := 0
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % minLevelTimeout
-    }
-    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("MinLevelTimeout", minLevelTimeout)
+    local minLevelTimeout := BrivGemFarm_LevelUp_MinLevelTimeout
+    if minLevelTimeout is not digit
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % beforeSubmit
+    else
+        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("MinLevelTimeout", minLevelTimeout)
 }
 
 ; Minimum Briv level to reach before stacking
 BrivGemFarm_LevelUp_BrivMinLevelStacking()
 {
     global
-    beforeSubmit := BrivGemFarm_LevelUp_BrivMinLevelStacking
+    local beforeSubmit := BrivGemFarm_LevelUp_BrivMinLevelStacking
     Gui, ICScriptHub:Submit, NoHide
-    brivMinLevelStacking := BrivGemFarm_LevelUp_BrivMinLevelStacking
+    local brivMinLevelStacking := BrivGemFarm_LevelUp_BrivMinLevelStacking
     if brivMinLevelStacking is not digit
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelStacking, % beforeSubmit
     else

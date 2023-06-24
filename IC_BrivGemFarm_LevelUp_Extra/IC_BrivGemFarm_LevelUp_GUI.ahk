@@ -17,14 +17,14 @@ Gui, ICScriptHub:Add, Text, xs ys+15 w500 vBrivGemFarmLevelUpStatusWarning,
 GUIFunctions.UseThemeTextColor() ; WARNING: Addon was loaded too late. Stop/start Gem Farm to resume.
 
 ; Create minLevel, maxLevel, order buttons/edits
-xSection := 10
-ySection := 20
+xSection := ySection := 10
 Gui, ICScriptHub:Font, w700
 wMinMaxSettingsGroup := 465
 wGroup := wMinMaxSettingsGroup - 2 * xSection
 Gui, ICScriptHub:Add, GroupBox, Section xs w%wMinMaxSettingsGroup% h670 vMinMaxSettingsGroup, BrivGemFarm LevelUp Settings
 Gui, ICScriptHub:Font, w400
-Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%ySection%, Seat
+yTitleSpacing := 2 * ySection
+Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%yTitleSpacing%, Seat
 Gui, ICScriptHub:Add, Text, x+51, Name
 Gui, ICScriptHub:Add, Text, x+64 vMinLevelText, MinLevel
 Gui, ICScriptHub:Add, Text, x+31 vMaxLevelText, MaxLevel
@@ -47,7 +47,7 @@ AddSeat(xSpacing, ySpacing, seat)
     GUIFunctions.UseThemeTextColor()
 }
 
-Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySection% vLoadFormationText, Formation
+Gui, ICScriptHub:Add, Text, xs+%xSection% y+%yTitleSpacing% vLoadFormationText, Formation
 Gui, ICScriptHub:Add, DropDownList, x+10 y+-17 w35 AltSubmit Disabled hwndBrivGemFarm_LevelUp_LoadFormation vBrivGemFarm_LevelUp_LoadFormation gBrivGemFarm_LevelUp_LoadFormation, Q||W|E
 PostMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BrivGemFarm_LevelUp_LoadFormation%
 Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% y+-17 vBrivGemFarm_LevelUp_ShowSpoilers gBrivGemFarm_LevelUp_ShowSpoilers, Show spoilers
@@ -56,7 +56,7 @@ Gui, ICScriptHub:Add, Text, x+%xSpacing% w220 vBrivGemFarm_LevelUp_NoFormationTe
 GUIFunctions.UseThemeTextColor()
 
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, Section xs+%xSection% y+%ySection% w%wGroup% h80 vDefaultSettingsGroup, Default Settings
+Gui, ICScriptHub:Add, GroupBox, Section xs+%xSection% y+%yTitleSpacing% w%wGroup% h50 vDefaultSettingsGroup, Default Settings
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, Button, xs+%leftAlign% yp+20 Disabled vBrivGemFarm_LevelUp_Default gBrivGemFarm_LevelUp_Default, Load default settings
 Gui, ICScriptHub:Add, Text, x+%xSpacing% yp+5 w100 vBrivGemFarm_LevelUp_SettingsStatusText, % "No settings."
@@ -69,31 +69,48 @@ Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MinRadio1 gBrivGemFarm_Lev
 Gui, ICScriptHub:Add, Text, x+5 vDefaultMaxLevelText, |   Default max level:
 Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MaxRadio1 gBrivGemFarm_LevelUp_MaxDefault, 1
 Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MaxRadioLast gBrivGemFarm_LevelUp_MaxDefault, Last upgrade
+GuiControlGet, pos, ICScriptHub:Pos, DefaultMinLevelText
+GuiControlGet, posS, ICScriptHub:Pos, DefaultSettingsGroup
+newHeight := posY + posH - posSY + ySection
+GuiControl, ICScriptHub:Move, DefaultSettingsGroup, h%newHeight%
 
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, Section xs y+%ySection% w%wGroup% h100 vMinSettingsGroup, Min Settings
+Gui, ICScriptHub:Add, GroupBox, Section xs y+%yTitleSpacing% w%wGroup% h50 vMinSettingsGroup, Min Settings
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w40 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
+Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18, Maximum simultaneous F keys inputs during MinLevel
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w40 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
+Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18, MinLevel timeout (ms)
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
 Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit6 vBrivGemFarm_LevelUp_BrivMinLevelStacking gBrivGemFarm_LevelUp_BrivMinLevelStacking
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18, Briv MinLevel before stacking
+GuiControlGet, pos, ICScriptHub:Pos, BrivGemFarm_LevelUp_BrivMinLevelStacking
+GuiControlGet, posS, ICScriptHub:Pos, MinSettingsGroup
+newHeight := posY + posH - posSY + ySection
+GuiControl, ICScriptHub:Move, MinSettingsGroup, h%newHeight%
 
 Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, Section xs y+%ySection% w%wGroup% h45 vMaxSettingsGroup, Fail Run Recovery Settings
+Gui, ICScriptHub:Add, GroupBox, Section xs y+%yTitleSpacing% w%wGroup% h50 vFailRunRecoverySettingsGroup, Fail Run Recovery Settings
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_LevelToSoftCapFailedConversion gBrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, Level champions to soft cap after failed conversion
 Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% vBrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv gBrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, Briv included
+GuiControlGet, pos, ICScriptHub:Pos, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv
+GuiControlGet, posS, ICScriptHub:Pos, FailRunRecoverySettingsGroup
+newHeight := posY + posH - posSY + ySection
+GuiControl, ICScriptHub:Move, FailRunRecoverySettingsGroup, h%newHeight%
 
-Gui, ICScriptHub:Add, Button, xs-%xSection% ys+70 Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
+GuiControlGet, posS, ICScriptHub:Pos, MinMaxSettingsGroup
+newHeight := posY + posH - posSY + yTitleSpacing + 1
+GuiControl, ICScriptHub:Move, MinMaxSettingsGroup, h%newHeight%
+
+yLoadDefinitionsSpacing := 2 * yTitleSpacing
+Gui, ICScriptHub:Add, Button, xs-%xSection% y+%yLoadDefinitionsSpacing% Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
 Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R3 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
 
 OnMessage(WM_COMMAND, "CheckComboStatus")

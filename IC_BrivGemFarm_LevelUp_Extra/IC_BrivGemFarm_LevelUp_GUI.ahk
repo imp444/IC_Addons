@@ -145,7 +145,7 @@ CheckComboStatus(W)
         if ((W >> 16) & 0xFFFF == CBN_SELENDCANCEL)
         {
             choice := % DDL_BrivGemFarmLevelUpName_%seat_ID%
-            if (choice == "Briv") ; After %choice%, ErrorLevel is set to 1 for an unknown reason
+            if (choice == g_DefinesLoader.HeroDefines.hero_defines[58].name) ; After %choice%, ErrorLevel is set to 1 for an unknown reason
                 GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_5, % "|" . choice
             else
                 GuiControl, ICScriptHub:ChooseString, %choice%, % "|" . choice

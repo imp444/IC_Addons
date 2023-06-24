@@ -1,3 +1,15 @@
+June 23, 2023 - v0.4.2
+    Fixed GUI sections being incorrectly displayed depending on addon order.
+    Added status loop to show if the addon/BrivGemfarm is currently active.
+    Show all warnings under status loop.
+
+June 21, 2023 -
+    Updated DashWait to level up champions to MaxLevel faster.
+
+June 18, 2023 -
+    Fixed champions not being leveled to MaxLevel in W formation before stacking.
+    Fixed displaying DashWait Loop.
+
 June 15, 2023 - v0.4.1
     Fixed unloading TempSettings theme.
     Fixed F key spam after DoPartySetupMin().

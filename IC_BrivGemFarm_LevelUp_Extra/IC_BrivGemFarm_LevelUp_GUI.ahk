@@ -82,6 +82,10 @@ GUIFunctions.UseThemeTextColor("InputBoxTextColor")
 Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w40 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18, MinLevel timeout (ms)
+GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit6 vBrivGemFarm_LevelUp_BrivMinLevelStacking gBrivGemFarm_LevelUp_BrivMinLevelStacking
+GUIFunctions.UseThemeTextColor()
+Gui, ICScriptHub:Add, Text, x+5 y+-18, Briv MinLevel before stacking
 
 Gui, ICScriptHub:Font, w700
 Gui, ICScriptHub:Add, GroupBox, Section xs y+%ySection% w%wGroup% h45 vMaxSettingsGroup, Fail Run Recovery Settings
@@ -305,6 +309,19 @@ BrivGemFarm_LevelUp_MinLevelTimeout()
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % minLevelTimeout
     }
     g_BrivGemFarm_LevelUp.TempSettings.AddSetting("MinLevelTimeout", minLevelTimeout)
+}
+
+; Minimum Briv level to reach before stacking
+BrivGemFarm_LevelUp_BrivMinLevelStacking()
+{
+    global
+    beforeSubmit := BrivGemFarm_LevelUp_BrivMinLevelStacking
+    Gui, ICScriptHub:Submit, NoHide
+    brivMinLevelStacking := BrivGemFarm_LevelUp_BrivMinLevelStacking
+    if brivMinLevelStacking is not digit
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelStacking, % beforeSubmit
+    else
+        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelStacking", brivMinLevelStacking)
 }
 
 ; Level champions to soft cap after a failed conversion to reach stack zone faster

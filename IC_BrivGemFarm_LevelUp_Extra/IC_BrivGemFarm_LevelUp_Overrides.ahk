@@ -80,8 +80,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             if (g_SF.Memory.ReadResetting())
                 this.ModronResetCheck()
             needToStack := g_SF.Memory.ReadSBStacks() < (g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ])
-            ; If briv level is set to less than 170, he doesn't get MetalBorn - Level him back after stacking
-            if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < 170 )
+            ; Level up Briv to MaxLevel after stacking
+            if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
                 setupMaxDone := false
             ; Check for failed stack conversion
             if (g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
@@ -237,7 +237,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 if (g_SF.Memory.ReadChampLvlByID(champID) < g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[champID])
                 {
                     g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[champID] . ")"
-                    g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; level up single champ once
+                    g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; Level up single champ once
                     return false
                 }
             }
@@ -246,16 +246,16 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite))
             {
-                if (champID == 58 AND g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[58] <= 170) ; If briv level is set to less than 170, he doesn't get MetalBorn - Level him back after stacking
+                if (champID == 58) ; Briv
                 {
                     targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
                     if g_SF.Memory.ReadSBStacks() < targetStacks
-                        continue
+                        targetLevel := g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] ; Level up Briv to BrivMinLevelStacking before stacking
                 }
                 if (g_SF.Memory.ReadChampLvlByID(champID) < targetLevel)
                 {
                     g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
-                    g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; level up single champ once
+                    g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; Level up single champ once
                     return false
                 }
             }
@@ -374,6 +374,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "ForceBrivShLevelToSoftCapFailedConversionBrivandie" ] := settings.ForceBrivShandie
         g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
         g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] := settings.MinLevelTimeout
+        g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
         g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion
         g_BrivUserSettingsFromAddons[ "" ] := settings.LevelToSoftCapFailedConversionBriv
         if (updateMaxLevels)

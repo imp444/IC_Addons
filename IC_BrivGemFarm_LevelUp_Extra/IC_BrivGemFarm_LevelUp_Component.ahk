@@ -35,6 +35,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         this.AddToolTips()
@@ -181,7 +182,10 @@ Class IC_BrivGemFarm_LevelUp_Component
         {
             if (!this.Settings.HasKey(k))
             {
-                this.Settings[k] := v
+                if (k == "BrivMinLevelStacking") ; Comes after settings.BrivGemFarm_LevelUp_Settings values have been initialized
+                    this.Settings[k] := (settings.BrivGemFarm_LevelUp_Settings.maxLevels[58] < 170) ? settings.BrivGemFarm_LevelUp_Settings.minLevels[58] : settings.BrivGemFarm_LevelUp_Settings.maxLevels[58]
+                else
+                    this.Settings[k] := v
                 save := true
             }
             else if (IsObject(v))
@@ -216,6 +220,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % defaultSettings.ForceBrivShandie
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % defaultSettings.MinLevelTimeout
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % defaultSettings.LevelToSoftCapFailedConversionBriv
             this.LoadFormation(this.GetFormationFromGUI())
@@ -237,6 +242,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.ForceBrivShandie := false
         settings.MaxSimultaneousInputs := 4
         settings.MinLevelTimeout := 5000
+        settings.BrivMinLevelStacking := 1300
         settings.DefaultMinLevel := 0
         settings.DefaultMaxLevel := 1
         settings.LevelToSoftCapFailedConversion := true
@@ -308,6 +314,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         this.TempSettings.Reset()
@@ -511,6 +518,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_ForceBrivShandie", "Level up Briv and Shandie before other champions after resetting.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxSimultaneousInputs", "Maximum number of champions being leveled during the intial leveling to minLevel.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinLevelTimeout", "Timeout before stopping the initial champion leveling. If set to 0, minimum leveling will be skipped.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_BrivMinLevelStacking", "Minimum Briv level to reach before stacking.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion", "Level champions to soft cap after failed conversion if Briv has lower than 50 Sprint stacks.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv", "Level Briv to soft cap after failed conversion if Briv has lower than 50 Sprint stacks.")
         GUIFunctions.AddToolTip("MinLevelText", "Minimum level for every champion in the formation before progressing/waiting for Shandie's Dash.")

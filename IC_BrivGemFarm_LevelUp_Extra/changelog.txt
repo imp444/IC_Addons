@@ -1,3 +1,9 @@
+June 24, 2023 - v0.4.3
+    New Features:
+        Added a separate setting for minimum Briv level before stacking. After stacking, will resume MaxLevel.
+        Added a setting to delay Briv leveling until a minimum area has been reached (used to walk the first few areas if Briv is in E formation).
+        Added an option to skip DashWait after leveling champions to MinLevel when stacking really early.
+
 June 23, 2023 - v0.4.2
     Fixed GUI sections being incorrectly displayed depending on addon order.
     Added status loop to show if the addon/BrivGemfarm is currently active.

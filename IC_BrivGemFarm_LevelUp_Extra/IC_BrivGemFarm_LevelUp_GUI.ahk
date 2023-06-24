@@ -78,6 +78,7 @@ Gui, ICScriptHub:Font, w700
 Gui, ICScriptHub:Add, GroupBox, Section xs y+%yTitleSpacing% w%wGroup% h50 vMinSettingsGroup, Min Settings
 Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
+Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% vBrivGemFarm_LevelUp_SkipMinDashWait gBrivGemFarm_LevelUp_SkipMinDashWait, Skip DashWait after Min Leveling
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
 Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
 GUIFunctions.UseThemeTextColor()
@@ -297,6 +298,14 @@ BrivGemFarm_LevelUp_ForceBrivShandie()
     global
     Gui, ICScriptHub:Submit, NoHide
     g_BrivGemFarm_LevelUp.TempSettings.AddSetting("ForceBrivShandie", BrivGemFarm_LevelUp_ForceBrivShandie)
+}
+
+; Skip early Dashwait
+BrivGemFarm_LevelUp_SkipMinDashWait()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    g_BrivGemFarm_LevelUp.TempSettings.AddSetting("SkipMinDashWait", BrivGemFarm_LevelUp_SkipMinDashWait)
 }
 
 ; Maximum number of simultaneous F keys inputs during MinLevel

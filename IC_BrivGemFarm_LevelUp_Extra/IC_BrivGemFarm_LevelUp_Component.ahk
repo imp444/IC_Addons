@@ -33,6 +33,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxRadio%defaultMaxLevel%, 1
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % this.Settings.ShowSpoilers
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
@@ -219,6 +220,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % defaultSettings.ShowSpoilers
             this.ToggleSpoilers(defaultSettings.ShowSpoilers)
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % defaultSettings.ForceBrivShandie
+            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_SkipMinDashWait, % defaultSettings.SkipMinDashWait
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % defaultSettings.MinLevelTimeout
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
@@ -242,6 +244,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings := {}
         settings.ShowSpoilers := false
         settings.ForceBrivShandie := false
+        settings.SkipMinDashWait := false
         settings.MaxSimultaneousInputs := 4
         settings.MinLevelTimeout := 5000
         settings.BrivMinLevelStacking := 1300
@@ -315,6 +318,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % showSpoilers
         this.ToggleSpoilers(showSpoilers)
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
@@ -520,6 +524,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxRadio1", "Put the champion on the field and don't level them.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxRadioLast", "Level the champion until soft cap.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_ForceBrivShandie", "Level up Briv and Shandie before other champions after resetting.")
+        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_SkipMinDashWait", "Skip waiting for Shandie's dash being active after leveling champions to MinLevel. Useful if stacking really early in the run.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxSimultaneousInputs", "Maximum number of champions being leveled during the intial leveling to minLevel.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxSimultaneousInputsText", "Maximum number of champions being leveled during the intial leveling to minLevel.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinLevelTimeout", "Timeout before stopping the initial champion leveling. If set to 0, minimum leveling will be skipped.")

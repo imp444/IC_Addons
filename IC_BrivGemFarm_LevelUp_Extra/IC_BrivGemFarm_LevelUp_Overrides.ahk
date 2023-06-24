@@ -218,7 +218,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (forceBrivShandie AND ElapsedTime < timeout) ; remaining time > 0
             return this.DoPartySetupMin(false, g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] - ElapsedTime)
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
-        if (g_SF.ShouldDashWait())
+        if (!g_BrivUserSettingsFromAddons[ "SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
         g_SF.ToggleAutoProgress( 1, false, true )
     }
@@ -385,6 +385,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
         this.FillMissingDefaultSettings(settings.DefaultMinLevel, settings.DefaultMaxLevel)
         g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ] := settings.ForceBrivShandie
+        g_BrivUserSettingsFromAddons[ "SkipMinDashWait" ] := settings.SkipMinDashWait
         g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
         g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] := settings.MinLevelTimeout
         g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] := settings.BrivMinLevelStacking

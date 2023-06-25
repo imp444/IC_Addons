@@ -10,6 +10,9 @@ This means you will have to get Briv to **5J+** to be able to use this feature.
 2. Set up your jumps in **Advanced Settings** tab (IC Script Hub) and save in **Briv Gem Farm** tab.
 3. Set up your Briv feats in **Specialization and Feat Choices** (save formation menu in the game). Hit save for each formation. It is not recommended to save feats for other champions.
 4. Start **Briv Gem Farm** in IC Script Hub.
+5. To prevent input spam, open this addon's tab, enter the number of skips Briv should do in Q/E in the text fields then save.
+
+![settings](Images/settings.png)
 
 ## Recommended settings:
 ### Specialization and Feat Choices

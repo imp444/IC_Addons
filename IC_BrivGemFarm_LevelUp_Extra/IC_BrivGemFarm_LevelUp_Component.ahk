@@ -34,10 +34,10 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % this.Settings.ShowSpoilers
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_SkipMinDashWait, % this.Settings.SkipMinDashWait
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
+        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         this.AddToolTips()
@@ -138,7 +138,9 @@ Class IC_BrivGemFarm_LevelUp_Component
     ; Performs additional functions after definitions have been fully loaded
     OnHeroDefinesFinished()
     {
+        this.UpdateBrivMinLevelStackingList()
         this.UndoTempSettings()
+
         levelSettings := this.Settings.BrivGemFarm_LevelUp_Settings
         for heroID in g_HeroDefines.HeroDataByID
         {
@@ -223,7 +225,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_SkipMinDashWait, % defaultSettings.SkipMinDashWait
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % defaultSettings.MinLevelTimeout
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
+            GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelArea, % defaultSettings.BrivMinLevelArea
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
             GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % defaultSettings.LevelToSoftCapFailedConversionBriv
@@ -321,7 +323,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
+        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
@@ -529,7 +531,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MaxSimultaneousInputsText", "Maximum number of champions being leveled during the intial leveling to minLevel.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinLevelTimeout", "Timeout before stopping the initial champion leveling. If set to 0, minimum leveling will be skipped.")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_MinLevelTimeoutText", "Timeout before stopping the initial champion leveling. If set to 0, minimum leveling will be skipped.")
-        GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_BrivMinLevelStacking", "Minimum Briv level to reach before stacking. After stacking is done, leveling will resume up to MaxLevel")
+        GUIFunctions.AddToolTip("Combo_BrivGemFarmLevelUpBrivMinLevelStacking", "Minimum Briv level to reach before stacking. After stacking is done, leveling will resume up to MaxLevel")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_BrivMinLevelStackingText", "Minimum Briv level to reach before stacking. After stacking is done, leveling will resume up to MaxLevel")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_BrivMinLevelArea", "Minimum area before starting to level up Briv (used to walk at the beginning if using Briv in E formation).")
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_BrivMinLevelAreaText", "Minimum area before starting to level up Briv (used to walk at the beginning if using Briv in E formation).")
@@ -537,6 +539,25 @@ Class IC_BrivGemFarm_LevelUp_Component
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv", "Level up Briv to soft cap after failed conversion if Briv has lower than 50 Sprint stacks.")
         GUIFunctions.AddToolTip("MinLevelText", "Minimum level for every champion in the formation before progressing/waiting for Shandie's Dash.")
         GUIFunctions.AddToolTip("MaxLevelText", "Maximum level for every champion in the formation before leveling stops.")
+    }
+
+    UpdateBrivMinLevelStackingList()
+    {
+        global
+        brivSeat := IC_BrivGemFarm_LevelUp_Seat.Seats[5]
+        heroData := brivSeat.HeroDataByName[brivSeat.HeroDataByID[58].name]
+        upgrades := heroData.upgradesList
+        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpBrivMinLevelStacking
+        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % "|" . upgrades
+        if(heroData.cachedSize == "")
+            heroData.cachedSize := IC_BrivGemFarm_LevelUp_Functions.DropDownSize(heroData.upgradesList)
+        Hwnd := HBrivGemFarmLevelUpBrivMinLevelStacking
+        PostMessage, CB_SETDROPPEDWIDTH, heroData.cachedSize, 0, , ahk_id %Hwnd%
+        Sleep, 1
+        k := "BrivMinLevelStacking"
+        brivMinLevelStacking := g_BrivGemFarm_LevelUp.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
+        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % brivMinLevelStacking
+        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpBrivMinLevelStacking
     }
 
     /*  _IC_BrivGemFarm_LevelUp_TempSettings

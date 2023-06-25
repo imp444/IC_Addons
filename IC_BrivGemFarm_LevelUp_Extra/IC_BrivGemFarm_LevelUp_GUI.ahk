@@ -1,5 +1,7 @@
 CBN_SELENDCANCEL := 10
 WM_COMMAND := 0x0111
+CB_DELETESTRING := 0x0144
+CB_GETCOUNT := 0x146
 CB_SETITEMHEIGHT := 0x0153
 CB_GETDROPPEDSTATE := 0x0157
 CB_SETDROPPEDWIDTH := 0x0160
@@ -80,19 +82,19 @@ Gui, ICScriptHub:Font, w400
 Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
 Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% vBrivGemFarm_LevelUp_SkipMinDashWait gBrivGemFarm_LevelUp_SkipMinDashWait, Skip DashWait after Min Leveling
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
+Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w50 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_MaxSimultaneousInputsText, Maximum simultaneous F keys inputs during MinLevel
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
+Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w50 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_MinLevelTimeoutText, MinLevel timeout (ms)
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit6 vBrivGemFarm_LevelUp_BrivMinLevelStacking gBrivGemFarm_LevelUp_BrivMinLevelStacking
+Gui, ICScriptHub:Add, ComboBox, xs+%leftAlign% y+%ySpacing% w50 Limit5 hwndHBrivGemFarmLevelUpBrivMinLevelStacking vCombo_BrivGemFarmLevelUpBrivMinLevelStacking gBrivGemFarm_LevelUp_MinMax_Clamp
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_BrivMinLevelStackingText, Briv MinLevel before stacking
 GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w45 Limit4 vBrivGemFarm_LevelUp_BrivMinLevelArea gBrivGemFarm_LevelUp_BrivMinLevelArea
+Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w50 Limit4 vBrivGemFarm_LevelUp_BrivMinLevelArea gBrivGemFarm_LevelUp_BrivMinLevelArea
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_BrivMinLevelAreaText, Minimum area to reach before leveling Briv
 GuiControlGet, pos, ICScriptHub:Pos, BrivGemFarm_LevelUp_BrivMinLevelArea
@@ -156,6 +158,21 @@ CheckComboStatus(W)
                 GuiControl, ICScriptHub:ChooseString, %choice%, % "|" . choice
         }
     }
+    else
+    {
+        ctrlH := HBrivGemFarmLevelUpBrivMinLevelStacking
+        SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlH%
+        if (Errorlevel AND ((W >> 16) & 0xFFFF == CBN_SELENDCANCEL))
+        {
+            k := "BrivMinLevelStacking"
+            brivMinLevelStacking := g_BrivGemFarm_LevelUp.TempSettings.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
+            SendMessage, CB_GETCOUNT, 0, 0,, ahk_id %ctrlH%
+            count := Errorlevel
+            GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % brivMinLevelStacking ; Add item
+            GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % brivMinLevelStacking ; so only the level is kept in edit
+            PostMessage, CB_DELETESTRING, count, 0,, ahk_id %ctrlH% ; Remove item
+        }
+    }
 }
 
 ; Switch names
@@ -194,8 +211,6 @@ BrivGemFarm_LevelUp_MinMax_Clamp()
         Gui, ICScriptHub:Submit, NoHide
         return
     }
-    clamped := clamped <= 0 ? 0 : clamped
-    clamped := clamped > 999999 ? 999999 : clamped
     if (clamped != value)
         GuiControl, ICScriptHub:Text, %A_GuiControl%, % clamped
     split := StrSplit(A_GuiControl, "_")
@@ -206,6 +221,8 @@ BrivGemFarm_LevelUp_MinMax_Clamp()
             g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "minLevels", heroId], clamped)
         Case "BrivGemFarmLevelUpMaxLevel":
             g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "maxLevels", heroId], clamped)
+        Case "BrivGemFarmLevelUpBrivMinLevelStacking":
+            g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelStacking", clamped)
         Default:
             return
     }
@@ -339,19 +356,6 @@ BrivGemFarm_LevelUp_MinLevelTimeout()
         GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % beforeSubmit
     else
         g_BrivGemFarm_LevelUp.TempSettings.AddSetting("MinLevelTimeout", minLevelTimeout)
-}
-
-; Minimum Briv level to reach before stacking
-BrivGemFarm_LevelUp_BrivMinLevelStacking()
-{
-    global
-    local beforeSubmit := BrivGemFarm_LevelUp_BrivMinLevelStacking
-    Gui, ICScriptHub:Submit, NoHide
-    local brivMinLevelStacking := BrivGemFarm_LevelUp_BrivMinLevelStacking
-    if brivMinLevelStacking is not digit
-        GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelStacking, % beforeSubmit
-    else
-        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelStacking", brivMinLevelStacking)
 }
 
 ; BrivMinLevelArea

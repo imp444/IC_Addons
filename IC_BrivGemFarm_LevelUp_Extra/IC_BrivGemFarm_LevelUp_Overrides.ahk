@@ -146,9 +146,10 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SF.DirectedInput(,,inputValues)
                 counter++
             }
+            this.DoPartySetupMax(2)
         }
-        while ( !this.DoPartySetupMax(2) AND ElapsedTime < 5000 )
-           ElapsedTime := A_TickCount - StartTime
+        while (!this.DoPartySetupMax(2) AND (A_TickCount - StartTime) < 5000)
+           Sleep, 30
         return
     }
 

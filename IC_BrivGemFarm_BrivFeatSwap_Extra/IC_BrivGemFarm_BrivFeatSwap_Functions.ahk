@@ -1,17 +1,37 @@
+#include *i %A_LineFile%\..\..\IC_BrivGemFarm_LevelUp_Extra\IC_BrivGemFarm_LevelUp_Functions.ahk
+
 ; Functions that allow Q/E swaps with Briv in E formation
 class IC_BrivGemFarm_BrivFeatSwap_Functions
 {
     static Injected := false
 
     ; Adds IC_BrivGemFarm_BrivFeatSwap_Addon.ahk to the startup of the Briv Gem Farm script.
-    InjectAddon()
+    InjectAddon(external := false)
     {
-        if (this.Injected) ; Only once, can be set by BrivGemFarm_LevelUp
+        if (this.Injected OR this.CheckForLevelUpAddon() AND !external) ; Load LevelUp before this addon
             return
         splitStr := StrSplit(A_LineFile, "\")
         addonDirLoc := splitStr[(splitStr.Count()-1)]
         addonLoc := "#include *i %A_LineFile%\..\..\" . addonDirLoc . "\IC_BrivGemFarm_BrivFeatSwap_Addon.ahk`n"
         FileAppend, %addonLoc%, %g_BrivFarmModLoc%
+        this.Injected := true
+    }
+
+    ; Returns true if the BrivGemFarm LevelUp addon is enabled in Addon Management or in the AddOnsIncluded.ahk file
+    CheckForLevelUpAddon()
+    {
+        static AddOnsIncludedConfigFile := % A_LineFile . "\..\..\AddOnsIncluded.ahk"
+        static AddonName := "BrivGemFarm LevelUp"
+
+        if (IsObject(AM := AddonManagement)) ; Look for enabled BrivGemFarm LevelUp addon
+            for k, v in AM.EnabledAddons
+                if (v.Name == AddonName)
+                    return true
+        if (FileExist(AddOnsIncludedConfigFile)) ; Try in the AddOnsIncluded file
+            Loop, Read, %AddOnsIncludedConfigFile%
+                if InStr(A_LoopReadLine, "#include *i %A_LineFile%\..\IC_BrivGemFarm_LevelUp_Extra\IC_BrivGemFarm_LevelUp_Component.ahk")
+                    return true
+        return false
     }
 }
 
@@ -69,7 +89,7 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
     ; Stops progress and switches to appropriate party to prepare for stacking Briv's SteelBones.
     StackFarmSetup(params*)
     {
-        base.StackFarmSetup(params*)
+        this.base.StackFarmSetup(params*)
         if (g_SF.IsCurrentFormation(g_SF.Memory.GetFormationByFavorite(2)))
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(2)
     }
@@ -83,7 +103,9 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     ; Update target values from file on launch
     BrivFeatSwap_Init()
     {
-        settings := g_SF.LoadObjectFromJSON(A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json")
+        if (g_SharedData.BrivGemFarmLevelUpRunning()) ; LevelUp addon check
+            IC_BrivGemFarm_BrivFeatSwap_Class.base := IC_BrivGemFarm_LevelUp_Class
+        settings := this.LoadObjectFromJSON(A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json")
         if (!IsObject(settings))
             return false
         g_SharedData.UpdateTargetAmounts(settings.targetQ, settings.targetE)
@@ -115,6 +137,9 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(1)
             return
         }
+        ; Prevent incorrect read if Briv is the only champion leveled in Q/E (e.g. using "Level Briv/Shandie to MinLevel first" LevelUp addon option)
+        if (this.Memory.ReadCurrentZone() == 1)
+            return
         isFormation2 := this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2))
         isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( this.Memory.ReadCurrentZone(), 50) == 0 ? 50 : Mod( this.Memory.ReadCurrentZone(), 50)] == 0
         ; check to swap briv from favorite 2 to favorite 3 (W to E)

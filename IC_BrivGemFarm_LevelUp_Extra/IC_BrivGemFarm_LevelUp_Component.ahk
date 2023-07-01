@@ -1,8 +1,15 @@
-﻿#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_GUI.ahk
+﻿#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_Functions.ahk
+#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_GUI.ahk
 #include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_DefinesLoader.ahk
-#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_Functions.ahk
 
-IC_BrivGemFarm_LevelUp_Functions.InjectAddon()
+; Test to see if BrivGemFarm addon is avaialbe.
+if(IsObject(IC_BrivGemFarm_Component))
+    IC_BrivGemFarm_LevelUp_Functions.InjectAddon()
+else
+{
+    GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusText, WARNING: This addon needs IC_BrivGemFarm enabled.
+    return
+}
 
 global g_BrivGemFarm_LevelUp := new IC_BrivGemFarm_LevelUp_Component
 global g_DefinesLoader := new IC_BrivGemFarm_LevelUp_DefinesLoader

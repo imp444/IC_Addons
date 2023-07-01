@@ -27,12 +27,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_SF.GameStartFormation := g_BrivUserSettings[ "BrivJumpBuffer" ] > 0 ? 3 : 1
         g_SaveHelper.Init() ; slow call, loads briv dictionary (3+s)
         formationModron := g_SF.Memory.GetActiveModronFormation()
-        if (!IsObject(IC_BrivGemFarm_BrivFeatSwap_Class) AND IC_BrivGemFarm_LevelUp_Functions.CheckForBrivFeatSwapAddon())
-        {
-            str := "It looks like you are using BrivGemFarm Briv Feat Swap addon, but it is not loaded yet. Please try again.`n"
-            MsgBox, % str . "Try to move BrivGemFarm Briv Feat Swap before BrivGemFarm_LevelUp in Addon Management so this doesn't happen again."
-            return
-        }
         if (this.PreFlightCheck() == -1) ; Did not pass pre flight check.
             return -1
         g_PreviousZoneStartTime := A_TickCount
@@ -49,6 +43,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
             {
                 g_SharedData.SaveFormations()
+                g_SharedData.SwapsMadeThisRun := 0
                 g_SharedData.BossesHitThisRun := 0
                 g_SF.ToggleAutoProgress( 0, false, true )
                 g_SharedData.StackFail := this.CheckForFailedConv()
@@ -67,7 +62,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 this.StackFailRetryAttempt := 0
                 StartTime := g_PreviousZoneStartTime := A_TickCount
                 PreviousZone := 1
-                g_SharedData.SwapsMadeThisRun := 0
                 g_SharedData.TriggerStart := false
                 g_SharedData.LoopString := "Main Loop"
             }

@@ -1,3 +1,5 @@
+#include %A_LineFile%\..\IC_BrivGemFarm_BrivFeatSwap_Functions.ahk
+
 GUIFunctions.AddTab("Briv Feat Swap")
 
 ; Add GUI fields to this addon's tab.
@@ -56,9 +58,15 @@ BrivGemFarm_BrivFeatSwap_Save()
 
 ; Test to see if BrivGemFarm addon is avaialbe.
 if(IsObject(IC_BrivGemFarm_Component))
+{
+    IC_BrivGemFarm_BrivFeatSwap_Functions.InjectAddon()
     global g_BrivFeatSwap := new IC_BrivGemFarm_BrivFeatSwap_Component
+}
 else
+{
     GuiControl, ICScriptHub:Text, BrivFeatSwapStatusText, WARNING: This addon needs IC_BrivGemFarm enabled.
+    return
+}
 
 /*  IC_BrivGemFarm_BrivFeatSwap_Component
 
@@ -145,7 +153,3 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
     }
 }
-
-IC_BrivGemFarm_BrivFeatSwap_Functions.InjectAddon()
-
-#include %A_LineFile%\..\IC_BrivGemFarm_BrivFeatSwap_Functions.ahk

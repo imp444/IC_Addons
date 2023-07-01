@@ -118,14 +118,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         isFormation2 := this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2))
         isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( this.Memory.ReadCurrentZone(), 50) == 0 ? 50 : Mod( this.Memory.ReadCurrentZone(), 50)] == 0
         ; check to swap briv from favorite 2 to favorite 3 (W to E)
-        if (g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetE" ] AND isFormation2 AND isWalkZone)
+        if (isFormation2 AND isWalkZone)
         {
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(2)
             this.DirectedInput(,,["{e}"]*)
             return
         }
         ; check to swap briv from favorite 2 to favorite 1 (W to Q)
-        if (g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetQ" ] AND isFormation2 AND !isWalkZone)
+        if (isFormation2 AND !isWalkZone)
         {
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(2)
             this.DirectedInput(,,["{q}"]*)

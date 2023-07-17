@@ -1,3 +1,6 @@
+July 17, 2023 - v1.1.2
+    Updated to ignore warnings when updating IC_BrivGemFarm_Class.
+
 July 01, 2023 - v1.1.1
     Fixed swapping to Q/E after stacking if not using 4J feat in W.
     Updated BrivFeatSwap to always load after LevelUp addon if both of them are enabled.

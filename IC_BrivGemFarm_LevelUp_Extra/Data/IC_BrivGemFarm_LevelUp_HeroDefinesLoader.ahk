@@ -1,15 +1,18 @@
 ﻿; Functions used to load hero definitions into the GUI
-class IC_BrivGemFarm_LevelUp_DefinesLoader
+class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
 {
     static cachedFileName := "cached_definitions.json"
     static rootCachedPath := "\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . IC_BrivGemFarm_LevelUp_DefinesLoader.cachedFileName
     static DEFS_LOAD_FAIL := -1
     static FILE_LOAD := 0
-    static HERO_DEFS := 1
-    static UPGRADE_DEFS := 2
-    static EFFECT_DEFS := 3
-    static EFFECT_KEY_DEFS := 4
-    static DEFS_LOAD_SUCCESS := 5
+    static TEXT_DEFS := 1
+    static HERO_DEFS := 2
+    static ATTACK_DEFS := 3
+    static UPGRADE_DEFS := 4
+    static EFFECT_DEFS := 5
+    static EFFECT_KEY_DEFS := 6
+    static DEFS_LOAD_SUCCESS := 7
+    static HERO_DATA_FINISHED := 8
 
     CachedHeroDefines := ""
     HeroDefines := ""
@@ -136,13 +139,13 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
     */
     CreateHeroDefs()
     {
-        static state := IC_BrivGemFarm_LevelUp_DefinesLoader.FILE_LOAD
+        static state := IC_BrivGemFarm_LevelUp_HeroDefinesLoader.FILE_LOAD
         static index := 0
         static maxIndex := 0
         static defs := ""
         static trimmedHeroDefs := ""
 
-        if (state == IC_BrivGemFarm_LevelUp_DefinesLoader.FILE_LOAD)
+        if (state == this.FILE_LOAD)
         {
             this.UpdateLoading("Loading new definitions...")
             defs := this.CachedHeroDefines
@@ -150,39 +153,73 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
             {
                 fileName := this.FindCachedDefinitionsPath()
                 if (!FileExist(fileName))
-                    return IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL
+                    return this.DEFS_LOAD_FAIL
                 FileRead, contents, %fileName%
                 defs := this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
                 if (defs == "")
-                    return IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL
+                    return this.DEFS_LOAD_FAIL
             }
-            state := IC_BrivGemFarm_LevelUp_DefinesLoader.HERO_DEFS
-            return IC_BrivGemFarm_LevelUp_DefinesLoader.HERO_DEFS
+            state := this.TEXT_DEFS
+            return this.TEXT_DEFS
         }
-        if (state == IC_BrivGemFarm_LevelUp_DefinesLoader.HERO_DEFS)
+        if (state == this.TEXT_DEFS)
+        {
+            this.UpdateLoading("Loading new definitions... Loading text")
+            trimmedHeroDefs := {}
+            ; Text definitions
+            text_defines := {}
+            for k, v in defs.text_defines
+            {
+                key := v.key
+                v.Delete("id")
+                v.Delete("key")
+                text_defines[key] := v
+            }
+            trimmedHeroDefs.text_defines := text_defines
+            state := this.HERO_DEFS
+            return this.HERO_DEFS
+        }
+        if (state == this.HERO_DEFS)
         {
             this.UpdateLoading("Loading new definitions... Loading heroes")
-            trimmedHeroDefs := {}
             ; Hero definitions
             hero_defines := {}
             for k, v in defs.hero_defines
             {
                 if (RegExMatch(v.name, "Y\d+E\d+") OR ErrorLevel != 0) ; skip placeholder
                     continue
-                obj := {name:v.name, seat_id:v.seat_id}
+                obj := {name:v.name, seat_id:v.seat_id, ultimate_attack_id:v.ultimate_attack_id}
                 if (v.properties.allow_time_gate != "" AND v.properties.allow_time_gate != -1)
                     obj.allow_time_gate := v.properties.allow_time_gate
                 hero_defines[v.id] := obj
             }
             trimmedHeroDefs.hero_defines := hero_defines
-            state := IC_BrivGemFarm_LevelUp_DefinesLoader.UPGRADE_DEFS
-            return IC_BrivGemFarm_LevelUp_DefinesLoader.UPGRADE_DEFS
+            state := this.ATTACK_DEFS
+            return this.ATTACK_DEFS
         }
-        if (state == IC_BrivGemFarm_LevelUp_DefinesLoader.UPGRADE_DEFS)
+        if (state == this.ATTACK_DEFS)
+        {
+            this.UpdateLoading("Loading new definitions... Loading attacks")
+            ; Text definitions
+            attack_defines := {}
+            for k, v in defs.attack_defines
+            {
+                obj := {}
+                for k1, v1 in ["description", "long_description", "name"]
+                    if (v.HasKey(v1) AND v[v1] != "")
+                        obj[v1] := v[v1]
+                attack_defines[v.id] := obj
+            }
+            trimmedHeroDefs.attack_defines := attack_defines
+            state := this.UPGRADE_DEFS
+            return this.UPGRADE_DEFS
+        }
+        if (state == this.UPGRADE_DEFS)
         {
             ; Upgrade definitions
             if (index == 0)
             {
+                trimmedHeroDefs.upgrade_defines := {}
                 maxIndex := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.UpgradeFilter.Length()
                 this.UpdateLoading("Loading new definitions... Loading upgrades " . index . "/" . maxIndex)
             }
@@ -190,40 +227,70 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
             {
                 for k, v in defs[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.UpgradeFilter[++index]]
                 {
-                    if (v.required_upgrade_id == 9999)
-                        continue
-                    heroDef := trimmedHeroDefs.hero_defines[v.hero_id]
-                    if (!heroDef.HasKey("upgrades"))
-                        heroDef.upgrades := {}
-                    obj := {required_level:v.required_level}
+                    hero_id := v.hero_id, required_level := v.required_level
+                    obj := {hero_id:hero_id, required_level:required_level}
+                    heroDef := trimmedHeroDefs.hero_defines[hero_id]
                     if (v.name != "")
                         obj.name := v.name
-                    if (v.effect != "" AND RegExMatch(v.effect, "set_ultimate_attack")) ; fill old data struct
+                    if (v.upgrade_type != "")
+                        obj.upgrade_type := v.upgrade_type
+                    if ((effect := v.effect) != "")
                     {
-                        split := StrSplit(v.effect, ",")
-                        for k1, v1 in defs.attack_defines
+                        if (RegExMatch(effect, "effect_string")) ; Convert string to Object
                         {
-                            if (v1.id == split[2])
+                            fixedEffect := {}, nextPos := 1
+                            regexChar := "\\u([0-9a-f]+)"
+                            while (RegExMatch(effect, "O)" . regexChar, matchO))
                             {
-                                obj.name := v1.name
-                                break
+                                char := Chr("0x" . matchO[1])
+                                effect := StrReplace(effect, matchO[0], char,, 1)
                             }
+                            regex := "O)""\b([^""]+)""\B:(?:\s?)+""?([^""]+)(?:""|,|})\B"
+                            while (nextPos := RegExMatch(effect, regex, matchO, nextPos) + matchO.len())
+                                fixedEffect[matchO.value(1)] := matchO.value(2)
+                            v.effect := fixedEffect
                         }
+                        obj.effect := v.effect
                     }
                     if (v.specialization_name)
                         obj.specialization_name := v.specialization_name
+                    if (v.specialization_description)
+                        obj.specialization_description := v.specialization_description
                     if (v.tip_text)
                         obj.tip_text := v.tip_text
-                    if (v.effect != "")
-                        obj.effect := v.effect
-                    heroDef.upgrades[v.id] := obj
+                    trimmedHeroDefs.upgrade_defines[v.id] := obj
+                    if (required_level == 9999)
+                        continue
+                    if (heroDef.tempUpgrades.HasKey(required_level))
+                    {
+                        if (IsObject(heroDef.tempUpgrades[required_level]))
+                            heroDef.tempUpgrades[required_level].Push(v.id)
+                        else
+                            heroDef.tempUpgrades[required_level] := [heroDef.tempUpgrades[required_level], v.id]
+                    }
+                    else
+                        heroDef.tempUpgrades[required_level] := v.id
                 }
                 this.UpdateLoading("Loading new definitions... Loading upgrades " . index . "/" . maxIndex)
-                return IC_BrivGemFarm_LevelUp_DefinesLoader.UPGRADE_DEFS
+                return this.UPGRADE_DEFS
             }
-            state := IC_BrivGemFarm_LevelUp_DefinesLoader.EFFECT_DEFS, index := 0, maxIndex := 0
+            ; Sorted upgrades by required_level
+            for k, v in trimmedHeroDefs.hero_defines
+            {
+                upgrades := []
+                for k1, v1 in v.tempUpgrades
+                {
+                    if (IsObject(v1))
+                        upgrades.Push(v1*)
+                    else
+                        upgrades.Push(v1)
+                }
+                v.upgrades := upgrades
+                v.Delete("tempUpgrades")
+            }
+            state := this.EFFECT_DEFS, index := 0, maxIndex := 0
         }
-        if (state == IC_BrivGemFarm_LevelUp_DefinesLoader.EFFECT_DEFS)
+        if (state == this.EFFECT_DEFS)
         {
             ; Effect definitions
             if (index == 0)
@@ -240,36 +307,33 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
                     v.Delete("id")
                     v.Delete("graphic_id")
                     for k1, v1 in ["description", "effect_keys", "flavour_text", "properties", "requirements"]
-                    {
                         if (v.HasKey(v1) AND (v[v1] == "" OR v[v1].Count() == 0))
                             v.Delete(v1)
-                    }
                     trimmedHeroDefs.effect_defines[id] := v
                 }
                 this.UpdateLoading("Loading new definitions... Loading upgrade effects " . index . "/" . maxIndex)
-                return IC_BrivGemFarm_LevelUp_DefinesLoader.EFFECT_DEFS
+                return this.EFFECT_DEFS
             }
-            state := IC_BrivGemFarm_LevelUp_DefinesLoader.EFFECT_KEY_DEFS, index := 0, maxIndex := 0
+            state := this.EFFECT_KEY_DEFS, index := 0, maxIndex := 0
         }
         ; Effect key definitions
         trimmedHeroDefs.effect_key_defines := {}
         for k, v in defs.effect_key_defines
         {
-            id := v.id
+            key := v.key
             v.Delete("id")
-            for k1, v1 in ["descriptions", "key", "owner", "param_names", "properties"]
-            {
+            v.Delete("key")
+            for k1, v1 in ["descriptions", "owner", "param_names", "properties"]
                 if (v.HasKey(v1) AND (v[v1] == "" OR v[v1].Count() == 0))
                     v.Delete(v1)
-            }
-            trimmedHeroDefs.effect_key_defines[id] := v
+            trimmedHeroDefs.effect_key_defines[key] := v
         }
         lastUpdateString := "Last updated: " . A_YYYY . "/" A_MM "/" A_DD " at " A_Hour . ":" A_Min
         Status := lastUpdateString
         g_BrivGemFarm_LevelUp.UpdateLastUpdated(lastUpdateString, true)
         this.HeroDefines := trimmedHeroDefs
-        this.CachedHeroDefines := "", defs := "", trimmedHeroDefs := "", state := IC_BrivGemFarm_LevelUp_DefinesLoader.FILE_LOAD
-        return IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_SUCCESS
+        this.CachedHeroDefines := "", defs := "", trimmedHeroDefs := "", state := this.FILE_LOAD
+        return this.DEFS_LOAD_SUCCESS
     }
 
     /*  ReadOrCreateHeroDefs - Read/Write definitions from/to HeroDefines.json
@@ -280,17 +344,15 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
     */
     ReadOrCreateHeroDefs(silent := true, create := false)
     {
-        static state := 0
+        static state := IC_BrivGemFarm_LevelUp_HeroDefinesLoader.FILE_LOAD
 
         this.PauseOrResume(0)
-        if (create)
-            state := 0
-        if (state == 0)
+        if (state == this.FILE_LOAD)
         {
             if (!create)
                 this.HeroDefines := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath)
-            heroDefsLoaded := create OR !IsObject(this.HeroDefines) ? g_DefinesLoader.CreateHeroDefs() : IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_SUCCESS
-            if (heroDefsLoaded == IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_FAIL)
+            heroDefsLoaded := create OR !IsObject(this.HeroDefines) ? g_DefinesLoader.CreateHeroDefs() : this.DEFS_LOAD_SUCCESS
+            if (heroDefsLoaded == this.DEFS_LOAD_FAIL)
             {
                 if (this.HeroDefines == "")
                     this.UpdateLoading("WARNING: Could not load cached_definitions. Click on 'load definitions' to resume.`nThis file should be located in your game folder under: " . this.rootCachedPath)
@@ -300,115 +362,42 @@ class IC_BrivGemFarm_LevelUp_DefinesLoader
                 g_BrivGemFarm_LevelUp.OnHeroDefinesFailed()
                 return
             }
-            else if (heroDefsLoaded != IC_BrivGemFarm_LevelUp_DefinesLoader.DEFS_LOAD_SUCCESS)
+            else if (heroDefsLoaded != this.DEFS_LOAD_SUCCESS)
             {
                 this.PauseOrResume(1)
                 return
             }
-            this.PauseOrResume(0)
-            state := 1
+            state := this.DEFS_LOAD_SUCCESS
+            this.PauseOrResume(1)
+            return
         }
-        this.Stop()
-        if (state == 1)
+        if (state == this.DEFS_LOAD_SUCCESS)
         {
-            for k, v in this.HeroDefines.hero_defines
-                IC_BrivGemFarm_LevelUp_Seat.AddChampionData(new IC_BrivGemFarm_LevelUp_HeroData(k, v))
+            g_HeroDefines.Init(this.HeroDefines)
             IC_BrivGemFarm_LevelUp_Seat.OnHeroDefinesFinished()
+            state := this.HERO_DATA_FINISHED
+            this.PauseOrResume(1)
+            return
+        }
+        if (state == this.HERO_DATA_FINISHED)
+        {
+            this.Stop()
+            state := this.FILE_LOAD
             if (create)
-                g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath, this.HeroDefines)
+                this.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath, this.HeroDefines)
         }
+    }
+
+    ;Writes beautified json (object) to a file (FileName)
+    WriteObjectToJSON(FileName, ByRef object)
+    {
+        objectJSON := JSON.stringify( object )
+        objectJSON := JSON.Beautify( objectJSON )
+        FileDelete, %FileName%
+        FileAppend, %objectJSON%, %FileName%, UTF-8
+        return
     }
 }
-
-; Class that contains the data of a champion
-Class IC_BrivGemFarm_LevelUp_HeroData
-{
-    static HeroDataByID := {}
-
-    LastUpgradeLevel := ""
-    UpgradesList := ""
-
-    __New(id, heroData)
-    {
-        this.ID := id
-        this.Name := heroData.name
-        this.Seat_id := heroData.seat_id
-        this.Allow_time_gate := heroData.allow_time_gate
-        this.Upgrades := this.BuildUpgrades(heroData.upgrades)
-        IC_BrivGemFarm_LevelUp_HeroData.HeroDataByID[id] := this
-    }
-
-    BuildUpgrades(data)
-    {
-        upgrades := {}, lastUpgradeLevel := 0, maxUpgradeLevelDigits := 0, listContents := "", specializations := {}
-        for upgradeKey, upgrade in data
-        {
-            level := upgrade.required_level
-            if (level == "")
-                continue
-            lastUpgradeLevel := Max(level, lastUpgradeLevel)
-            maxUpgradeLevelDigits := Max(maxUpgradeLevelDigits, StrLen(level))
-        }
-        this.LastUpgradeLevel := lastUpgradeLevel
-        for upgradeKey, upgrade in data
-        {
-            ; upgradeData := new IC_BrivGemFarm_LevelUp_UpgradeData(upgradeKey, upgrade)
-            level := levelStr := upgrade.required_level
-            if (level == "")
-                continue
-            s := ""
-            if (upgrade.specialization_name)
-            {
-                if (specializations[level] == "")
-                    specializations[level] := 1
-                levelStr .=  "." . specializations[level]
-                s .= "↰↱ " . specializations[level]++ . "." . upgrade.specialization_name
-            }
-            else if (upgrade.name)
-                s .= "★  " . upgrade.name
-            if (upgrade.effect)
-            {
-                split := StrSplit(upgrade.effect, ",")
-                if (split[1] == "health_add")
-                    s .= "♥ Health +" . split[2]
-                else if (split[1] == "hero_dps_multiplier_mult")
-                    s .= "🗡️ Damage +" . split[2] . "%"
-                else if (split[1] == "global_dps_multiplier_mult")
-                    s .= "⚔️ Global Damage +" . split[2] . "%"
-                else if (split[1] == "set_ultimate_attack")
-                    s := "⚡️ " . upgrade.name
-                else if (split[1] == "buff_ultimate")
-                    s := "++ Ultimate damage +" split[2] . "%"
-                else if (split[1] == "buff_upgrade")
-                    s := "++ " . data[split[3]].name . " + " split[2] . "%"
-                else if (split[1] == "increase_revive_effect_post_stack")
-                    s := "++ " . data[split[3]].name . " + " split[2] . "%"
-            }
-            p := "" ; Longest number has no padding before ':'
-            Loop, % 2 * (maxUpgradeLevelDigits - StrLen(level)) ; 2 pixels per digit
-                p .= " "
-            listContents .= levelStr . p . ": " . s . "|"
-        }
-        Sort, listContents, N D|
-        this.UpgradesList := RegExReplace(listContents, "((\d)+)(\.)(\d)+", "$1") ; Remove specialization sort string
-        return upgrades
-    }
-}
-
-;; Class that contains all upgrades data of a champion
-;Class IC_BrivGemFarm_LevelUp_UpgradeData
-;{
-;    __New(id, upgradeData)
-;    {
-;        this.ID := id
-;        this.Level := upgradeData.required_level
-;        this.Name := upgradeData.name
-;        this.Effect := upgradeData.effect
-;        if (upgradeData.specialization_name)
-;            this.Specialization := upgradeData.specialization_name
-;        this.ShortDescription := ""
-;    }
-;}
 
 ; Modified JSON class with parent/child key filters
 Class IC_BrivGemFarm_LevelUp_CachedDefinitionsReader extends JSON
@@ -419,6 +408,7 @@ Class IC_BrivGemFarm_LevelUp_CachedDefinitionsReader extends JSON
     static EffectFilter := ""
     static EffectKeyFilter := "effect_key_defines"
     static AttackFilter := "attack_defines"
+    static TextFilter := "text_defines"
 
     parse(script, js := false, filter := "")  {
 		if jsObject := this.verify(script)
@@ -470,6 +460,7 @@ Class IC_BrivGemFarm_LevelUp_CachedDefinitionsReader extends JSON
 	    childrenFilter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.HeroFilter] := ""
 	    childrenFilter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.EffectKeyFilter] := ""
 	    childrenFilter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.AttackFilter] := ""
+	    childrenFilter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.TextFilter] := ""
 	    for k, v in IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.UpgradeFilter
 	        childrenFilter[v] := ""
 	    for k, v in IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.EffectFilter
@@ -486,6 +477,7 @@ Class IC_BrivGemFarm_LevelUp_CachedDefinitionsReader extends JSON
 	    filter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.HeroFilter] := ""
 	    filter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.EffectKeyFilter] := ""
 	    filter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.AttackFilter] := ""
+	    filter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.TextFilter] := ""
 	    for k, v in IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.UpgradeFilter
 	        filter[v] := ""
 	    for k, v in IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.EffectFilter

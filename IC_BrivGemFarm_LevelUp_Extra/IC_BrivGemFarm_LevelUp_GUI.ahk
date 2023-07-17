@@ -1,10 +1,15 @@
+SM_CXVSCROLL := 2
+CBN_DROPDOWN := 7
 CBN_SELENDCANCEL := 10
 WM_COMMAND := 0x0111
 CB_DELETESTRING := 0x0144
 CB_GETCOUNT := 0x146
+CB_GETCURSEL := 0x147
+CB_GETDROPPEDCONTROLRECT := 0x0152
 CB_SETITEMHEIGHT := 0x0153
 CB_GETDROPPEDSTATE := 0x0157
 CB_SETDROPPEDWIDTH := 0x0160
+CB_GETCOMBOBOXINFO := 0x0164
 
 GUIFunctions.AddTab("BrivGF LevelUp")
 ; Add GUI fields to this addon's tab.
@@ -121,58 +126,117 @@ Gui, ICScriptHub:Add, Button, xs-%xSection% y+%yLoadDefinitionsSpacing% Disabled
 Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R3 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
 
 OnMessage(WM_COMMAND, "CheckComboStatus")
+OnMessage(0x200, Func("CheckComboStatus"))
 
-; Refresh min/max values after a ComboBox sends a selection cancel event to the parent tab
+; Checks performed on combo mouseover / selection cancel
 CheckComboStatus(W)
+{
+    global
+    local arr := GetCurrentlyDroppedCombo()
+    if (local seat_ID := arr[1])
+    {
+        if ((W >> 16) & 0xFFFF == CBN_SELENDCANCEL) ; Refresh min/max values after a ComboBox sends a selection cancel event to the parent tab
+        {
+            ToolTip
+            if (seat_ID == 58)
+            {
+                local ctrlH := arr[2], k := "BrivMinLevelStacking"
+                local brivMinLevelStacking := g_BrivGemFarm_LevelUp.TempSettings.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
+                SendMessage, CB_GETCOUNT, 0, 0,, ahk_id %ctrlH%
+                local count := Errorlevel
+                GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % brivMinLevelStacking ; Add item
+                GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % brivMinLevelStacking ; so only the level is kept in edit
+                PostMessage, CB_DELETESTRING, count, 0,, ahk_id %ctrlH% ; Remove item
+            }
+            else
+            {
+                local choice := % DDL_BrivGemFarmLevelUpName_%seat_ID%
+                if (choice == g_HeroDefines.HeroDataByID[58].name) ; After %choice%, ErrorLevel is set to 1 for an unknown reason
+                    GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_5, % "|" . choice
+                else
+                    GuiControl, ICScriptHub:ChooseString, %choice%, % "|" . choice
+            }
+        }
+        else if (MouseOverComboBoxList(ctrlH := arr[2])) ; Show current selection as tooltip
+        {
+            OnMessage(0x200, "CheckControlForToolTip",0)
+            SetTimer, RemoveToolTip, -500
+            SendMessage, CB_GETCURSEL, 0, 0,, ahk_id %ctrlH%
+            local currentSel := ErrorLevel ; 0 based
+            heroData := IC_BrivGemFarm_LevelUp_Seat.Seats[(seat_ID == 58 ? 5 : seat_ID)].GetCurrentHeroData()
+            ToolTip, % IC_BrivGemFarm_LevelUp_Functions.WrapText(heroData.UpgradeDescriptionFromIndex(currentSel + 1))
+            SetTimer, HideToolTip, Delete
+            OnMessage(0x200, "CheckControlForToolTip")
+        }
+    }
+}
+
+; Remove comboBox toolip when not hovering
+RemoveToolTip()
+{
+    arr := GetCurrentlyDroppedCombo()
+    MouseGetPos,,,, VarControl ; CheckControlForToolTip()
+    if (!VarControl AND !(arr[1] AND MouseOverComboBoxList(arr[2])))
+        ToolTip
+}
+
+; Returns an array containing the corresponding seatID / control Hwnd of the currently dropped combo
+GetCurrentlyDroppedCombo()
 {
     global
     GuiControlGet, CurrentTab,, ModronTabControl, Tab
     if (CurrentTab != "BrivGF LevelUp")
         return
-    seat_ID := 0
     Loop, 12
     {
-        ctrlH := HBrivGemFarmLevelUpMinLevel_%A_Index%
-        SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlH%
+        local ctrlHwnd := HBrivGemFarmLevelUpMinLevel_%A_Index%
+        SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlHwnd%
         if (Errorlevel)
-        {
-            seat_ID := A_Index
-            break
-        }
-        ctrlH := HBrivGemFarmLevelUpMaxLevel_%A_Index%
-        SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlH%
+            return [A_Index, ctrlHwnd]
+        ctrlHwnd := HBrivGemFarmLevelUpMaxLevel_%A_Index%
+        SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlHwnd%
         if (Errorlevel)
-        {
-            seat_ID := A_Index
-            break
-        }
+            return [A_Index, ctrlHwnd]
     }
-    if (seat_ID)
+    ctrlHwnd := HBrivGemFarmLevelUpBrivMinLevelStacking
+    SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlHwnd%
+    if (Errorlevel)
+        return [58, ctrlHwnd]
+}
+
+; Returns true if the mouse is within the rectangle of a combobox's item list
+MouseOverComboBoxList(controlID)
+{
+    global
+    SysGet, scrollW, %SM_CXVSCROLL% ; Scrollbar width
+    VarSetCapacity(COMBOBOXINFO, size := 40 + A_PtrSize*3, 0)
+    NumPut(size, COMBOBOXINFO)
+    SendMessage, CB_GETCOMBOBOXINFO,, &COMBOBOXINFO,, ahk_id %controlID%
+    local yMaxEdit := NumGet(COMBOBOXINFO, 16, "Int") ; Combo edit height
+    VarSetCapacity(RECT, 16, 0)
+    NumPut(16, RECT)
+    SendMessage, CB_GETDROPPEDCONTROLRECT,, &RECT,, ahk_id %controlID% ; Full combo rect
+    local xMin := NumGet(RECT, 0, "Int")
+    local yMin := NumGet(RECT, 4, "Int") + yMaxEdit
+    local xMax := NumGet(RECT, 8, "Int") - scrollW
+    local yMax := NumGet(RECT, 12, "Int")
+    local height := yMax - yMin
+    local monitor := IC_BrivGemFarm_LevelUp_Functions.GetMonitor(controlID)
+    SysGet, monitorCoords, Monitor, %monitor%
+    if (height >= monitorCoordsBottom) ; List bigger than screen height
     {
-        if ((W >> 16) & 0xFFFF == CBN_SELENDCANCEL)
-        {
-            choice := % DDL_BrivGemFarmLevelUpName_%seat_ID%
-            if (choice == g_DefinesLoader.HeroDefines.hero_defines[58].name) ; After %choice%, ErrorLevel is set to 1 for an unknown reason
-                GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_5, % "|" . choice
-            else
-                GuiControl, ICScriptHub:ChooseString, %choice%, % "|" . choice
-        }
+        yMin := 0
+        yMax := monitorCoordsBottom
     }
-    else
+    else if (yMax > monitorCoordsBottom) ; List opens upwards instead of downwards
     {
-        ctrlH := HBrivGemFarmLevelUpBrivMinLevelStacking
-        SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlH%
-        if (Errorlevel AND ((W >> 16) & 0xFFFF == CBN_SELENDCANCEL))
-        {
-            k := "BrivMinLevelStacking"
-            brivMinLevelStacking := g_BrivGemFarm_LevelUp.TempSettings.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
-            SendMessage, CB_GETCOUNT, 0, 0,, ahk_id %ctrlH%
-            count := Errorlevel
-            GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % brivMinLevelStacking ; Add item
-            GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % brivMinLevelStacking ; so only the level is kept in edit
-            PostMessage, CB_DELETESTRING, count, 0,, ahk_id %ctrlH% ; Remove item
-        }
+        yMax := yMin - yMaxEdit
+        yMin := yMax - height
     }
+    CoordMode, Mouse, Screen
+    MouseGetPos, xPos, yPos
+    CoordMode, Mouse, Client
+    return (xMin <= xPos) AND (xPos <= xMax) AND (yMin <= yPos) AND (yPos <= yMax)
 }
 
 ; Switch names
@@ -181,15 +245,8 @@ BrivGemFarm_LevelUp_Name()
     global
     Gui, ICScriptHub:Submit, NoHide
     local name := % %A_GuiControl%
-    heroDefs := g_DefinesLoader.HeroDefines.hero_defines
-    for k, v in heroDefs
-    {
-        if (v.name == name)
-        {
-            IC_BrivGemFarm_LevelUp_Seat.Seats[v.seat_id].UpdateMinMaxLevels(name)
-            break
-        }
-    }
+    local heroData := g_HeroDefines.HeroDataByName[name]
+    IC_BrivGemFarm_LevelUp_Seat.Seats[heroData.seat_id].UpdateMinMaxLevels(name)
 }
 
 ; Input upgrade level when selected from DDL, then verify that min/max level inputs are in 0-999999 range
@@ -213,8 +270,8 @@ BrivGemFarm_LevelUp_MinMax_Clamp()
     }
     if (clamped != value)
         GuiControl, ICScriptHub:Text, %A_GuiControl%, % clamped
-    split := StrSplit(A_GuiControl, "_")
-    heroId := IC_BrivGemFarm_LevelUp_Seat.Seats[split[3]].GetCurrentHeroData().id
+    local split := StrSplit(A_GuiControl, "_")
+    local heroId := IC_BrivGemFarm_LevelUp_Seat.Seats[split[3]].GetCurrentHeroData().id
     Switch split[2]
     {
         Case "BrivGemFarmLevelUpMinLevel":
@@ -243,7 +300,7 @@ BrivGemFarm_LevelUp_ShowSpoilers()
 {
     global
     Gui, ICScriptHub:Submit, NoHide
-    showSpoilers := BrivGemFarm_LevelUp_ShowSpoilers
+    local showSpoilers := BrivGemFarm_LevelUp_ShowSpoilers
     g_BrivGemFarm_LevelUp.TempSettings.AddSetting("ShowSpoilers", showSpoilers)
     g_BrivGemFarm_LevelUp.ToggleSpoilers(showSpoilers) ; Effect is immediate
 }

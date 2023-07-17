@@ -1,3 +1,7 @@
+July 17, 2023 - v0.5.0
+    Static upgrade descriptions are displayed as tooltips when hovering a champion's upgrade list item.
+    Fixed current displayed formation not being saved properly when reloading definitions.
+
 July 01, 2023 - v0.4.4
     Fixed champions leveling in W formation.
     Updated BrivFeatSwap to always load after LevelUp addon if both of them are enabled.

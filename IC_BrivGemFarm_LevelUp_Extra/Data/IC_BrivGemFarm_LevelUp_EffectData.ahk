@@ -22,7 +22,7 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             text .= this.RawDescriptionFromCondition(descriptions, "desc")
         else if (descriptions.HasKey("conditions"))
         {
-            conditionsTrue := ["static_desc"]
+            conditionsTrue := ["static_desc", "not short_form", "spurt_is_spirit_v2"] ; TODO: Display conditions as radio/checkboxes
             if (this.id == 980 OR this.id == 1126) ; Perfect Imitation / Meat Grinder
                 conditionsTrue.Push("not static_desc")
             if (this.id == 1126) ; Meat Grinder
@@ -553,6 +553,8 @@ Class IC_BrivGemFarm_LevelUp_EffectData
         else if (param1 == "azaka_time")
             repl := this.ValueIfKeyExists(kvps, "time")
         else if param1 in weretiger_description,omin_contractual_obligation_desc,shadow_council_bonus_desc
+            repl := ""
+        else if param1 in chwinga_mask_healing_charm_stacks,chwinga_mask_tools_charm_stacks
             repl := ""
         else if (param1 == "miria_zombie_bodyguards_remaining_amount")
             repl := (value := this.ValueIfKeyExists(kvps, "amount")) != "NOREPL" ? 100 - value : value

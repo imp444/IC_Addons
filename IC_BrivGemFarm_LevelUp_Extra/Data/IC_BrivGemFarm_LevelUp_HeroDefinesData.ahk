@@ -130,7 +130,7 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesData
         for k, v in [d, h, m, s]
         {
             if ((v > 0 OR divCount > 0) AND maxResInt >= k AND divCount < maxDivs)
-		    {
+            {
                 str .= v . arr[k][2 - (v == 1)]
                 ++divCount
             }

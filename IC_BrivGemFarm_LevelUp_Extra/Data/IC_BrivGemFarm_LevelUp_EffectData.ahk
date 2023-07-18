@@ -15,59 +15,59 @@ Class IC_BrivGemFarm_LevelUp_EffectData
 
     RawDescriptionFromConditions(descriptions)
     {
-		text := ""
-		if (descriptions.HasKey("pre"))
-			text .= this.RawDescriptionFromCondition(descriptions, "pre")
-		if (descriptions.HasKey("desc"))
-			text .= this.RawDescriptionFromCondition(descriptions, "desc")
-		else if (descriptions.HasKey("conditions"))
-		{
-		    conditionsTrue := ["static_desc"]
-			if (this.id == 980 OR this.id == 1126) ; Perfect Imitation / Meat Grinder
-			    conditionsTrue.Push("not static_desc")
-			if (this.id == 1126) ; Meat Grinder
-			{
+        text := ""
+        if (descriptions.HasKey("pre"))
+            text .= this.RawDescriptionFromCondition(descriptions, "pre")
+        if (descriptions.HasKey("desc"))
+            text .= this.RawDescriptionFromCondition(descriptions, "desc")
+        else if (descriptions.HasKey("conditions"))
+        {
+            conditionsTrue := ["static_desc"]
+            if (this.id == 980 OR this.id == 1126) ; Perfect Imitation / Meat Grinder
+                conditionsTrue.Push("not static_desc")
+            if (this.id == 1126) ; Meat Grinder
+            {
                 effect := this.effect_keys[1].effect_string
                 split := StrSplit(effect, ",")
                 if (split[1] == "set_ultimate_attack") ; Ultimate
                     text .= g_HeroDefines.AttackDataById(split[2]).FullDescription("")
-			}
-			for k, dictionary in descriptions.conditions
-			{
-				if this.CheckConditionsTrue(dictionary, conditionsTrue)
-				{
-					text .= this.RawDescriptionFromConditions(dictionary)
-					if (this.id == 980 OR this.id == 1126)
-					    text .= (k >= dictionary.Count()) ? "" : "`n`n"
-					else
-					    break
-				}
-			}
-		}
-		if (descriptions.HasKey("post"))
-			text .= this.RawDescriptionFromCondition(descriptions, "post")
-		return text
-	}
+            }
+            for k, dictionary in descriptions.conditions
+            {
+                if this.CheckConditionsTrue(dictionary, conditionsTrue)
+                {
+                    text .= this.RawDescriptionFromConditions(dictionary)
+                    if (this.id == 980 OR this.id == 1126)
+                        text .= (k >= dictionary.Count()) ? "" : "`n`n"
+                    else
+                        break
+                }
+            }
+        }
+        if (descriptions.HasKey("post"))
+            text .= this.RawDescriptionFromCondition(descriptions, "post")
+        return text
+    }
 
-	RawDescriptionFromCondition(descriptions, key)
-	{
-	    isObj := IsObject(desc := descriptions[key])
-		return isObj? this.RawDescriptionFromConditions(desc) : desc
-	}
+    RawDescriptionFromCondition(descriptions, key)
+    {
+        isObj := IsObject(desc := descriptions[key])
+        return isObj? this.RawDescriptionFromConditions(desc) : desc
+    }
 
-	CheckConditionsTrue(dictionary, conditions)
-	{
-	    cd := dictionary.HasKey("desc") AND !dictionary.HasKey("condition")
-	    condition := dictionary.condition
-	    for k, v in conditions
-	        if (v == condition)
-	            cd2 := true
-	    return cd OR cd2
-	}
+    CheckConditionsTrue(dictionary, conditions)
+    {
+        cd := dictionary.HasKey("desc") AND !dictionary.HasKey("condition")
+        condition := dictionary.condition
+        for k, v in conditions
+            if (v == condition)
+                cd2 := true
+        return cd OR cd2
+    }
 
-	GetDescriptionString(upgrade)
-	{
-	    if (IsObject(upgrade.effect) AND upgrade.effect.HasKey("description"))
+    GetDescriptionString(upgrade)
+    {
+        if (IsObject(upgrade.effect) AND upgrade.effect.HasKey("description"))
             description := upgrade.effect.description
         else
         {
@@ -80,10 +80,10 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             description := this.RawDescriptionFromConditions(descriptionStr)
         }
         return this.ParseConditionalDescription(description)
-	}
+    }
 
-	ParseConditionalDescription(description)
-	{
+    ParseConditionalDescription(description)
+    {
         str := ""
         pushCurrent := true
         regex := this.descriptionRegex
@@ -115,15 +115,15 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             subStartPos := nextPos += matchO.len()
         }
         str .= SubStr(description, subStartPos, StrLen(description) - subStartPos + 1)
-	    return Trim(StrReplace(str, "^", "`n"))
-	}
+        return Trim(StrReplace(str, "^", "`n"))
+    }
 
-	GetBaseEffectKeyValuePairs(values*)
-	{
-	    if (!(paramsCount := values.Length()))
-	        return ""
-	    kvps := {}
-	    if (this.HasKey("param_names"))
+    GetBaseEffectKeyValuePairs(values*)
+    {
+        if (!(paramsCount := values.Length()))
+            return ""
+        kvps := {}
+        if (this.HasKey("param_names"))
         {
             param_names := StrSplit(this.param_names, ",")
             Loop, % paramsCount
@@ -149,11 +149,11 @@ Class IC_BrivGemFarm_LevelUp_EffectData
         else
             kvps.amount := values[1]
         return kvps
-	}
+    }
 
-	GetEffectKeyValuePairs(values*)
-	{
-	    if (this.HasKey("effect_keys") AND (keys := this.effect_keys) != "")
+    GetEffectKeyValuePairs(values*)
+    {
+        if (this.HasKey("effect_keys") AND (keys := this.effect_keys) != "")
         {
             indexed := this.properties.indexed_effect_properties
             for k, v in keys
@@ -168,12 +168,12 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             }
         }
         return values
-	}
+    }
 
-	ParseEffectKeys(keys)
-	{
-	    values := {}
-	    for k, v in keys
+    ParseEffectKeys(keys)
+    {
+        values := {}
+        for k, v in keys
             values[k] := v
         if ((effectString := values.effect_string) != "")
         {
@@ -189,7 +189,7 @@ Class IC_BrivGemFarm_LevelUp_EffectData
                 values[k] := v
         }
         return values
-	}
+    }
 
     FullDescription(upgrade, values*)
     {
@@ -265,7 +265,7 @@ Class IC_BrivGemFarm_LevelUp_EffectData
         else if (param1 == "upgrade_value") ; ++
         {
             split := StrSplit(param2, ",")
-		    effectDef := g_HeroDefines.UpgradeDataByID(split[1]).effectDef
+            effectDef := g_HeroDefines.UpgradeDataByID(split[1]).effectDef
             effectString := effectDef.effect_keys[split[2] + 1].effect_string
             repl := StrSplit(effectString, ",")[2]
         }
@@ -462,16 +462,16 @@ Class IC_BrivGemFarm_LevelUp_EffectData
         {
             textDefineByKey := IC_BrivGemFarm_LevelUp_TextData.GetData("amount_stacks", "$amount Stacks")
             repl := "`n`n" . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_stack_bonuses", "Zealot Stack Bonuses") . ": "
-			repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "250")
-			repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_250", "Mark of Tiamat Stuns Enemies for 2 seconds")
-			repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "2,500")
-			repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_2500", "Torogar add a small AOE to his base attack at 50% damage")
-			repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "25,000")
-			repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_25000", "Enemies with Mark of Tiamat have their attack cooldown increased by 1 second")
-			repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "250,000")
-			repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_250000", "Torogar reduces his base attack cooldown by 1 second")
-			repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "2,500,000")
-			repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_2500000", "Damage bonus from mark of Timat increased 200% (multiplicative)")
+            repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "250")
+            repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_250", "Mark of Tiamat Stuns Enemies for 2 seconds")
+            repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "2,500")
+            repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_2500", "Torogar add a small AOE to his base attack at 50% damage")
+            repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "25,000")
+            repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_25000", "Enemies with Mark of Tiamat have their attack cooldown increased by 1 second")
+            repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "250,000")
+            repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_250000", "Torogar reduces his base attack cooldown by 1 second")
+            repl .= "`n- " . StrReplace(textDefineByKey, "$amount", "2,500,000")
+            repl .= ": " . IC_BrivGemFarm_LevelUp_TextData.GetData("zealot_bonus_2500000", "Damage bonus from mark of Timat increased 200% (multiplicative)")
         }
         else if (param1 == "power_armor_max_stacks")
             repl := this.ValueIfKeyExists(kvps, "max_stacks")
@@ -482,13 +482,13 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             repl := IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc", "Each Champion that attacks with the Luck of Yondalla applies a random Lucky Break to enemies they hit for 15 seconds") . ":"
             repl .= "`n- " . IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc_opportunity_1", "Opportunity (Cornucopia): The target takes $amount% more damage per application (stacks multiplicitively).")
             repl := StrReplace(repl, "$amount", this.ValueIfKeyExists(kvps, "opportunity_amount", 0))
-			repl .= " " . IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc_opportunity_2", "The total effect is increased by an additional $amount%.")
+            repl .= " " . IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc_opportunity_2", "The total effect is increased by an additional $amount%.")
             repl := StrReplace(repl, "$amount", this.ValueIfKeyExists(kvps, "opportunity_amount", 0))
-			repl .= "`n- " . IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc_requisition", "Requisition (Fruit): The target drops $amount% more gold per application (stacks multiplicitively).")
-			repl := StrReplace(repl, "$amount", this.ValueIfKeyExists(kvps, "amount", 0))
-			repl .= "`n- " . IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc_follow_through", "Follow Through (Border): Any Champion who attacks the target will have their next base attack cooldown reduced by $timeInSeconds per application.")
-			repl := StrReplace(repl, "$timeInSeconds", this.ValueIfKeyExists(kvps, "follow_through_amount", 0) . IC_BrivGemFarm_LevelUp_TextData.GetData("second_word_abbreviated", "s"))
-			repl .= "`n- " . IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc_stagger", "Stagger (Shield): The target has $amount% per application (stacks additively) chance of being stunned when they are attacked by any champion.")
+            repl .= "`n- " . IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc_requisition", "Requisition (Fruit): The target drops $amount% more gold per application (stacks multiplicitively).")
+            repl := StrReplace(repl, "$amount", this.ValueIfKeyExists(kvps, "amount", 0))
+            repl .= "`n- " . IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc_follow_through", "Follow Through (Border): Any Champion who attacks the target will have their next base attack cooldown reduced by $timeInSeconds per application.")
+            repl := StrReplace(repl, "$timeInSeconds", this.ValueIfKeyExists(kvps, "follow_through_amount", 0) . IC_BrivGemFarm_LevelUp_TextData.GetData("second_word_abbreviated", "s"))
+            repl .= "`n- " . IC_BrivGemFarm_LevelUp_TextData.GetData("yondalla_desc_stagger", "Stagger (Shield): The target has $amount% per application (stacks additively) chance of being stunned when they are attacked by any champion.")
             repl := StrReplace(repl, "$amount", this.ValueIfKeyExists(kvps, "stagger_amount", 0))
         }
         else if (param1 == "hitch_ricochet_chance")
@@ -516,9 +516,9 @@ Class IC_BrivGemFarm_LevelUp_EffectData
         else if param1 in leadership_summit_description,demon_sickness_description
         {
             effectIDs := (param1 == "leadership_summit_description") ? [546, 547, 548, 549] : [551, 552, 553, 554]
-			repl := ""
-			for k, v in effectIDs
-			    repl .= "`n" . (g_HeroDefines.EffectDataById(v).FullDescription("")) . "`n"
+            repl := ""
+            for k, v in effectIDs
+                repl .= "`n" . (g_HeroDefines.EffectDataById(v).FullDescription("")) . "`n"
         }
         else if (RegExMatch(param1, "voronika_inner_circle_(\d)", match))
             repl := IC_BrivGemFarm_LevelUp_TextData.GetData("UPGRADETIP_SPECIALIZATION_CHOICE_TEXT", "Specialization Choice") . " " . match1 + 1

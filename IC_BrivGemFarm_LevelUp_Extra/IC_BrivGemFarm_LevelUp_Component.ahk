@@ -258,7 +258,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.MaxSimultaneousInputs := 4
         settings.MinLevelTimeout := 5000
         settings.BrivMinLevelStacking := 1300
-        settings.BrivMinLevelArea := 0
+        settings.BrivMinLevelArea := 1
         settings.DefaultMinLevel := 0
         settings.DefaultMaxLevel := 1
         settings.LevelToSoftCapFailedConversion := true

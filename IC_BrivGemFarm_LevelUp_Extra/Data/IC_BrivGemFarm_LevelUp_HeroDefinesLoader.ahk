@@ -2,7 +2,7 @@
 class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
 {
     static cachedFileName := "cached_definitions.json"
-    static rootCachedPath := "\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . IC_BrivGemFarm_LevelUp_DefinesLoader.cachedFileName
+    static rootCachedPath := "\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . IC_BrivGemFarm_LevelUp_HeroDefinesLoader.cachedFileName
     static DEFS_LOAD_FAIL := -1
     static FILE_LOAD := 0
     static TEXT_DEFS := 1

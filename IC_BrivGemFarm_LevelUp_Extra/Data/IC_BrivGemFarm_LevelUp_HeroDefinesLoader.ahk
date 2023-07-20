@@ -443,7 +443,10 @@ Class IC_BrivGemFarm_LevelUp_CachedDefinitionsReader extends JSON
             else if (IsObject(filter))
             {
                 for k, v in filter
-                    object[k] := this._CreateObject(jsObject[k], v)
+                {
+                    if (jsObject[k] != "")
+                        object[k] := this._CreateObject(jsObject[k], v)
+                }
             }
             else
                  object[filter] := this._CreateObject(jsObject[filter])

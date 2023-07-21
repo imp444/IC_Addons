@@ -423,7 +423,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
     {
         g_SF.Memory.OpenProcessReader()
         g_SF.CalcLastUpgradeLevels()
-        this.FillMissingDefaultSettings()
+        this.UpdateSettingsFromFile(true)
     }
 
     ; Save full Q,W,E formations to BrivGemFarm_LevelUp_Settings.json

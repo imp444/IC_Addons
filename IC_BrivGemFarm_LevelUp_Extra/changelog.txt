@@ -1,3 +1,10 @@
+July 21, 2023 - v0.5.1
+    After loading definitions, the latest server timestamp is now shown as a tooltip for Last updated text (user local time).
+    Fixes:
+        Fixed reading and filtering keys from the cached_definitons file when the path to the folder has been found.
+        Fixed default value for BrivMinLevelArea setting (was 0, now 1) to match the value initially set in the GUI.
+        After starting BrivGemFarm, when filling missing min/max settings, the script will retry to read memory to calculate those settings every 1000ms until success.
+
 July 17, 2023 - v0.5.0
     Static upgrade descriptions are displayed as tooltips when hovering a champion's upgrade list item.
     Fixed current displayed formation not being saved properly when reloading definitions.

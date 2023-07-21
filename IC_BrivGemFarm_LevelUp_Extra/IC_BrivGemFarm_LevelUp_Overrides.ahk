@@ -372,9 +372,11 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
     }
 
     ; Load settings from the GUI settings file
-    UpdateSettingsFromFile(updateMaxLevels := false)
+    UpdateSettingsFromFile(updateMaxLevels := false, fileName := "")
     {
-        settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Functions.SettingsPath)
+        if (fileName == "")
+            fileName := IC_BrivGemFarm_LevelUp_Functions.SettingsPath
+        settings := g_SF.LoadObjectFromJSON(fileName)
         if (!IsObject(settings))
             return false
         g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
@@ -395,7 +397,14 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
     FillMissingDefaultSettings(minLevel := 0, maxLevel := "Last")
     {
         levelSettings := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ]
-        Loop, % g_SF.Memory.ReadChampListSize()
+        numChamps := g_SF.Memory.ReadChampListSize()
+        if ((numChamps := g_SF.Memory.ReadChampListSize()) == "")
+        {
+            func := ObjBindMethod(this, "RetryCalc")
+            SetTimer, %func%, -1000
+            return
+        }
+        Loop, % numChamps
         {
             champID := A_Index
             if levelSettings.minLevels[champID] == ""
@@ -408,6 +417,13 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
                     levelSettings.maxLevels[champID] := (maxLevel == "") ? 1 : maxLevel
             }
         }
+    }
+
+    RetryCalc()
+    {
+        g_SF.Memory.OpenProcessReader()
+        g_SF.CalcLastUpgradeLevels()
+        this.FillMissingDefaultSettings()
     }
 
     ; Save full Q,W,E formations to BrivGemFarm_LevelUp_Settings.json

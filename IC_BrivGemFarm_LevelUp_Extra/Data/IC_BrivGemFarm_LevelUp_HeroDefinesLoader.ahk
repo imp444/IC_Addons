@@ -18,6 +18,7 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
     HeroDefines := ""
     TimerFunctions := {}
     Status := ""
+    CNETime := ""
 
     Start(params*)
     {
@@ -107,6 +108,9 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         {
             FileRead, contents, %fileName%
             RegExMatch(contents, "(\d)+", checksum, InStr(contents, "checksum")) ; Check file checksum
+            RegExMatch(contents, "(\d)+", current_time, InStr(contents, "current_time")) ; Check file checksum
+            this.CNETime := current_time
+            IC_BrivGemFarm_LevelUp_ToolTip.UpdateDefsCNETime(current_time)
             settings := g_BrivGemFarm_LevelUp.Settings
             if (settings.LastChecksum == "" OR settings.LastChecksum != checksum)
             {

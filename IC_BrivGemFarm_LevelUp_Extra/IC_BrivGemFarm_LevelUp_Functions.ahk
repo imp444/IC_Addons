@@ -132,4 +132,11 @@ class IC_BrivGemFarm_LevelUp_Functions
     ; Return Primary Monitor if can't sense
         return idxPrimary
     }
+
+    UnixToUTC(unixTime)
+    {
+	    time := 1970
+        time += unixTime, s
+        return time
+	}
 }

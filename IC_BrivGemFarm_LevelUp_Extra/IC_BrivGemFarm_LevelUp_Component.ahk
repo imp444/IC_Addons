@@ -474,16 +474,21 @@ Class IC_BrivGemFarm_LevelUp_Component
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
             SharedRunData.SaveFormations()
-            savedFormations := this.Settings.SavedFormations := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath).SavedFormations
         }
         catch
         {
-            noGameSave := true
+            noScriptSave := true
         }
-        if (noGameSave OR !IsObject(savedFormations))
+        savedFormations := this.Settings.SavedFormations := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath).SavedFormations
+        if (noScriptSave)
         {
-            g_SF.Memory.OpenProcessReader()
-            return g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formation), true) ; without empty slots
+            existingProcessID := g_UserSettings[ "ExeName"]
+	        Process, Exist, %existingProcessID%
+	        if (ErrorLevel)
+	        {
+                g_SF.Memory.OpenProcessReader()
+                return g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formation), true) ; without empty slots
+            }
         }
         Switch formation
         {

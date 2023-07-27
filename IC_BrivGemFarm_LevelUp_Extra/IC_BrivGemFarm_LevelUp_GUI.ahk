@@ -420,7 +420,9 @@ Class IC_BrivGemFarm_LevelUp_GUI
             this.AddSeat(A_Index, group, posW)
         group.AddControl("BGFLU_LoadFormationText", "Text", "y+15", "Formation", true)
         group.AddControl("BGFLU_LoadFormation", "DropDownList", "y+-17 w35 AltSubmit Disabled hwndBGFLU_LoadFormation gBGFLU_LoadFormation", "Q||W|E")
-        PostMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BGFLU_LoadFormation%
+        SendMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BGFLU_LoadFormation%
+        if (ErrorLevel)
+            MsgBox, 16,, Failed to resize BGFLU_LoadFormation.
         group.AddControl("BGFLU_ShowSpoilers", "CheckBox", "y+-17 gBGFLU_ShowSpoilers", "Show spoilers")
         GUIFunctions.UseThemeTextColor("ErrorTextColor", 700)
         group.AddControl("BGFLU_NoFormationText", "Text", "w220")
@@ -846,7 +848,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
                     local count := Errorlevel
                     GuiControl, ICScriptHub:, BGFLU_Combo_BrivMinLevelStacking, % brivMinLevelStacking ; Add item
                     GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % brivMinLevelStacking ; so only the level is kept in edit
-                    PostMessage, CB_DELETESTRING, count, 0,, ahk_id %ctrlH% ; Remove item
+                    SendMessage, CB_DELETESTRING, count, 0,, ahk_id %ctrlH% ; Remove item
                 }
                 else
                 {

@@ -525,7 +525,9 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_Combo_BrivMinLevelStacking, % "|" . upgrades
         if(heroData.cachedSize == "")
             heroData.cachedSize := IC_BrivGemFarm_LevelUp_Functions.DropDownSize(upgrades)
-        PostMessage, CB_SETDROPPEDWIDTH, heroData.cachedSize, 0, , ahk_id %HBGFLU_BrivMinLevelStacking%
+        SendMessage, CB_SETDROPPEDWIDTH, heroData.cachedSize, 0, , ahk_id %HBGFLU_BrivMinLevelStacking%
+        if (Errorlevel < 0)
+            MsgBox, 16,, Failed to resize BGFLU_BrivMinLevelStacking.
         Sleep, 1
         local k := "BrivMinLevelStacking"
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % g_BrivGemFarm_LevelUp.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
@@ -814,8 +816,12 @@ Class IC_BrivGemFarm_LevelUp_Seat
         local seat := this.ID
         local minH := HBGFLU_MinLevel_%seat%
         local maxH := HBGFLU_MaxLevel_%seat%
-        PostMessage, CB_SETDROPPEDWIDTH, width, 0, , ahk_id %minH%
-        PostMessage, CB_SETDROPPEDWIDTH, width, 0, , ahk_id %maxH%
+        SendMessage, CB_SETDROPPEDWIDTH, width, 0, , ahk_id %minH%
+        if (Errorlevel < 0)
+            MsgBox, 16,, % "Failed to resize BGFLU_MinLevel_" . seat
+        SendMessage, CB_SETDROPPEDWIDTH, width, 0, , ahk_id %maxH%
+        if (Errorlevel < 0)
+            MsgBox, 16,, % "Failed to resize BGFLU_MaxLevel_" . seat
     }
 
     ; Updates the list of champions names for this lot

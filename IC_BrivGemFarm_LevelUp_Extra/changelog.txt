@@ -1,3 +1,13 @@
+July 27, 2023 - v0.6.0
+    Updated the overall sections of the GUI to resize themselves better on creation and when manually resizing the window.
+    It is now possible to jump to sections that would be hidden on smaller screens using the list located on the top right of BrivGemFarm Settings.
+    Fixes:
+        Fixed time format for the text displaying the time when definitions were last loaded.
+        Changed the command type when sending resize commands to the GUI from PostMessage to SendMessage. An error message will pop up on failure.
+
+July 22, 2023 -
+    Added Havilar to the list of speed champions prioritized during leveling.
+
 July 21, 2023 - v0.5.1
     After loading definitions, the latest server timestamp is now shown as a tooltip for Last updated text (user local time).
     Fixes:

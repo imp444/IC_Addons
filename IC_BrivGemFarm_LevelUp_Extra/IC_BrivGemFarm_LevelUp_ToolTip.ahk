@@ -33,7 +33,7 @@ Class IC_BrivGemFarm_LevelUp_ToolTip
         EnvSub, now, A_NowUTC, s
         EnvAdd, unixTime, now
         localTime := IC_BrivGemFarm_LevelUp_Functions.UnixToUTC(unixTime)
-        FormatTime, timeStr, % localTime, dddd MMMM d, yyyy hh:mm:ss tt
+        FormatTime, timeStr, % localTime
         GUIFunctions.AddToolTip("BrivGemFarm_LevelUp_DefinitionsStatus", "Last server update: " . timeStr)
     }
 }

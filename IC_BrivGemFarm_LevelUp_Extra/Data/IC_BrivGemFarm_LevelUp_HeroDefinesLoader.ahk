@@ -332,7 +332,8 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
                     v.Delete(v1)
             trimmedHeroDefs.effect_key_defines[key] := v
         }
-        lastUpdateString := "Last updated: " . A_YYYY . "/" A_MM "/" A_DD " at " A_Hour . ":" A_Min
+        FormatTime, timeStr, % A_Now
+        lastUpdateString := "Last updated: " . timeStr
         Status := lastUpdateString
         g_BrivGemFarm_LevelUp.UpdateLastUpdated(lastUpdateString, true)
         this.HeroDefines := trimmedHeroDefs

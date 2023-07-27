@@ -135,8 +135,8 @@ class IC_BrivGemFarm_LevelUp_Functions
 
     UnixToUTC(unixTime)
     {
-	    time := 1970
+        time := 1970
         time += unixTime, s
         return time
-	}
+    }
 }

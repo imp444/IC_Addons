@@ -10,120 +10,23 @@ CB_SETITEMHEIGHT := 0x0153
 CB_GETDROPPEDSTATE := 0x0157
 CB_SETDROPPEDWIDTH := 0x0160
 CB_GETCOMBOBOXINFO := 0x0164
+WM_ENTERSIZEMOVE := 0x0231
+WM_EXITSIZEMOVE := 0x0232
 
 GUIFunctions.AddTab("BrivGF LevelUp")
 ; Add GUI fields to this addon's tab.
 Gui, ICScriptHub:Tab, BrivGF LevelUp
 
 GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
-Gui, ICScriptHub:Add, Text, Section vBrivGemFarmLevelUpStatus, Status:
-Gui, ICScriptHub:Add, Text, x+5 w170 vBrivGemFarmLevelUpStatusText, Not Running
+Gui, ICScriptHub:Add, Text, x+8 Section vBGFLU_Status, Status:
+Gui, ICScriptHub:Add, Text, x+5 w170 vBGFLU_StatusText, Not Running
 
 GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-Gui, ICScriptHub:Add, Text, xs ys+15 w500 vBrivGemFarmLevelUpStatusWarning,
+Gui, ICScriptHub:Add, Text, xs ys+15 w500 vBGFLU_StatusWarning,
 GUIFunctions.UseThemeTextColor() ; WARNING: Addon was loaded too late. Stop/start Gem Farm to resume.
 
 ; Create minLevel, maxLevel, order buttons/edits
-xSection := ySection := 10
-Gui, ICScriptHub:Font, w700
-wMinMaxSettingsGroup := 465
-wGroup := wMinMaxSettingsGroup - 2 * xSection
-Gui, ICScriptHub:Add, GroupBox, Section xs w%wMinMaxSettingsGroup% h670 vMinMaxSettingsGroup, BrivGemFarm LevelUp Settings
-Gui, ICScriptHub:Font, w400
-yTitleSpacing := 2 * ySection
-Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%yTitleSpacing%, Seat
-Gui, ICScriptHub:Add, Text, x+51, Name
-Gui, ICScriptHub:Add, Text, x+64 vMinLevelText, MinLevel
-Gui, ICScriptHub:Add, Text, x+31 vMaxLevelText, MaxLevel
-leftAlign := 12
-xSpacing := 15
-ySpacing := 10
-Loop, 12
-{
-    AddSeat(xSpacing, ySpacing, A_Index)
-}
-; Add settings for the next seat
-AddSeat(xSpacing, ySpacing, seat)
-{
-    global
-    Gui, ICScriptHub:Add, Text, Center xs+%leftAlign% y+%ySpacing% w15, % seat
-    GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-    Gui, ICScriptHub:Add, DropDownList , vDDL_BrivGemFarmLevelUpName_%seat% gBrivGemFarm_LevelUp_Name x+%xSpacing% y+-16 w111
-    Gui, ICScriptHub:Add, ComboBox, Limit6 hwndHBrivGemFarmLevelUpMinLevel_%seat% vCombo_BrivGemFarmLevelUpMinLevel_%seat% gBrivGemFarm_LevelUp_MinMax_Clamp x+%xSpacing% w60
-    Gui, ICScriptHub:Add, ComboBox, Limit6 hwndHBrivGemFarmLevelUpMaxLevel_%seat% vCombo_BrivGemFarmLevelUpMaxLevel_%seat% gBrivGemFarm_LevelUp_MinMax_Clamp x+%xSpacing% w60
-    GUIFunctions.UseThemeTextColor()
-}
-
-Gui, ICScriptHub:Add, Text, xs+%xSection% y+%yTitleSpacing% vLoadFormationText, Formation
-Gui, ICScriptHub:Add, DropDownList, x+10 y+-17 w35 AltSubmit Disabled hwndBrivGemFarm_LevelUp_LoadFormation vBrivGemFarm_LevelUp_LoadFormation gBrivGemFarm_LevelUp_LoadFormation, Q||W|E
-PostMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BrivGemFarm_LevelUp_LoadFormation%
-Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% y+-17 vBrivGemFarm_LevelUp_ShowSpoilers gBrivGemFarm_LevelUp_ShowSpoilers, Show spoilers
-GUIFunctions.UseThemeTextColor("ErrorTextColor", 700)
-Gui, ICScriptHub:Add, Text, x+%xSpacing% w220 vBrivGemFarm_LevelUp_NoFormationText,
-GUIFunctions.UseThemeTextColor()
-
-Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, Section xs+%xSection% y+%yTitleSpacing% w%wGroup% h50 vDefaultSettingsGroup, Default Settings
-Gui, ICScriptHub:Font, w400
-Gui, ICScriptHub:Add, Button, xs+%leftAlign% yp+20 Disabled vBrivGemFarm_LevelUp_Default gBrivGemFarm_LevelUp_Default, Load default settings
-Gui, ICScriptHub:Add, Text, x+%xSpacing% yp+5 w100 vBrivGemFarm_LevelUp_SettingsStatusText, % "No settings."
-Gui, ICScriptHub:Add, Button, xp yp-5 Hidden vBrivGemFarm_LevelUp_Save gBrivGemFarm_LevelUp_Save, Save
-Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Changes gBrivGemFarm_LevelUp_Changes, Show unsaved changes
-Gui, ICScriptHub:Add, Button, x+%xSpacing% Hidden vBrivGemFarm_LevelUp_Undo gBrivGemFarm_LevelUp_Undo, Undo
-Gui, ICScriptHub:Add, Text, xs+%leftAlign% y+%ySpacing% vDefaultMinLevelText, Default min level:
-Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MinRadio0 gBrivGemFarm_LevelUp_MinDefault, 0
-Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MinRadio1 gBrivGemFarm_LevelUp_MinDefault, 1
-Gui, ICScriptHub:Add, Text, x+5 vDefaultMaxLevelText, |   Default max level:
-Gui, ICScriptHub:Add, Radio, x+5 vBrivGemFarm_LevelUp_MaxRadio1 gBrivGemFarm_LevelUp_MaxDefault, 1
-Gui, ICScriptHub:Add, Radio, x+1 vBrivGemFarm_LevelUp_MaxRadioLast gBrivGemFarm_LevelUp_MaxDefault, Last upgrade
-GuiControlGet, pos, ICScriptHub:Pos, DefaultMinLevelText
-GuiControlGet, posS, ICScriptHub:Pos, DefaultSettingsGroup
-newHeight := posY + posH - posSY + ySection
-GuiControl, ICScriptHub:Move, DefaultSettingsGroup, h%newHeight%
-
-Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, Section xs y+%yTitleSpacing% w%wGroup% h50 vMinSettingsGroup, Min Settings
-Gui, ICScriptHub:Font, w400
-Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_ForceBrivShandie gBrivGemFarm_LevelUp_ForceBrivShandie, Level up Briv/Shandie to MinLevel first
-Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% vBrivGemFarm_LevelUp_SkipMinDashWait gBrivGemFarm_LevelUp_SkipMinDashWait, Skip DashWait after Min Leveling
-GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w50 Limit2 vBrivGemFarm_LevelUp_MaxSimultaneousInputs gBrivGemFarm_LevelUp_MaxSimultaneousInputs
-GUIFunctions.UseThemeTextColor()
-Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_MaxSimultaneousInputsText, Maximum simultaneous F keys inputs during MinLevel
-GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w50 Limit5 vBrivGemFarm_LevelUp_MinLevelTimeout gBrivGemFarm_LevelUp_MinLevelTimeout
-GUIFunctions.UseThemeTextColor()
-Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_MinLevelTimeoutText, MinLevel timeout (ms)
-GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, ComboBox, xs+%leftAlign% y+%ySpacing% w50 Limit5 hwndHBrivGemFarmLevelUpBrivMinLevelStacking vCombo_BrivGemFarmLevelUpBrivMinLevelStacking gBrivGemFarm_LevelUp_MinMax_Clamp
-GUIFunctions.UseThemeTextColor()
-Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_BrivMinLevelStackingText, Briv MinLevel before stacking
-GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, xs+%leftAlign% y+%ySpacing% w50 Limit4 vBrivGemFarm_LevelUp_BrivMinLevelArea gBrivGemFarm_LevelUp_BrivMinLevelArea
-GUIFunctions.UseThemeTextColor()
-Gui, ICScriptHub:Add, Text, x+5 y+-18 vBrivGemFarm_LevelUp_BrivMinLevelAreaText, Minimum area to reach before leveling Briv
-GuiControlGet, pos, ICScriptHub:Pos, BrivGemFarm_LevelUp_BrivMinLevelArea
-GuiControlGet, posS, ICScriptHub:Pos, MinSettingsGroup
-newHeight := posY + posH - posSY + ySection
-GuiControl, ICScriptHub:Move, MinSettingsGroup, h%newHeight%
-
-Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, GroupBox, Section xs y+%yTitleSpacing% w%wGroup% h50 vFailRunRecoverySettingsGroup, Fail Run Recovery Settings
-Gui, ICScriptHub:Font, w400
-Gui, ICScriptHub:Add, CheckBox, xs+%leftAlign% yp+20 vBrivGemFarm_LevelUp_LevelToSoftCapFailedConversion gBrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, Level champions to soft cap after failed conversion
-Gui, ICScriptHub:Add, CheckBox, x+%xSpacing% vBrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv gBrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, Briv included
-GuiControlGet, pos, ICScriptHub:Pos, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv
-GuiControlGet, posS, ICScriptHub:Pos, FailRunRecoverySettingsGroup
-newHeight := posY + posH - posSY + ySection
-GuiControl, ICScriptHub:Move, FailRunRecoverySettingsGroup, h%newHeight%
-
-GuiControlGet, posS, ICScriptHub:Pos, MinMaxSettingsGroup
-newHeight := posY + posH - posSY + yTitleSpacing + 1
-GuiControl, ICScriptHub:Move, MinMaxSettingsGroup, h%newHeight%
-
-yLoadDefinitionsSpacing := 2 * yTitleSpacing
-Gui, ICScriptHub:Add, Button, xs-%xSection% y+%yLoadDefinitionsSpacing% Disabled vBrivGemFarm_LevelUp_LoadDefinitions gBrivGemFarm_LevelUp_LoadDefinitions, Load Definitions
-Gui, ICScriptHub:Add, Text, x+10 y+-18 w450 R3 vBrivGemFarm_LevelUp_DefinitionsStatus, % "No definitions."
+IC_BrivGemFarm_LevelUp_GUI.SetupGroups()
 
 ; Temp settings ListView
 Gui, IC_BrivGemFarm_LevelUp_TempSettings:New, -MaximizeBox -Resize
@@ -131,129 +34,575 @@ GUIFunctions.LoadTheme("IC_BrivGemFarm_LevelUp_TempSettings")
 GUIFunctions.UseThemeBackgroundColor()
 GUIFunctions.UseThemeTextColor()
 Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, GroupBox, w330 h310, BrivGemFarm LevelUp Settings
-Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, ListView, xp+15 yp+24 w300 h270 NoSortHdr vBrivTempSettingsID , Setting|Current|New
-GUIFunctions.UseThemeListViewBackgroundColor("BrivTempSettingsID")
+Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, ListView, xp+15 yp+24 w300 h270 NoSortHdr vBGFLU_TempSettings , Setting|Current|New
+GUIFunctions.UseThemeListViewBackgroundColor("BGFLU_TempSettings")
 GUIFunctions.LoadTheme()
 
-OnMessage(WM_COMMAND, "CheckComboStatus")
-OnMessage(0x200, Func("CheckComboStatus"))
+OnMessage(WM_COMMAND, "BGFLU_CheckComboStatus")
+OnMessage(0x200, Func("BGFLU_CheckComboStatus"))
+OnMessage(WM_ENTERSIZEMOVE, Func("BGFLU_CheckResizeEvent").Bind(WM_ENTERSIZEMOVE))
+OnMessage(WM_EXITSIZEMOVE, Func("BGFLU_CheckResizeEvent").Bind(WM_EXITSIZEMOVE))
 
-; Checks performed on combo mouseover / selection cancel
-CheckComboStatus(W)
+BGFLU_CheckResizeEvent(WM)
 {
-    IC_BrivGemFarm_LevelUp_GUI.CheckComboStatus(W)
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_CheckResizeEvent(WM)
 }
 
-; Switch names
-BrivGemFarm_LevelUp_Name()
+BGFLU_DoResizeEvent()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_Name()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_DoResizeEvent()
 }
 
-; Input upgrade level when selected from DDL, then verify that min/max level inputs are in 0-999999 range
-BrivGemFarm_LevelUp_MinMax_Clamp()
+BGFLU_CheckComboStatus(W)
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_MinMax_Clamp()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_CheckComboStatus(W)
 }
 
-; Load formation to the GUI
-BrivGemFarm_LevelUp_LoadFormation()
+BGFLU_LB_Section()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_LoadFormation()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_LB_Section()
 }
 
-; Spoilers
-BrivGemFarm_LevelUp_ShowSpoilers()
+BGFLU_Name()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_ShowSpoilers()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_Name()
 }
 
-; Default settings button
-BrivGemFarm_LevelUp_Default()
+BGFLU_MinMax_Clamp()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_Default()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_MinMax_Clamp()
 }
 
-; Save settings button
-BrivGemFarm_LevelUp_Save()
+BGFLU_LoadFormation()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_Save()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_LoadFormation()
 }
 
-; TempsSettings changes
-BrivGemFarm_LevelUp_Changes()
+BGFLU_ShowSpoilers()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_Changes()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_ShowSpoilers()
 }
 
-; Undo temp settings button
-BrivGemFarm_LevelUp_Undo()
+BGFLU_Default()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_Undo()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_Default()
 }
 
-BrivGemFarm_LevelUp_MinDefault()
+BGFLU_Save()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_MinDefault()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_Save()
 }
 
-BrivGemFarm_LevelUp_MaxDefault()
+BGFLU_Changes()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_MaxDefault()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_Changes()
 }
 
-; Force Briv/Shandie MinLevel
-BrivGemFarm_LevelUp_ForceBrivShandie()
+BGFLU_Undo()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_ForceBrivShandie()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_Undo()
 }
 
-; Skip early Dashwait
-BrivGemFarm_LevelUp_SkipMinDashWait()
+BGFLU_MinDefault()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_SkipMinDashWait()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_MinDefault()
 }
 
-; Maximum number of simultaneous F keys inputs during MinLevel
-BrivGemFarm_LevelUp_MaxSimultaneousInputs()
+BGFLU_MaxDefault()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_MaxSimultaneousInputs()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_MaxDefault()
 }
 
-; Maximum number of simultaneous F keys inputs during MinLevel
-BrivGemFarm_LevelUp_MinLevelTimeout()
+BGFLU_ForceBrivShandie()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_MinLevelTimeout()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_ForceBrivShandie()
 }
 
-; BrivMinLevelArea
-BrivGemFarm_LevelUp_BrivMinLevelArea()
+BGFLU_SkipMinDashWait()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_BrivMinLevelArea()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_SkipMinDashWait()
 }
 
-; Level champions to soft cap after a failed conversion to reach stack zone faster
-BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion()
+BGFLU_MaxSimultaneousInputs()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_MaxSimultaneousInputs()
 }
 
-; Level champions to soft cap after a failed conversion to reach stack zone faster (Briv is excluded, desireable for early stacking)
-BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv()
+BGFLU_MinLevelTimeout()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_MinLevelTimeout()
 }
 
-; Load new definitions
-BrivGemFarm_LevelUp_LoadDefinitions()
+BGFLU_BrivMinLevelArea()
 {
-    IC_BrivGemFarm_LevelUp_GUI.BrivGemFarm_LevelUp_LoadDefinitions()
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_BrivMinLevelArea()
+}
+
+BGFLU_LevelToSoftCapFailedConversion()
+{
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_LevelToSoftCapFailedConversion()
+}
+
+BGFLU_LevelToSoftCapFailedConversionBriv()
+{
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_LevelToSoftCapFailedConversionBriv()
+}
+
+BGFLU_LoadDefinitions()
+{
+    IC_BrivGemFarm_LevelUp_GUI.BGFLU_LoadDefinitions()
+}
+
+; Class that allows to group controls under a GroupBox control.
+Class IC_BrivGemFarm_LevelUp_GUI_Group
+{
+    Controls := []
+    GroupID := 0
+    Height := 0
+    Width := 0
+    XSpacing := 10
+    YSpacing := 10
+    YTitleSpacing := 20
+    XSection := 10
+    YSection := 10
+    Hidden := false
+
+    ; Creates a new GroupBox.
+    ; Parameters: - name:str - The name/reference of the group.
+    ;             - title:str - The title of the control that will appear on the outline.
+    ;             - previous:str - The reference control that is used to position the new group.
+    ;             - tabS:bool - If true, adds an x offset to this group from the previous control equal to XSection.
+    ;             - newLine:bool - If true, position the group under the previous control.
+    __New(name, title := "", previous := "BGFLU_DefaultSettingsGroup", tabS := true, newLine := true)
+    {
+        global
+        this.GroupID := name
+        GuiControlGet, previousPos, ICScriptHub:Pos, %previous%
+        local groupX := previousPosX + (tabS ? this.XSection : 0) + (newLine ? 0 : previousPosW)
+        local options := "Section w0 h10 v" . name . " x" . groupX
+        local ySpacing := previousPosY + previousPosH + (newLine ? this.YSpacing : 0)
+        options .= " y" . (newLine ? ySpacing : "s")
+        Gui, ICScriptHub:Font, w700
+        Gui, ICScriptHub:Add, GroupBox, %options% , %title%
+        Gui, ICScriptHub:Font, w400
+    }
+
+    ; Creates and adds a control to the GroupBox.
+    ; Parameters: - controlID:str - The name/reference of the control.
+    ;             - controlType:str - The type of the control.
+    ;             - options:str - Options to apply to the control. X/Y positionals override the default values.
+    ;             - text:str - The initial text of the control.
+    ;             - newLine:bool - If true, position the control under the previous ones.
+    AddControl(controlID, controlType := "", options := "", text := "", newLine := false)
+    {
+        global
+        if (controlType != "")
+        {
+            if controlType in ComboBox,DropDownList,Edit,ListBox
+                GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+            if (!RegExMatch(options, "x(\d+|\+|\-|m|p|s[^\s])"))
+            {
+                if (newLine)
+                    options .= " xs+" . this.XSection
+                else
+                    options .= " x+" . this.XSpacing
+            }
+            if (!RegExMatch(options, "y(\d+|\+|\-|m|p|s[^\s])"))
+            {
+                if (this.Controls.Length() == 0)
+                    options .= " ys+" . this.YTitleSpacing
+                else if (newLine)
+                    options .= " y+" . this.YSpacing
+            }
+            options .= " v" . controlID
+            Gui, ICScriptHub:Add, %controlType%, %options%, % text
+            GUIFunctions.UseThemeTextColor()
+        }
+        this.Controls.Push(controlID)
+    }
+
+    ; Show the GroupBox outline and its controls.
+    Show()
+    {
+        for k, v in this.Controls
+            GuiControl, ICScriptHub:Show, %v%
+        controlID := this.GroupID
+        GuiControl, ICScriptHub:Show, %controlID%
+        this.Hidden := false
+    }
+
+    ; Hide the GroupBox outline and its controls.
+    Hide()
+    {
+        for k, v in this.Controls
+            GuiControl, ICScriptHub:Hide, %v%
+        controlID := this.GroupID
+        GuiControl, ICScriptHub:Hide, %controlID%
+        this.Hidden := true
+    }
+
+    ; Moves the GroupBox outline and its controls to a new position.
+    ; Parameters: - x:int - New X postion of the GroupBox.
+    ;             - y:int - New Y postion of the GroupBox.
+    Move(x := "", y := "")
+    {
+        controlID := this.GroupID
+        GuiControlGet, oldPos, ICScriptHub:Pos, %controlID%
+        x := x == "" ? oldPosX : x
+        y := y == "" ? oldPosY : y
+        if (x == oldPosX AND y == oldPosY)
+            return
+        GuiControl, ICScriptHub:Move, %controlID%, x%x% y%y%
+        ; Bug when using Move in a Tab control
+        GuiControlGet, bugPos, ICScriptHub:Pos, %controlID%
+        xFixBug := 2 * x - bugPosX
+        yFixBug := 2 * y - bugPosY
+        xOffset := xFixBug - oldPosX
+        yOffset := yFixBug - oldPosY
+        GuiControl, ICScriptHub:MoveDraw, %controlID%, x%xFixBug% y%yFixBug%
+        for k, v in this.Controls
+        {
+            GuiControlGet, oldPos, ICScriptHub:Pos, %v%
+            newX := oldPosX + xOffset
+            newY := oldPosY + yOffset
+            GuiControl, ICScriptHub:MoveDraw, %v%, x%newX% y%newY%
+        }
+    }
+
+    ; Returns the control with the lowest Y position within the GroupBox.
+    ; Ignores controls that have been previousy hidden.
+    GetLowestControl()
+    {
+        yMax := 0
+        lowest := ""
+        for k, v in this.Controls
+        {
+            if (IC_BrivGemFarm_LevelUp_GUI.GroupsByName[v].Hidden)
+                continue
+            GuiControlGet, pos, ICScriptHub:Pos, %v%
+            if (posY + posH > yMax)
+            {
+                yMax := posY + posH
+                lowest := v
+            }
+        }
+        return lowest
+    }
+
+    ; Returns the control with the furthest X position within the GroupBox.
+    ; Ignores controls that have been previousy hidden.
+    GetRightMostControl()
+    {
+        xMax := 0
+        rightMost := ""
+        for k, v in this.Controls
+        {
+            if (IC_BrivGemFarm_LevelUp_GUI.GroupsByName[v].Hidden)
+                continue
+            GuiControlGet, pos, ICScriptHub:Pos, %v%
+            if (posX + posW > xMax)
+            {
+                xMax := posX + posW
+                rightMost := v
+            }
+        }
+        return rightMost
+    }
+
+    ; Calculates the size of this GroupBox's outline that contours all of its controls.
+    AutoResize()
+    {
+        lowest := this.GetLowestControl()
+        GuiControlGet, posL, ICScriptHub:Pos, %lowest%
+        rightMost := this.GetRightMostControl()
+        GuiControlGet, posR, ICScriptHub:Pos, %rightMost%
+        controlID := this.GroupID
+        GuiControlGet, posS, ICScriptHub:Pos, %controlID%
+        newHeight := posLY + posLH - posSY + this.YSection
+        newWidth := posRX + posRW - posSX + this.XSection
+        this.UpdateSize(newHeight, newWidth)
+    }
+
+    ; Resizes this GroupBox's outline.
+    ; Parameters: - newHeight:int - New height of the GroupBox.
+    ;             - newWidth:int - New width of the GroupBox.
+    UpdateSize(newHeight := "", newWidth := "")
+    {
+        controlID := this.GroupID
+        if (newHeight != "")
+            this.Height := newHeight
+        else
+            newHeight := this.Height
+        if (newWidth != "")
+            this.Width := newWidth
+        else
+            newWidth := this.Width
+        GuiControl, ICScriptHub:Move, %controlID%, h%newHeight% w%newWidth%
+    }
 }
 
 Class IC_BrivGemFarm_LevelUp_GUI
 {
+    static MainGroup := ""
+    static Groups := []
+    static GroupsByName := {}
+
+    ; Creates all of the groups of settings.
+    ; All of the other groups are children of BGFLU_SettingsGroup.
+    SetupGroups()
+    {
+        global
+        this.SetupBGFLUSettingsGroup()
+        this.SetupBGFLU_MinMaxSettingsGroup()
+        this.SetupBGFLU_MinSettingsGroup()
+        this.SetupBGFLU_FailRunRecoverySettingsGroup()
+        this.SetupBGFLU_GUISettingsGroup()
+        this.MainGroup.AutoResize()
+        local rightMostGroupWidth := this.MainGroup.Width - 2 * this.MainGroup.XSection
+        for k, v in this.Groups
+        {
+            if (k > 1) ; BGFLU_DefaultSettingsGroup
+                v.UpdateSize(, rightMostGroupWidth)
+        }
+        this.ShowSection()
+    }
+
+    ; Add a group to the main BGFLU_SettingsGroup group.
+    AddGroup(group)
+    {
+        group.AutoResize()
+        this.Groups.Push(group)
+        this.GroupsByName[group.GroupID] := group
+        this.MainGroup.AddControl(group.GroupID)
+    }
+
+    SetupBGFLUSettingsGroup()
+    {
+        global
+        local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_SettingsGroup", "BrivGemFarm LevelUp Settings", "BGFLU_StatusWarning", false)
+        this.MainGroup := group
+        this.SetupBGFLU_DefaultSettingsGroup()
+        GuiControlGet, pos, ICScriptHub:Pos, BGFLU_DefaultSettingsGroup
+        sections := "Min/Max Settings||Min Settings|Fail Run Recovery Settings|GUI Settings"
+        Gui, Font, s11
+        group.AddControl("BGFLU_LB_Section", "ListBox", "AltSubmit R4 w175 gBGFLU_LB_Section x" . (PosX + PosW + 10) . " y" . (posY + 6), sections, false)
+        Gui, Font, s9
+    }
+
+    SetupBGFLU_DefaultSettingsGroup()
+    {
+        global
+        local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_DefaultSettingsGroup", "Default Settings", "BGFLU_SettingsGroup")
+        group.AddControl("BGFLU_Default", "Button", "Disabled gBGFLU_Default", "Load default settings", true)
+        group.AddControl("BGFLU_SettingsStatusText", "Text", "yp+5 w100", "No settings.")
+        group.AddControl("BGFLU_Save", "Button", "xp yp-5 Hidden gBGFLU_Save", "Save")
+        group.AddControl("BGFLU_Changes", "Button", "Hidden gBGFLU_Changes", "View changes")
+        group.AddControl("BGFLU_Undo", "Button", "Hidden gBGFLU_Undo", "Undo")
+        group.AddControl("BGFLU_DefaultMinLevelText", "Text",, "Default min level: ", true)
+        group.AddControl("BGFLU_MinRadio0", "Radio", "x+5 gBGFLU_MinDefault", "0")
+        group.AddControl("BGFLU_MinRadio1", "Radio", "x+0 gBGFLU_MinDefault", "1")
+        group.AddControl("BGFLU_DefaultMaxLevelText", "Text",, "Default max level:", true)
+        group.AddControl("BGFLU_MaxRadio1", "Radio", "x+5 gBGFLU_MaxDefault", "1")
+        group.AddControl("BGFLU_MaxRadioLast", "Radio", "x+0 gBGFLU_MaxDefault", "Last upgrade")
+        this.AddGroup(group)
+    }
+
+    SetupBGFLU_MinMaxSettingsGroup()
+    {
+        global
+        local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_MinMaxSettingsGroup", "Min/Max Settings",, false)
+        group.AddControl("BGFLU_SeatText", "Text", "Center", "Seat", true)
+        group.AddControl("BGFLU_NameText", "Text", "Center w104", "Name")
+        group.AddControl("BGFLU_MinLevelText", "Text", "Center w60", "MinLevel")
+        group.AddControl("BGFLU_MaxLevelText", "Text", "Center w60", "MaxLevel")
+        GuiControlGet, pos, ICScriptHub:Pos, BGFLU_SeatText
+        Loop, 12
+            this.AddSeat(A_Index, group, posW)
+        group.AddControl("BGFLU_LoadFormationText", "Text", "y+15", "Formation", true)
+        group.AddControl("BGFLU_LoadFormation", "DropDownList", "y+-17 w35 AltSubmit Disabled hwndBGFLU_LoadFormation gBGFLU_LoadFormation", "Q||W|E")
+        PostMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BGFLU_LoadFormation%
+        group.AddControl("BGFLU_ShowSpoilers", "CheckBox", "y+-17 gBGFLU_ShowSpoilers", "Show spoilers")
+        GUIFunctions.UseThemeTextColor("ErrorTextColor", 700)
+        group.AddControl("BGFLU_NoFormationText", "Text", "w220")
+        GUIFunctions.UseThemeTextColor()
+        this.AddGroup(group)
+    }
+
+    ; Add settings for the next seat
+    AddSeat(seat, group, seatW)
+    {
+        global
+        group.AddControl("BGFLU_SeatIDText_" . seat, "Text", "Center w" . seatW, seat, true)
+        group.AddControl("BGFLU_DDL_Name_" . seat, "DropDownList", "gBGFLU_Name yp-4 w104")
+        group.AddControl("BGFLU_Combo_MinLevel_" . seat, "ComboBox", "Limit6 hwndHBGFLU_MinLevel_" . seat . " gBGFLU_MinMax_Clamp w60")
+        group.AddControl("BGFLU_Combo_MaxLevel_" . seat, "ComboBox", "Limit6 hwndHBGFLU_MaxLevel_" . seat . " gBGFLU_MinMax_Clamp w60")
+    }
+
+    SetupBGFLU_MinSettingsGroup()
+    {
+        global
+        local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_MinSettingsGroup", "Min Settings",, false)
+        group.AddControl("BGFLU_ForceBrivShandie", "CheckBox", "gBGFLU_ForceBrivShandie", "Level up Briv/Shandie to MinLevel first", true)
+        group.AddControl("BGFLU_SkipMinDashWait", "CheckBox", "gBGFLU_SkipMinDashWait", "Skip DashWait after Min Leveling")
+        group.AddControl("BGFLU_MaxSimultaneousInputs", "Edit", "w50 Limit2 gBGFLU_MaxSimultaneousInputs",, true)
+        group.AddControl("BGFLU_MaxSimultaneousInputsText", "Text", "x+5 yp+4", "Maximum simultaneous F keys inputs during MinLevel")
+        group.AddControl("BGFLU_MinLevelTimeout", "Edit", "w50 Limit5 gBGFLU_MinLevelTimeout",, true)
+        group.AddControl("BGFLU_MinLevelTimeoutText", "Text", "x+5 yp+4", "MinLevel timeout (ms)")
+        group.AddControl("BGFLU_Combo_BrivMinLevelStacking", "ComboBox", "w50 Limit5 hwndHBGFLU_BrivMinLevelStacking gBGFLU_MinMax_Clamp",, true)
+        group.AddControl("BGFLU_BrivMinLevelStackingText", "Text", "x+5 yp+4", "Briv MinLevel before stacking")
+        group.AddControl("BGFLU_BrivMinLevelArea", "Edit", "w50 Limit4 gBGFLU_BrivMinLevelArea",, true)
+        group.AddControl("BGFLU_BrivMinLevelAreaText", "Text", "x+5 yp+4", "Minimum area to reach before leveling Briv")
+        this.AddGroup(group)
+    }
+
+    SetupBGFLU_FailRunRecoverySettingsGroup()
+    {
+        global
+        local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_FailRunRecoverySettingsGroup", "Fail Run Recovery Settings",, false)
+        group.AddControl("BGFLU_LevelToSoftCapFailedConversion", "CheckBox", "gBGFLU_LevelToSoftCapFailedConversion", "Level champions to soft cap after failed conversion", true)
+        group.AddControl("BGFLU_LevelToSoftCapFailedConversionBriv", "CheckBox", "gBGFLU_LevelToSoftCapFailedConversionBriv", "Briv included")
+        this.AddGroup(group)
+    }
+
+    SetupBGFLU_GUISettingsGroup()
+    {
+        global
+        local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_GUISettingsGroup", "GUI Settings",, false)
+        group.AddControl("BGFLU_LoadDefinitions", "Button", "Disabled gBGFLU_LoadDefinitions", "Load Definitions", true)
+        group.AddControl("BGFLU_DefinitionsStatus", "Text", "yp+4 w450 R3", "No definitions.")
+        this.AddGroup(group)
+    }
+
+    ; Show the maximum amount of groups.
+    ; Always include BGFLU_DefaultSettingsGroup, BGFLU_LB_Section control and at least one group.
+    ShowSection(section := 2)
+    {
+        minY := this.GetDefaultSettingsGroupYPos()
+        displayed := this.GetDisplayedSections(section)
+        for k, v in this.Groups
+        {
+            control := this.Groups[k]
+            if (k > 1)
+            {
+                if (displayed.HasKey(k))
+                {
+                    if (displayed.HasKey(k - 1))
+                        control.Move(, displayed[k-1])
+                    else
+                        control.Move(, minY)
+                    v.Show()
+                }
+                else
+                {
+                    v.Hide()
+                    control.Move(, minY)
+                }
+            }
+        }
+        this.MainGroup.AutoResize()
+    }
+
+    ; Returns an object that contains the groups to display and the new Y position of the group.
+    ; Doesn't include the first default group BGFLU_DefaultSettingsGroup.
+    ; The maximum of groups that fit into the main window will be displayed.
+    ; The groups after the group of firstSection index are prioritized in descending order.
+    ; Then the groups above that one are backtracked in ascending order.
+    GetDisplayedSections(firstSection := 2)
+    {
+        displayed := {}
+        if (firstSection < 2)
+            firstSection := 2
+        cursor := this.GetDefaultSettingsGroupYPos()
+        GuiControlGet, maxPos, ICScriptHub:Pos, ModronTabControl
+        maxHeight := maxPosH + maxPosY
+        belowGroupCount := this.Groups.Length() - firstSection + 1
+        Loop, % belowGroupCount
+        {
+            groupIndex := firstSection + A_Index - 1
+            cursor += this.GetNextGroupHeight(groupIndex)
+            if (cursor < maxHeight OR displayed.Count() == 0)
+            {
+                cursor += 10
+                displayed[groupIndex] := cursor
+            }
+            else
+                return displayed
+        }
+        Loop, % firstSection - 2
+        {
+            groupIndex := firstSection - A_Index
+            cursor += this.GetNextGroupHeight(groupIndex)
+            if (cursor < maxHeight OR displayed.Count() == 0)
+            {
+                cursor += 10
+                displayed[groupIndex] := cursor
+            }
+            else
+                break
+        }
+        return this.GetMaxDisplayedSections(displayed)
+    }
+
+    ; Returns an object that contains the displayed groups in order and their Y positions.
+    GetMaxDisplayedSections(displayed)
+    {
+        cursor := this.GetDefaultSettingsGroupYPos()
+        for k, v in displayed
+        {
+            cursor += this.GetNextGroupHeight(k) + 10
+            displayed[k] := cursor
+        }
+        return displayed
+    }
+
+    ; Returns the default position for all of the grousp below BGFLU_DefaultSettingsGroup.
+    GetDefaultSettingsGroupYPos()
+    {
+        GuiControlGet, minPos, ICScriptHub:Pos, BGFLU_DefaultSettingsGroup
+        return minPosY + minPosH + 10 ; Second group start pos
+    }
+
+    ; Returns the height of the next group to display.
+    GetNextGroupHeight(index)
+    {
+        group := this.Groups[index]
+        controlID := group.GroupID
+        GuiControlGet, nextGroupPos, ICScriptHub:Pos, %controlID%
+        return nextGroupPosH
+    }
+
+    ; Checks performed on GUI resize event
+    BGFLU_CheckResizeEvent(WM)
+    {
+        global
+        GuiControlGet, currentTab,, ModronTabControl, Tab
+        if (WM == WM_ENTERSIZEMOVE AND currentTab == "BrivGF LevelUp")
+            SetTimer, BGFLU_DoResizeEvent, 200
+        else if (WM == WM_EXITSIZEMOVE)
+        {
+            SetTimer, BGFLU_DoResizeEvent, Delete
+            this.BGFLU_DoResizeEvent()
+        }
+    }
+
+    ; Action performed on GUI resize event
+    BGFLU_DoResizeEvent()
+    {
+        global
+        this.ShowSection(BGFLU_LB_Section + 1)
+    }
+
+    ; Jump to section
+    BGFLU_LB_Section()
+    {
+        global
+        Gui, ICScriptHub:Submit, NoHide
+        local value := % %A_GuiControl%
+        this.ShowSection(value + 1)
+    }
+
     ; Switch names
-    BrivGemFarm_LevelUp_Name()
+    BGFLU_Name()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
@@ -263,7 +612,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
     }
 
     ; Input upgrade level when selected from DDL, then verify that min/max level inputs are in 0-999999 range
-    BrivGemFarm_LevelUp_MinMax_Clamp()
+    BGFLU_MinMax_Clamp()
     {
         global
         local beforeSubmit := % %A_GuiControl%
@@ -284,14 +633,14 @@ Class IC_BrivGemFarm_LevelUp_GUI
         if (clamped != value)
             GuiControl, ICScriptHub:Text, %A_GuiControl%, % clamped
         local split := StrSplit(A_GuiControl, "_")
-        local heroId := IC_BrivGemFarm_LevelUp_Seat.Seats[split[3]].GetCurrentHeroData().id
-        Switch split[2]
+        local heroId := IC_BrivGemFarm_LevelUp_Seat.Seats[split[4]].GetCurrentHeroData().id
+        Switch split[3]
         {
-            Case "BrivGemFarmLevelUpMinLevel":
+            Case "MinLevel":
                 g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "minLevels", heroId], clamped)
-            Case "BrivGemFarmLevelUpMaxLevel":
+            Case "MaxLevel":
                 g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "maxLevels", heroId], clamped)
-            Case "BrivGemFarmLevelUpBrivMinLevelStacking":
+            Case "BrivMinLevelStacking":
                 g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelStacking", clamped)
             Default:
                 return
@@ -299,28 +648,28 @@ Class IC_BrivGemFarm_LevelUp_GUI
     }
 
     ; Load formation to the GUI
-    BrivGemFarm_LevelUp_LoadFormation()
+    BGFLU_LoadFormation()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
-        GuiControl, ICScriptHub:Disable, BrivGemFarm_LevelUp_LoadFormation
+        GuiControl, ICScriptHub:Disable, BGFLU_LoadFormation
         Sleep, 20
         g_BrivGemFarm_LevelUp.LoadFormation(%A_GuiControl%)
-        GuiControl, ICScriptHub:Enable, BrivGemFarm_LevelUp_LoadFormation
+        GuiControl, ICScriptHub:Enable, BGFLU_LoadFormation
     }
 
     ; Spoilers
-    BrivGemFarm_LevelUp_ShowSpoilers()
+    BGFLU_ShowSpoilers()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
-        local showSpoilers := BrivGemFarm_LevelUp_ShowSpoilers
+        local showSpoilers := BGFLU_ShowSpoilers
         g_BrivGemFarm_LevelUp.TempSettings.AddSetting("ShowSpoilers", showSpoilers)
         g_BrivGemFarm_LevelUp.ToggleSpoilers(showSpoilers) ; Effect is immediate
     }
 
     ; Default settings button
-    BrivGemFarm_LevelUp_Default()
+    BGFLU_Default()
     {
         global
         MsgBox, 4, , Restore Default settings?, 10
@@ -328,13 +677,13 @@ Class IC_BrivGemFarm_LevelUp_GUI
             Return
         IfMsgBox, Timeout
             Return
-        GuiControl, ICScriptHub:Disable, BrivGemFarm_LevelUp_Default
+        GuiControl, ICScriptHub:Disable, BGFLU_Default
         g_BrivGemFarm_LevelUp.LoadSettings(true)
-        GuiControl, ICScriptHub:Enable, BrivGemFarm_LevelUp_Default
+        GuiControl, ICScriptHub:Enable, BGFLU_Default
     }
 
     ; Save settings button
-    BrivGemFarm_LevelUp_Save()
+    BGFLU_Save()
     {
         global
         MsgBox, 4, , Save and apply changes?, 10
@@ -348,7 +697,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
     }
 
     ; TempsSettings changes
-    BrivGemFarm_LevelUp_Changes()
+    BGFLU_Changes()
     {
         global
         g_BrivGemFarm_LevelUp.TempSettings.ReloadTempSettingsDisplay()
@@ -356,7 +705,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
     }
 
     ; Undo temp settings button
-    BrivGemFarm_LevelUp_Undo()
+    BGFLU_Undo()
     {
         global
         MsgBox, 4, , Undo all changes?, 10
@@ -368,117 +717,119 @@ Class IC_BrivGemFarm_LevelUp_GUI
         Gui, IC_BrivGemFarm_LevelUp_TempSettings:Hide
     }
 
-    BrivGemFarm_LevelUp_MinDefault()
+    ; Default min values for champions without default parameters.
+    BGFLU_MinDefault()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
-        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("DefaultMinLevel", BrivGemFarm_LevelUp_MinRadio0 ? 0 : 1)
+        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("DefaultMinLevel", BGFLU_MinRadio0 ? 0 : 1)
         g_BrivGemFarm_LevelUp.FillMissingDefaultSettings()
     }
 
-    BrivGemFarm_LevelUp_MaxDefault()
+    ; Default max values for champions without default parameters.
+    BGFLU_MaxDefault()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
-        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("DefaultMaxLevel", BrivGemFarm_LevelUp_MaxRadio1 ? 1 : "Last")
+        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("DefaultMaxLevel", BGFLU_MaxRadio1 ? 1 : "Last")
         g_BrivGemFarm_LevelUp.FillMissingDefaultSettings()
     }
 
     ; Force Briv/Shandie MinLevel
-    BrivGemFarm_LevelUp_ForceBrivShandie()
+    BGFLU_ForceBrivShandie()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
-        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("ForceBrivShandie", BrivGemFarm_LevelUp_ForceBrivShandie)
+        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("ForceBrivShandie", BGFLU_ForceBrivShandie)
     }
 
     ; Skip early Dashwait
-    BrivGemFarm_LevelUp_SkipMinDashWait()
+    BGFLU_SkipMinDashWait()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
-        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("SkipMinDashWait", BrivGemFarm_LevelUp_SkipMinDashWait)
+        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("SkipMinDashWait", BGFLU_SkipMinDashWait)
     }
 
     ; Maximum number of simultaneous F keys inputs during MinLevel
-    BrivGemFarm_LevelUp_MaxSimultaneousInputs()
+    BGFLU_MaxSimultaneousInputs()
     {
         global
-        local beforeSubmit := BrivGemFarm_LevelUp_MaxSimultaneousInputs
+        local beforeSubmit := BGFLU_MaxSimultaneousInputs
         Gui, ICScriptHub:Submit, NoHide
-        local maxSimultaneousInputs := BrivGemFarm_LevelUp_MaxSimultaneousInputs
+        local maxSimultaneousInputs := BGFLU_MaxSimultaneousInputs
         if maxSimultaneousInputs is not digit
         {
-            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % beforeSubmit
+            GuiControl, ICScriptHub:Text, BGFLU_MaxSimultaneousInputs, % beforeSubmit
             return
         }
         else if (maxSimultaneousInputs < 1)
         {
             maxSimultaneousInputs := 1
-            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % maxSimultaneousInputs
+            GuiControl, ICScriptHub:Text, BGFLU_MaxSimultaneousInputs, % maxSimultaneousInputs
         }
         g_BrivGemFarm_LevelUp.TempSettings.AddSetting("MaxSimultaneousInputs", maxSimultaneousInputs)
     }
 
     ; Maximum number of simultaneous F keys inputs during MinLevel
-    BrivGemFarm_LevelUp_MinLevelTimeout()
+    BGFLU_MinLevelTimeout()
     {
         global
-        local beforeSubmit := BrivGemFarm_LevelUp_MinLevelTimeout
+        local beforeSubmit := BGFLU_MinLevelTimeout
         Gui, ICScriptHub:Submit, NoHide
-        local minLevelTimeout := BrivGemFarm_LevelUp_MinLevelTimeout
+        local minLevelTimeout := BGFLU_MinLevelTimeout
         if minLevelTimeout is not digit
-            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_MinLevelTimeout, % beforeSubmit
+            GuiControl, ICScriptHub:Text, BGFLU_MinLevelTimeout, % beforeSubmit
         else
             g_BrivGemFarm_LevelUp.TempSettings.AddSetting("MinLevelTimeout", minLevelTimeout)
     }
 
     ; BrivMinLevelArea
-    BrivGemFarm_LevelUp_BrivMinLevelArea()
+    BGFLU_BrivMinLevelArea()
     {
         global
-        local beforeSubmit := BrivGemFarm_LevelUp_BrivMinLevelArea
+        local beforeSubmit := BGFLU_BrivMinLevelArea
         Gui, ICScriptHub:Submit, NoHide
-        local brivMinLevelArea := BrivGemFarm_LevelUp_BrivMinLevelArea
+        local brivMinLevelArea := BGFLU_BrivMinLevelArea
         if brivMinLevelArea is not digit
         {
-            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelArea, % beforeSubmit
+            GuiControl, ICScriptHub:Text, BGFLU_BrivMinLevelArea, % beforeSubmit
             return
         }
         else if (brivMinLevelArea < 1)
         {
             brivMinLevelArea := 1
-            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_BrivMinLevelArea, % brivMinLevelArea
+            GuiControl, ICScriptHub:Text, BGFLU_BrivMinLevelArea, % brivMinLevelArea
         }
         g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelArea", brivMinLevelArea)
     }
 
     ; Level champions to soft cap after a failed conversion to reach stack zone faster
-    BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion()
+    BGFLU_LevelToSoftCapFailedConversion()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
-        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("LevelToSoftCapFailedConversion", BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion)
+        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("LevelToSoftCapFailedConversion", BGFLU_LevelToSoftCapFailedConversion)
     }
 
     ; Level champions to soft cap after a failed conversion to reach stack zone faster (Briv is excluded, desireable for early stacking)
-    BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv()
+    BGFLU_LevelToSoftCapFailedConversionBriv()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
-        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("LevelToSoftCapFailedConversionBriv", BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv)
+        g_BrivGemFarm_LevelUp.TempSettings.AddSetting("LevelToSoftCapFailedConversionBriv", BGFLU_LevelToSoftCapFailedConversionBriv)
     }
 
     ; Load new definitions
-    BrivGemFarm_LevelUp_LoadDefinitions()
+    BGFLU_LoadDefinitions()
     {
         global
-        GuiControl, ICScriptHub:Disable, BrivGemFarm_LevelUp_LoadDefinitions
+        GuiControl, ICScriptHub:Disable, BGFLU_LoadDefinitions
         g_DefinesLoader.Start(false, true)
     }
 
     ; Checks performed on combo mouseover / selection cancel
-    CheckComboStatus(W)
+    BGFLU_CheckComboStatus(W)
     {
         global
         local arr := this.GetCurrentlyDroppedCombo()
@@ -493,15 +844,15 @@ Class IC_BrivGemFarm_LevelUp_GUI
                     local brivMinLevelStacking := g_BrivGemFarm_LevelUp.TempSettings.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
                     SendMessage, CB_GETCOUNT, 0, 0,, ahk_id %ctrlH%
                     local count := Errorlevel
-                    GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % brivMinLevelStacking ; Add item
-                    GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % brivMinLevelStacking ; so only the level is kept in edit
+                    GuiControl, ICScriptHub:, BGFLU_Combo_BrivMinLevelStacking, % brivMinLevelStacking ; Add item
+                    GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % brivMinLevelStacking ; so only the level is kept in edit
                     PostMessage, CB_DELETESTRING, count, 0,, ahk_id %ctrlH% ; Remove item
                 }
                 else
                 {
-                    local choice := % DDL_BrivGemFarmLevelUpName_%seat_ID%
+                    local choice := % BGFLU_DDL_Name_%seat_ID%
                     if (choice == g_HeroDefines.HeroDataByID[58].name) ; After %choice%, ErrorLevel is set to 1 for an unknown reason
-                        GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_5, % "|" . choice
+                        GuiControl, ICScriptHub:ChooseString, BGFLU_DDL_Name_5, % "|" . choice
                     else
                         GuiControl, ICScriptHub:ChooseString, %choice%, % "|" . choice
                 }
@@ -539,16 +890,16 @@ Class IC_BrivGemFarm_LevelUp_GUI
             return
         Loop, 12
         {
-            local ctrlHwnd := HBrivGemFarmLevelUpMinLevel_%A_Index%
+            local ctrlHwnd := HBGFLU_MinLevel_%A_Index%
             SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlHwnd%
             if (Errorlevel)
                 return [A_Index, ctrlHwnd]
-            ctrlHwnd := HBrivGemFarmLevelUpMaxLevel_%A_Index%
+            ctrlHwnd := HBGFLU_MaxLevel_%A_Index%
             SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlHwnd%
             if (Errorlevel)
                 return [A_Index, ctrlHwnd]
         }
-        ctrlHwnd := HBrivGemFarmLevelUpBrivMinLevelStacking
+        ctrlHwnd := HBGFLU_BrivMinLevelStacking
         SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlHwnd%
         if (Errorlevel)
             return [58, ctrlHwnd]

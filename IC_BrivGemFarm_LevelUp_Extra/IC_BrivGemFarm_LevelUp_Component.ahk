@@ -9,7 +9,7 @@ if(IsObject(IC_BrivGemFarm_Component))
     IC_BrivGemFarm_LevelUp_Functions.InjectAddon()
 else
 {
-    GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusText, WARNING: This addon needs IC_BrivGemFarm enabled.
+    GuiControl, ICScriptHub:Text, BGFLU_StatusText, WARNING: This addon needs IC_BrivGemFarm enabled.
     return
 }
 
@@ -38,17 +38,17 @@ Class IC_BrivGemFarm_LevelUp_Component
         ; Preload settings into the GUI
         defaultMinLevel := this.Settings.DefaultMinLevel
         defaultMaxLevel := this.Settings.DefaultMaxLevel
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinRadio%defaultMinLevel%, 1
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxRadio%defaultMaxLevel%, 1
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % this.Settings.ShowSpoilers
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_SkipMinDashWait, % this.Settings.SkipMinDashWait
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
-        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
+        GuiControl, ICScriptHub:, BGFLU_MinRadio%defaultMinLevel%, 1
+        GuiControl, ICScriptHub:, BGFLU_MaxRadio%defaultMaxLevel%, 1
+        GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % this.Settings.ShowSpoilers
+        GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
+        GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
+        GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
+        GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
+        GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
+        GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         IC_BrivGemFarm_LevelUp_ToolTip.AddToolTips()
         g_DefinesLoader.Start()
         this.CreateTimedFunctions()
@@ -78,8 +78,8 @@ Class IC_BrivGemFarm_LevelUp_Component
             SetTimer, %k%, Off
             SetTimer, %k%, Delete
         }
-        GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusText, Waiting for Gem Farm to start
-        GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusWarning,
+        GuiControl, ICScriptHub:Text, BGFLU_StatusText, Waiting for Gem Farm to start
+        GuiControl, ICScriptHub:Text, BGFLU_StatusWarning,
     }
 
     ; Updates status string / warnings on a timer
@@ -132,16 +132,16 @@ Class IC_BrivGemFarm_LevelUp_Component
                     for k, v in statuses
                         if (v == loadWarningMsg)
                             statuses.RemoveAt(k)
-                GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusText, Running
+                GuiControl, ICScriptHub:Text, BGFLU_StatusText, Running
             }
         }
         catch
         {
-            GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusText, Waiting for Gem Farm to start
+            GuiControl, ICScriptHub:Text, BGFLU_StatusText, Waiting for Gem Farm to start
         }
         ; Display all statuses one after the other, then start again from the beginning
         statusIndex := statuses.Length() < statusIndex ? 1 : statusIndex
-        GuiControl, ICScriptHub:Text, BrivGemFarmLevelUpStatusWarning, % statuses[statusIndex++]
+        GuiControl, ICScriptHub:Text, BGFLU_StatusWarning, % statuses[statusIndex++]
     }
 
     ; Performs additional functions after definitions have been fully loaded
@@ -161,15 +161,15 @@ Class IC_BrivGemFarm_LevelUp_Component
                 levelSettings.maxLevels[heroID] := this.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1
             }
         }
-        GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadFormation
-        GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_Default
-        GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadDefinitions
+        GuiControl, ICScriptHub: Enable, BGFLU_LoadFormation
+        GuiControl, ICScriptHub: Enable, BGFLU_Default
+        GuiControl, ICScriptHub: Enable, BGFLU_LoadDefinitions
     }
 
     ; Allows to click on the button to manually load hero definitions
     OnHeroDefinesFailed()
     {
-        GuiControl, ICScriptHub: Enable, BrivGemFarm_LevelUp_LoadDefinitions
+        GuiControl, ICScriptHub: Enable, BGFLU_LoadDefinitions
     }
 
     /*  LoadSettings - Load GUI settings
@@ -225,19 +225,19 @@ Class IC_BrivGemFarm_LevelUp_Component
             this.TempSettings.AddSetting("", defaultSettings)
             defaultMinLevel := this.TempSettings.TempSettings.HasKey("DefaultMinLevel") ? this.TempSettings.TempSettings.DefaultMinLevel : this.Settings.DefaultMinLevel
             defaultMaxLevel := this.TempSettings.TempSettings.HasKey("DefaultMaxLevel") ? this.TempSettings.TempSettings.DefaultMaxLevel : this.Settings.DefaultMaxLevel
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinRadio%defaultMinLevel%, 1
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxRadio%defaultMaxLevel%, 1
+            GuiControl, ICScriptHub:, BGFLU_MinRadio%defaultMinLevel%, 1
+            GuiControl, ICScriptHub:, BGFLU_MaxRadio%defaultMaxLevel%, 1
             this.FillMissingDefaultSettings()
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % defaultSettings.ShowSpoilers
+            GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % defaultSettings.ShowSpoilers
             this.ToggleSpoilers(defaultSettings.ShowSpoilers)
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % defaultSettings.ForceBrivShandie
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_SkipMinDashWait, % defaultSettings.SkipMinDashWait
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % defaultSettings.MinLevelTimeout
-            GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelArea, % defaultSettings.BrivMinLevelArea
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
-            GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % defaultSettings.LevelToSoftCapFailedConversionBriv
+            GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % defaultSettings.ForceBrivShandie
+            GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % defaultSettings.SkipMinDashWait
+            GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
+            GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % defaultSettings.MinLevelTimeout
+            GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
+            GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % defaultSettings.BrivMinLevelArea
+            GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
+            GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % defaultSettings.LevelToSoftCapFailedConversionBriv
             this.LoadFormation(this.GetFormationFromGUI())
         }
         if (save)
@@ -324,19 +324,19 @@ Class IC_BrivGemFarm_LevelUp_Component
         currentFormation := this.GetFormationFromGUI()
         defaultMinLevel := this.Settings.DefaultMinLevel
         defaultMaxLevel := this.Settings.DefaultMaxLevel
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinRadio%defaultMinLevel%, 1
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxRadio%defaultMaxLevel%, 1
+        GuiControl, ICScriptHub:, BGFLU_MinRadio%defaultMinLevel%, 1
+        GuiControl, ICScriptHub:, BGFLU_MaxRadio%defaultMaxLevel%, 1
         showSpoilers := this.Settings.ShowSpoilers
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ShowSpoilers, % showSpoilers
+        GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % showSpoilers
         this.ToggleSpoilers(showSpoilers)
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_ForceBrivShandie, % this.Settings.ForceBrivShandie
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_SkipMinDashWait, % this.Settings.SkipMinDashWait
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_MinLevelTimeout, % this.Settings.MinLevelTimeout
-        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
+        GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
+        GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
+        GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
+        GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
+        GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
+        GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         this.TempSettings.Reset()
         this.LoadFormation(currentFormation)
         this.Update("Settings loaded.", true)
@@ -395,31 +395,31 @@ Class IC_BrivGemFarm_LevelUp_Component
     Update(text := "", settingsText := false, invalidFormationText := false)
     {
         if (settingsText)
-            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_SettingsStatusText, % text
+            GuiControl, ICScriptHub:Text, BGFLU_SettingsStatusText, % text
         else
         {
-            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_SettingsStatusText,
+            GuiControl, ICScriptHub:Text, BGFLU_SettingsStatusText,
             GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_Text, % "Status: " . text
         }
         this.UpdateLastUpdated()
         if (this.TempSettings.HasChanges())
         {
-            GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_SettingsStatusText
-            GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Save
-            GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Changes
-            GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_Undo
+            GuiControl, ICScriptHub:Hide, BGFLU_SettingsStatusText
+            GuiControl, ICScriptHub:Show, BGFLU_Save
+            GuiControl, ICScriptHub:Show, BGFLU_Changes
+            GuiControl, ICScriptHub:Show, BGFLU_Undo
         }
         else
         {
-            GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Save
-            GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Changes
-            GuiControl, ICScriptHub:Hide, BrivGemFarm_LevelUp_Undo
-            GuiControl, ICScriptHub:Show, BrivGemFarm_LevelUp_SettingsStatusText
+            GuiControl, ICScriptHub:Hide, BGFLU_Save
+            GuiControl, ICScriptHub:Hide, BGFLU_Changes
+            GuiControl, ICScriptHub:Hide, BGFLU_Undo
+            GuiControl, ICScriptHub:Show, BGFLU_SettingsStatusText
         }
         if (invalidFormationText)
-            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_NoFormationText, % text
+            GuiControl, ICScriptHub:Text, BGFLU_NoFormationText, % text
         else
-            GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_NoFormationText,
+            GuiControl, ICScriptHub:Text, BGFLU_NoFormationText,
     }
 
     ; Update the text that shows the last time cached_definitions.json was loaded
@@ -433,7 +433,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             settings.LastUpdateString := lastUpdateString
             g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         }
-        GuiControl, ICScriptHub:, BrivGemFarm_LevelUp_DefinitionsStatus, % lastUpdateString
+        GuiControl, ICScriptHub:, BGFLU_DefinitionsStatus, % lastUpdateString
     }
 
     ; Loads formation from champIDs into the GUI, defaults to Q formation
@@ -446,7 +446,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         }
         if (!IsObject(formation) OR formation.Length() == 0)
         {
-            GuiControl, ICScriptHub:Choose, BrivGemFarm_LevelUp_LoadFormation, 0
+            GuiControl, ICScriptHub:Choose, BGFLU_LoadFormation, 0
             this.Update("Invalid formation. Game closed?",, true)
             return
         }
@@ -459,7 +459,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             seat_id := heroData.seat_id
             name := heroData.name
             seats.Delete(seat_id)
-            GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_%seat_id%, % "|" . name
+            GuiControl, ICScriptHub:ChooseString, BGFLU_DDL_Name_%seat_id%, % "|" . name
             Sleep, 1
         }
         for k, v in seats ; Delete contents from unused seats
@@ -483,9 +483,9 @@ Class IC_BrivGemFarm_LevelUp_Component
         if (noScriptSave)
         {
             existingProcessID := g_UserSettings[ "ExeName"]
-	        Process, Exist, %existingProcessID%
-	        if (ErrorLevel)
-	        {
+            Process, Exist, %existingProcessID%
+            if (ErrorLevel)
+            {
                 g_SF.Memory.OpenProcessReader()
                 return g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formation), true) ; without empty slots
             }
@@ -521,15 +521,15 @@ Class IC_BrivGemFarm_LevelUp_Component
         global
         local heroData := g_HeroDefines.HeroDataByID[58]
         local upgrades := heroData.upgradesList
-        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpBrivMinLevelStacking
-        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % "|" . upgrades
+        GuiControl, -Redraw, BGFLU_Combo_BrivMinLevelStacking
+        GuiControl, ICScriptHub:, BGFLU_Combo_BrivMinLevelStacking, % "|" . upgrades
         if(heroData.cachedSize == "")
             heroData.cachedSize := IC_BrivGemFarm_LevelUp_Functions.DropDownSize(upgrades)
-        PostMessage, CB_SETDROPPEDWIDTH, heroData.cachedSize, 0, , ahk_id %HBrivGemFarmLevelUpBrivMinLevelStacking%
+        PostMessage, CB_SETDROPPEDWIDTH, heroData.cachedSize, 0, , ahk_id %HBGFLU_BrivMinLevelStacking%
         Sleep, 1
         local k := "BrivMinLevelStacking"
-        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpBrivMinLevelStacking, % g_BrivGemFarm_LevelUp.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
-        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpBrivMinLevelStacking
+        GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % g_BrivGemFarm_LevelUp.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
+        GuiControl, +Redraw, BGFLU_Combo_BrivMinLevelStacking
     }
 
     /*  _IC_BrivGemFarm_LevelUp_TempSettings
@@ -695,8 +695,8 @@ Class IC_BrivGemFarm_LevelUp_Component
         ; Build the listview with settings / min/Max settings, showing current (saved) and new (unsaved) values
         ReloadTempSettingsDisplay()
         {
-            restore_gui_on_return := GUIFunctions.LV_Scope("IC_BrivGemFarm_LevelUp_TempSettings", "BrivTempSettingsID")
-            Gui, IC_BrivGemFarm_LevelUp_TempSettings:ListView, BrivTempSettingsID
+            restore_gui_on_return := GUIFunctions.LV_Scope("IC_BrivGemFarm_LevelUp_TempSettings", "BGFLU_TempSettings")
+            Gui, IC_BrivGemFarm_LevelUp_TempSettings:ListView, BGFLU_TempSettings
             LV_Delete()
             for k, v in this.TempSettings
             {
@@ -761,17 +761,17 @@ Class IC_BrivGemFarm_LevelUp_Seat
     DeleteContents()
     {
         seat := this.ID
-        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
-        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
-        GuiControl, ICScriptHub:Choose, DDL_BrivGemFarmLevelUpName_%seat%, 0
-        GuiControl, ICScriptHub:Choose, Combo_BrivGemFarmLevelUpMinLevel_%seat%, 0
-        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % "|"
-        GuiControl, ICScriptHub:Move, Combo_BrivGemFarmLevelUpMinLevel_%seat%, h25
-        GuiControl, ICScriptHub:Choose, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, 0
-        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, % "|"
-        GuiControl, ICScriptHub:Move, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, h25
-        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
-        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
+        GuiControl, -Redraw, BGFLU_Combo_MinLevel_%seat%
+        GuiControl, -Redraw, BGFLU_Combo_MaxLevel_%seat%
+        GuiControl, ICScriptHub:Choose, BGFLU_DDL_Name_%seat%, 0
+        GuiControl, ICScriptHub:Choose, BGFLU_Combo_MinLevel_%seat%, 0
+        GuiControl, ICScriptHub:, BGFLU_Combo_MinLevel_%seat%, % "|"
+        GuiControl, ICScriptHub:Move, BGFLU_Combo_MinLevel_%seat%, h25
+        GuiControl, ICScriptHub:Choose, BGFLU_Combo_MaxLevel_%seat%, 0
+        GuiControl, ICScriptHub:, BGFLU_Combo_MaxLevel_%seat%, % "|"
+        GuiControl, ICScriptHub:Move, BGFLU_Combo_MaxLevel_%seat%, h25
+        GuiControl, +Redraw, BGFLU_Combo_MinLevel_%seat%
+        GuiControl, +Redraw, BGFLU_Combo_MaxLevel_%seat%
     }
 
     /*  UpdateMinMaxLevels - Update min/max upgrades values and upgrade list
@@ -787,10 +787,10 @@ Class IC_BrivGemFarm_LevelUp_Seat
         local heroData := g_HeroDefines.HeroDataByName[name]
         local heroID := heroData.id
         local upgrades := heroData.upgradesList
-        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
-        GuiControl, -Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
-        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % "|" . upgrades
-        GuiControl, ICScriptHub:, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, % "|" . upgrades
+        GuiControl, -Redraw, BGFLU_Combo_MinLevel_%seat%
+        GuiControl, -Redraw, BGFLU_Combo_MaxLevel_%seat%
+        GuiControl, ICScriptHub:, BGFLU_Combo_MinLevel_%seat%, % "|" . upgrades
+        GuiControl, ICScriptHub:, BGFLU_Combo_MaxLevel_%seat%, % "|" . upgrades
         if(heroData.cachedSize == "")
             heroData.cachedSize := IC_BrivGemFarm_LevelUp_Functions.DropDownSize(upgrades)
         this.SetMinMaxComboWidth(heroData.cachedSize)
@@ -801,10 +801,10 @@ Class IC_BrivGemFarm_LevelUp_Seat
         minLevel := minLevel != "" ? minlevel : g_BrivGemFarm_LevelUp.Settings.DefaultMinLevel
         local maxLevel := levelTempSettings.maxLevels.HasKey(heroID) ? levelTempSettings.maxLevels[heroID] : levelSettings.maxLevels[heroID]
         maxLevel := maxLevel != "" ? maxlevel : g_BrivGemFarm_LevelUp.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1
-        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpMinLevel_%seat%, % minLevel
-        GuiControl, ICScriptHub:Text, Combo_BrivGemFarmLevelUpMaxLevel_%seat%, % maxLevel
-        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMinLevel_%seat%
-        GuiControl, +Redraw, Combo_BrivGemFarmLevelUpMaxLevel_%seat%
+        GuiControl, ICScriptHub:Text, BGFLU_Combo_MinLevel_%seat%, % minLevel
+        GuiControl, ICScriptHub:Text, BGFLU_Combo_MaxLevel_%seat%, % maxLevel
+        GuiControl, +Redraw, BGFLU_Combo_MinLevel_%seat%
+        GuiControl, +Redraw, BGFLU_Combo_MaxLevel_%seat%
     }
 
     ; Sets the width of min/max comboBoxes for a seat
@@ -812,8 +812,8 @@ Class IC_BrivGemFarm_LevelUp_Seat
     {
         global
         local seat := this.ID
-        local minH := HBrivGemFarmLevelUpMinLevel_%seat%
-        local maxH := HBrivGemFarmLevelUpMaxLevel_%seat%
+        local minH := HBGFLU_MinLevel_%seat%
+        local maxH := HBGFLU_MaxLevel_%seat%
         PostMessage, CB_SETDROPPEDWIDTH, width, 0, , ahk_id %minH%
         PostMessage, CB_SETDROPPEDWIDTH, width, 0, , ahk_id %maxH%
     }
@@ -828,7 +828,7 @@ Class IC_BrivGemFarm_LevelUp_Seat
             if (showSpoilers OR !this.IsSpoiler(heroData.allow_time_gate))
                 names .= heroData.name . "|"
         }
-        GuiControl, ICScriptHub:, DDL_BrivGemFarmLevelUpName_%seat%, % names
+        GuiControl, ICScriptHub:, BGFLU_DDL_Name_%seat%, % names
     }
 
     ; Toggle this seat's spoilers on/off
@@ -837,18 +837,18 @@ Class IC_BrivGemFarm_LevelUp_Seat
         if (!this.HasSpoiler)
             return
         seat := this.ID
-        choice := DDL_BrivGemFarmLevelUpName_%seat% ; Remember the current name selection
+        choice := BGFLU_DDL_Name_%seat% ; Remember the current name selection
         this.UpdateNames(value)
-        GuiControl, ICScriptHub:ChooseString, DDL_BrivGemFarmLevelUpName_%seat%, % choice
+        GuiControl, ICScriptHub:ChooseString, BGFLU_DDL_Name_%seat%, % choice
         Gui, ICScriptHub:Submit, NoHide
-        if (choice != DDL_BrivGemFarmLevelUpName_%seat%)
+        if (choice != BGFLU_DDL_Name_%seat%)
             this.DeleteContents()
     }
 
     GetCurrentHeroData()
     {
         id := this.ID
-        name := DDL_BrivGemFarmLevelUpName_%id%
+        name := BGFLU_DDL_Name_%id%
         return g_HeroDefines.HeroDataByName[name]
     }
 

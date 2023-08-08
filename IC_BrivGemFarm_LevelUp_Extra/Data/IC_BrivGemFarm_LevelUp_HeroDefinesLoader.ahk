@@ -2,7 +2,7 @@
 class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
 {
     static cachedFileName := "cached_definitions.json"
-    static rootCachedPath := "\IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\" . IC_BrivGemFarm_LevelUp_HeroDefinesLoader.cachedFileName
+    static rootCachedPath := "IdleChampions\IdleDragons_Data\StreamingAssets\downloaded_files\"
     static DEFS_LOAD_FAIL := -1
     static FILE_LOAD := 0
     static TEXT_DEFS := 1
@@ -59,50 +59,59 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         g_BrivGemFarm_LevelUp.UpdateLastUpdated(text)
     }
 
-    ; Retrieves cached_definitions path. If silent = false, prompts a Yes/No dialog if new path / path not found
+    ; Returns the path to cached_definitions.
+    ; Parameters: - silent:bool - If false, prompts a Yes/No dialog if new path / path not found
+    GetCachedDefinitionsPath(silent := true)
+    {
+        lastCachedPath := g_BrivGemFarm_LevelUp.Settings.LastCachedPath
+        if (lastCachedPath == "" OR !FileExist(lastCachedPath) OR !silent)
+            cachedPath := this.FindCachedDefinitionsPath(silent)
+        else
+            cachedPath := lastCachedPath
+        return cachedPath
+    }
+
+    ; Find cached_definitions path.
     ; Saves the last known valid path
+    ; Parameters: - silent:bool - If false, prompts a Yes/No dialog if new path / path not found
     FindCachedDefinitionsPath(silent := true)
     {
-        settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath)
-        if (settings.LastCachedPath == "" OR !FileExist(settings.LastCachedPath) OR !silent)
+        fileName := this.cachedFileName
+        rootFolder := this.rootCachedPath
+        if (silent)
+            cachedPath := this.SearchForFile(fileName, "common\" . rootFolder, "Epic Games\" . rootFolder, "IdleChampions\" . rootFolder)
+        else ; Clicked on "Load Definitions"
         {
-            fileName := this.cachedFileName
-            exePath := % g_UserSettings[ "InstallPath" ] ; Steam
-            cachedPath := % exePath . "\..\..\" . this.rootCachedPath
-            if (silent)
-            {
-                if (!FileExist(cachedPath)) ; Try to find cached_definitions path
-                {
-                    this.UpdateLoading(this.Status . " Searching for " . fileName)
-                    Loop Files, this.rootCachedPath, R  ; Recurse into subfolders.
-                    {
-                        cachedPath = %A_LoopFileFullPath%
-                        break
-                    }
-                }
-            }
-            else ; Clicked on "Load Definitions"
-            {
-                MsgBox, 4, , Load file from new location?
-                IfMsgBox, Yes
-                    FileSelectFile, cachedPath, 1, % rootCachedPath, %fileName%, %fileName%
-                IfMsgBox, No
-                    return cachedPath
-            }
-            Sleep, 10
-            settings.LastCachedPath := cachedPath
-            g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
+            MsgBox, 4, , Load file from new location?
+            IfMsgBox, Yes
+                FileSelectFile, cachedPath, 1, % rootFolder, %fileName%, %fileName%
+            IfMsgBox, No
+                return exePath . "\..\..\" . rootFolder
         }
-        else
-            cachedPath := settings.LastCachedPath
+        settings := settings := g_BrivGemFarm_LevelUp.Settings
+        settings.LastCachedPath := cachedPath
+        g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         return cachedPath
+    }
+
+    ; Returns the file path to fileName that matches patterns in the patterns* parameter.
+    SearchForFile(fileName, patterns*)
+    {
+        this.UpdateLoading(this.Status . " Searching for " . fileName)
+        wildPattern := "\*" . fileName
+        Loop Files, % wildPattern, R  ; Recurse into subfolders.
+        {
+            for k, v in patterns
+                if (InStr(A_LoopFilePath, v))
+                    return %A_LoopFileLongPath%
+        }
     }
 
     ; Check if last known definitions from HeroDefines.json match cached_definitions.json
     CheckForDefsChange(params*)
     {
         this.UpdateLoading("Checking for new definitions...")
-        fileName := this.FindCachedDefinitionsPath(params*)
+        fileName := this.GetCachedDefinitionsPath(params*)
         fileExists := FileExist(fileName)
         if (fileExists)
         {
@@ -155,7 +164,7 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
             defs := this.CachedHeroDefines
             if (defs == "")
             {
-                fileName := this.FindCachedDefinitionsPath()
+                fileName := this.GetCachedDefinitionsPath()
                 if (!FileExist(fileName))
                     return this.DEFS_LOAD_FAIL
                 FileRead, contents, %fileName%

@@ -1,6 +1,5 @@
 #include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_Functions.ahk
-#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_GUI.ahk
-#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_ToolTip.ahk
+#include %A_LineFile%\..\GUI\IC_BrivGemFarm_LevelUp_GUI.ahk
 #include %A_LineFile%\..\Data\IC_BrivGemFarm_LevelUp_HeroDefinesLoader.ahk
 #include %A_LineFile%\..\Data\IC_BrivGemFarm_LevelUp_HeroDefinesData.ahk
 
@@ -704,7 +703,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             {
                 if (IsObject(v))
                     continue
-                if (k == "ShowSpoilers" OR k == "ForceBrivShandie" OR k == "LevelToSoftCapFailedConversion" OR k == "LevelToSoftCapFailedConversionBriv")
+                if k in ShowSpoilers,ForceBrivShandie,SkipMinDashWait,LevelToSoftCapFailedConversion,LevelToSoftCapFailedConversionBriv
                 {
                     saved := g_BrivGemFarm_LevelUp.Settings[k] ? "Yes" : "No"
                     v := v ? "Yes" : "No"

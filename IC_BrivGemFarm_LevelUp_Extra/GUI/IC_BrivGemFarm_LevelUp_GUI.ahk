@@ -172,6 +172,8 @@ Class IC_BrivGemFarm_LevelUp_GUI
         local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_GUISettingsGroup", "GUI Settings",, false)
         group.AddControl("BGFLU_LoadDefinitions", "Button", "Disabled gBGFLU_LoadDefinitions", "Load Definitions", true)
         group.AddControl("BGFLU_DefinitionsStatus", "Text", "yp+4 w450 R3", "No definitions.")
+        group.AddControl("BGFLU_DefinitionsPathText", "Text",, "Current location:", true)
+        group.AddControl("BGFLU_DefinitionsPath", "Edit", "-Background -VScroll Disabled w450 R2",, true)
         this.AddGroup(group)
     }
 

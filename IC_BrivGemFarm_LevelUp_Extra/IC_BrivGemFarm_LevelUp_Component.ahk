@@ -433,6 +433,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         }
         GuiControl, ICScriptHub:, BGFLU_DefinitionsStatus, % lastUpdateString
+        GuiControl, ICScriptHub:, BGFLU_DefinitionsPath, % settings.LastCachedPath
     }
 
     ; Loads formation from champIDs into the GUI, defaults to Q formation

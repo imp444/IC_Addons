@@ -1,4 +1,4 @@
-#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_GUI_Constants.ahk
+﻿#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_GUI_Constants.ahk
 #include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_GUI_Events.ahk
 #include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_GUI_Group.ahk
 #include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_ToolTip.ahk
@@ -38,6 +38,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
     static MainGroup := ""
     static Groups := []
     static GroupsByName := {}
+    static SectionNames := ["Min/Max Settings", "Min Settings", "Fail Run Recovery Settings", "GUI Settings"]
 
     ; Creates all of the groups of settings.
     ; All of the other groups are children of BGFLU_SettingsGroup.
@@ -75,10 +76,9 @@ Class IC_BrivGemFarm_LevelUp_GUI
         this.MainGroup := group
         this.SetupBGFLU_DefaultSettingsGroup()
         GuiControlGet, pos, ICScriptHub:Pos, BGFLU_DefaultSettingsGroup
-        sections := "Min/Max Settings||Min Settings|Fail Run Recovery Settings|GUI Settings"
-        Gui, Font, s11
-        group.AddControl("BGFLU_LB_Section", "ListBox", "AltSubmit R4 w175 gBGFLU_LB_Section x" . (PosX + PosW + 10) . " y" . (posY + 6), sections, false)
-        Gui, Font, s9
+        Gui, ICScriptHub:Font, s11
+        group.AddControl("BGFLU_LB_Section", "ListBox", "AltSubmit R4 w175 gBGFLU_LB_Section x" . (PosX + PosW + 10) . " y" . (posY + 6),, false)
+        Gui, ICScriptHub:Font, s9
     }
 
     SetupBGFLU_DefaultSettingsGroup()
@@ -201,7 +201,18 @@ Class IC_BrivGemFarm_LevelUp_GUI
                 }
             }
         }
+        this.UpdateLBSection(displayed)
         this.MainGroup.AutoResize()
+    }
+
+    ; Update indicators showing currently displated sections
+    UpdateLBSection(displayed)
+    {
+        names := this.SectionNames
+        selection := ""
+        for k, v in names
+            selection .= (displayed.HasKey(k + 1) ? "‣" : " ") . v . "|"
+        GuiControl, ICScriptHub:, BGFLU_LB_Section, % "|" . selection
     }
 
     ; Returns an object that contains the groups to display and the new Y position of the group.

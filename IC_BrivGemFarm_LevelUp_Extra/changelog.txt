@@ -1,3 +1,12 @@
+August 08, 2023 - v0.6.1
+    Added indicators next to the "jump-to-section" control that show the currently displayed sections.
+    The saved location of the cached_definitions file is now shown under the GUI settings section.
+    (It is still possible to change it by manually loading a new file).
+    Fixes:
+        Increased font size for the "jump-to-section" control.
+        Fixed the value displayed for the SkipMinDashWait setting in temporary settings view.
+        Fixed automatic search for cached_definitions (Steam, Epic Games, CNE).
+
 July 27, 2023 - v0.6.0
     Updated the overall sections of the GUI to resize themselves better on creation and when manually resizing the window.
     It is now possible to jump to sections that would be hidden on smaller screens using the list located on the top right of BrivGemFarm Settings.

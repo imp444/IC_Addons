@@ -79,30 +79,66 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         fileName := this.cachedFileName
         rootFolder := this.rootCachedPath
         if (silent)
-            cachedPath := this.SearchForFile(fileName, "common\" . rootFolder, "Epic Games\" . rootFolder, "IdleChampions\" . rootFolder)
+            cachedPath := this.SearchForCachedDefinitionsPath(fileName)
         else ; Clicked on "Load Definitions"
         {
+            lastCachedPath := g_BrivGemFarm_LevelUp.Settings.LastCachedPath
             MsgBox, 4, , Load file from new location?
             IfMsgBox, Yes
                 FileSelectFile, cachedPath, 1, % rootFolder, %fileName%, %fileName%
             IfMsgBox, No
-                return exePath . "\..\..\" . rootFolder
+                return lastCachedPath
+            if (cachedPath == "")
+                return lastCachedPath
         }
-        settings := settings := g_BrivGemFarm_LevelUp.Settings
+        settings := g_BrivGemFarm_LevelUp.Settings
         settings.LastCachedPath := cachedPath
         g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
         return cachedPath
     }
 
-    ; Returns the file path to fileName that matches patterns in the patterns* parameter.
-    SearchForFile(fileName, patterns*)
+    ; Returns the name of the folder that contains the game"s .exe
+    GetPlatForm(exePath)
     {
-        this.UpdateLoading(this.Status . " Searching for " . fileName)
-        wildPattern := "\*" . fileName
-        Loop Files, % wildPattern, R  ; Recurse into subfolders.
+        if InStr(exePath, "Steam\steamapps\common\IdleChampions")
+            platform := "Steam"
+        else if (InStr(exePath, "Epic Games\IdleChampions") || InStr(exePath, "com.epicgames.launcher"))
+            platform := "Epic Games"
+        else if InStr(exePath, "Idle Champions\IdleChampions")
+            platform := "Idle Champions"
+        return platform
+    }
+
+    ; Returns the path to cached_definitions for Steam, EG or CNE.
+    SearchForCachedDefinitionsPath(fileName)
+    {
+        rootFolder := this.rootCachedPath
+        exePath := % g_UserSettings[ "InstallPath" ]
+        platform := this.GetPlatForm(exePath)
+        if platform in Steam,Idle Champions
         {
-            for k, v in patterns
-                if (InStr(A_LoopFilePath, v))
+            subPattern := (platform == "Steam" ? "common\" : "Idle Champions\") . rootFolder
+            pattern := exePath . "\..\..\" . rootFolder . fileName
+        }
+        else
+        {
+            wildPattern := "\*" . "Program Files"
+            Loop Files, % wildPattern, D
+                epicDir := A_LoopFileLongPath
+            pattern := epicDir . "\" . fileName
+            subPattern := "Epic Games\" . rootFolder
+        }
+        return this.SearchForFile(pattern, subPattern)
+    }
+
+    ; Returns the file path matching pattern and subPatterns* parameters.
+    SearchForFile(pattern, subPatterns*)
+    {
+        this.UpdateLoading(this.Status . " Searching for " . pattern)
+        Loop Files, % pattern, R  ; Recurse into subfolders.
+        {
+            for k, v in subPatterns
+                if (InStr(A_LoopFileLongPath, v))
                     return %A_LoopFileLongPath%
         }
     }

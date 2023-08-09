@@ -5,6 +5,15 @@ GUIFunctions.AddTab("Briv Feat Swap")
 ; Add GUI fields to this addon's tab.
 Gui, ICScriptHub:Tab, Briv Feat Swap
 Gui, ICScriptHub:Font, w700
+
+GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
+Gui, ICScriptHub:Add, Text, Section vBGFBFS_Status, Status:
+Gui, ICScriptHub:Add, Text, x+5 w170 vBGFBFS_StatusText, Not Running
+GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
+
+Gui, ICScriptHub:Add, Text, xs ys+15 Hidden vBGFBFS_StatusWarning, WARNING: Addon was loaded too late. Stop/start Gem Farm to resume.
+GUIFunctions.UseThemeTextColor()
+
 Gui, ICScriptHub:Add, Text, , Skip setup:
 Gui, ICScriptHub:Font, w400
 
@@ -30,11 +39,6 @@ Gui, ICScriptHub:Add, Edit, x%posX% y+-16 h19 w33 Limit3 vBrivGemFarm_BrivFeatSw
 GUIFunctions.UseThemeTextColor()
 Gui, ICScriptHub:Add, Text, vBrivFeatSwapsMadeThisRunText xs ys+120 w15, SwapsMadeThisRun:
 Gui, ICScriptHub:Add, Text, vBrivFeatSwapsMadeThisRunValue x+%xSpacing% w40
-
-Gui, ICScriptHub:Font, w700
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapStatus x%leftAlign% y+%ySpacing%, Status:
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapStatusText x+%xSpacing% w170, Not Running
-Gui, ICScriptHub:Font, w400
 
 ; Maximum number of simultaneous F keys inputs during MinLevel
 BrivGemFarm_BrivFeatSwap_Target()
@@ -64,7 +68,7 @@ if(IsObject(IC_BrivGemFarm_Component))
 }
 else
 {
-    GuiControl, ICScriptHub:Text, BrivFeatSwapStatusText, WARNING: This addon needs IC_BrivGemFarm enabled.
+    GuiControl, ICScriptHub:Text, BGFBFS_StatusText, WARNING: This addon needs IC_BrivGemFarm enabled.
     return
 }
 
@@ -97,7 +101,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     CreateTimedFunctions()
     {
         this.TimerFunctions := {}
-        fncToCallOnTimer := ObjBindMethod(this, "Update")
+        fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
         this.TimerFunctions[fncToCallOnTimer] := 1000
     }
 
@@ -109,31 +113,42 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
     }
 
-     Stop()
+    Stop()
     {
         for k,v in this.TimerFunctions
         {
             SetTimer, %k%, Off
             SetTimer, %k%, Delete
         }
-        GuiControl, ICScriptHub:Text, BrivFeatSwapStatusText, Not Running
+        GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Not Running
+        GuiControl, ICScriptHub:Hide, BGFBFS_StatusWarning
     }
 
     ; Update the GUI, try to read Q/W/E skip amounts
-    Update()
+    UpdateStatus()
     {
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            GuiControl, ICScriptHub:Text, BrivFeatSwapQValue, % SharedRunData.BrivFeatSwap_savedQSKipAmount
-            GuiControl, ICScriptHub:Text, BrivFeatSwapWValue, % SharedRunData.BrivFeatSwap_savedWSKipAmount
-            GuiControl, ICScriptHub:Text, BrivFeatSwapEValue, % SharedRunData.BrivFeatSwap_savedESKipAmount
-            GuiControl, ICScriptHub:Text, BrivFeatSwapsMadeThisRunValue, % SharedRunData.SwapsMadeThisRun
-            GuiControl, ICScriptHub:Text, BrivFeatSwapStatusText, Running
+            if (!SharedRunData.BGFBFS_Running)
+            {
+                this.Stop()
+                GuiControl, ICScriptHub:Show, BGFBFS_StatusWarning
+                str := "BrivGemFarm Briv Feat Swap addon was loaded after Briv Gem Farm started.`n"
+                MsgBox, % str . "If you want it enabled, press Stop/Start to retry."
+            }
+            else
+            {
+                GuiControl, ICScriptHub:Text, BrivFeatSwapQValue, % SharedRunData.BrivFeatSwap_savedQSKipAmount
+                GuiControl, ICScriptHub:Text, BrivFeatSwapWValue, % SharedRunData.BrivFeatSwap_savedWSKipAmount
+                GuiControl, ICScriptHub:Text, BrivFeatSwapEValue, % SharedRunData.BrivFeatSwap_savedESKipAmount
+                GuiControl, ICScriptHub:Text, BrivFeatSwapsMadeThisRunValue, % SharedRunData.SwapsMadeThisRun
+                GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Running
+            }
         }
         catch
         {
-            GuiControl, ICScriptHub:Text, BrivFeatSwapStatusText, Waiting for Gem Farm to start
+            GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Waiting for Gem Farm to start
         }
     }
 
@@ -141,7 +156,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         settings := {targetQ:targetQ, targetE:targetE}
         g_SF.WriteObjectToJSON(this.SettingsPath, settings)
-        GuiControl, ICScriptHub:Text, BrivFeatSwapStatusText, Settings saved
+        GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Settings saved
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
@@ -149,7 +164,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
         catch
         {
-            GuiControl, ICScriptHub:Text, BrivFeatSwapStatusText, Waiting for Gem Farm to start
+            GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Waiting for Gem Farm to start
         }
     }
 }

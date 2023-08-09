@@ -182,6 +182,12 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
 ; Overrides IC_SharedData_Class, check for compatibility
 class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Class
 {
+    ; Return true if the class has been updated by the addon
+    BGFBFS_Running()
+    {
+        return true
+    }
+
     ; Saves current Briv jump amount
     BrivFeatSwap_UpdateSkipAmount(formationIndex := 0)
     {

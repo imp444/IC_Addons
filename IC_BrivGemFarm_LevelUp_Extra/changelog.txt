@@ -1,3 +1,9 @@
+August 11, 2023 - v0.6.2
+    Improved search for cached_definitions file speed.
+    Hotfixes:
+        Disabled automatic cached_definitions search for EG.
+        Disabled table_checksums because of a parsing error (the addon may load "new" definitions at the start more often).
+
 August 08, 2023 - v0.6.1
     Added indicators next to the "jump-to-section" control that show the currently displayed sections.
     The saved location of the cached_definitions file is now shown under the GUI settings section.

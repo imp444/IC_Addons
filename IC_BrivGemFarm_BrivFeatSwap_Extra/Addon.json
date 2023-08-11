@@ -9,6 +9,10 @@
         {
             "Name":"Briv Gem Farm",
             "Version":"v1.3.0"
+        },
+        {
+            "Name":"BrivGemFarm Advanced Settings",
+            "Version":"v0.2.0"
         }
     ]
 }

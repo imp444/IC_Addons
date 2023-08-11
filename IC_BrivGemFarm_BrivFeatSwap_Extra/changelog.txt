@@ -1,3 +1,10 @@
+August 11, 2023 - v1.2.0
+    Added quick presets for each of the recommended routes. Each preset will select preferred Briv jump
+    settings in Advanced Settings tab and LevelUp addon if using the 8J/4J route with walks.
+    Added warnings if using the wrong route for the current Briv nJ number of imperfect jump %.
+    Status now shows the actual running state of the addon and displays a warning if the addon has not been loaded in BrivGemFarm.
+    Added BrivGemFarm Advanced Settings to the dependency list.
+
 July 17, 2023 - v1.1.2
     Updated to ignore warnings when updating IC_BrivGemFarm_Class.
 

@@ -122,11 +122,12 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         }
         else
         {
-            wildPattern := "\*" . "Program Files"
-            Loop Files, % wildPattern, D
-                epicDir := A_LoopFileLongPath
-            pattern := epicDir . "\" . fileName
-            subPattern := "Epic Games\" . rootFolder
+            return ""
+;            wildPattern := "\*" . "Program Files"
+;            Loop Files, % wildPattern, D
+;                epicDir := A_LoopFileLongPath
+;            pattern := epicDir . "\" . fileName
+;            subPattern := "Epic Games\" . rootFolder
         }
         return this.SearchForFile(pattern, subPattern)
     }
@@ -164,7 +165,6 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
                 if (settings.LastTableChecksums == "" OR !IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(settings.LastTableChecksums, tableChecksums))
                 {
                     this.UpdateLoading("New definitions found")
-                    settings.LastTableChecksums := tableChecksums
                     g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
                     this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
                     return true

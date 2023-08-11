@@ -1,70 +1,13 @@
 #include %A_LineFile%\..\IC_BrivGemFarm_BrivFeatSwap_Functions.ahk
+#include %A_LineFile%\..\IC_BrivGemFarm_BrivFeatSwap_GUI.ahk
 
-GUIFunctions.AddTab("Briv Feat Swap")
-
-; Add GUI fields to this addon's tab.
-Gui, ICScriptHub:Tab, Briv Feat Swap
-Gui, ICScriptHub:Font, w700
-
-GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
-Gui, ICScriptHub:Add, Text, Section vBGFBFS_Status, Status:
-Gui, ICScriptHub:Add, Text, x+5 w170 vBGFBFS_StatusText, Not Running
-GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-
-Gui, ICScriptHub:Add, Text, xs ys+15 Hidden vBGFBFS_StatusWarning, WARNING: Addon was loaded too late. Stop/start Gem Farm to resume.
-GUIFunctions.UseThemeTextColor()
-
-Gui, ICScriptHub:Add, Text, , Skip setup:
-Gui, ICScriptHub:Font, w400
-
-leftAlign := 20
-xSpacing := 5
-ySpacing := 20
-Gui, ICScriptHub:Add, Text, Section vBrivFeatSwapReads xs+%leftAlign% y+%ySpacing% w30, Reads
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapTarget x+15 w30, Target
-GuiControlGet, pos, ICScriptHub:Pos, BrivFeatSwapTarget
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapQText xs ys+30 w15, Q:
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapQValue x+%xSpacing% w20
-GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, x%posX% y+-16 h19 w33 Limit3 vBrivGemFarm_BrivFeatSwap_TargetQ gBrivGemFarm_BrivFeatSwap_Target, 0
-GUIFunctions.UseThemeTextColor()
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapWText xs ys+60 w15, W:
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapWValue x+%xSpacing% w20
-xPosSave := posX+1
-Gui, ICScriptHub:Add, Button, x%xPosSave% y+-16 h19 w31 vBrivGemFarm_BrivFeatSwap_Save gBrivGemFarm_BrivFeatSwap_Save, Save
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapEText xs ys+90 w15, E:
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapEValue x+%xSpacing% w20
-GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-Gui, ICScriptHub:Add, Edit, x%posX% y+-16 h19 w33 Limit3 vBrivGemFarm_BrivFeatSwap_TargetE gBrivGemFarm_BrivFeatSwap_Target, 0
-GUIFunctions.UseThemeTextColor()
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapsMadeThisRunText xs ys+120 w15, SwapsMadeThisRun:
-Gui, ICScriptHub:Add, Text, vBrivFeatSwapsMadeThisRunValue x+%xSpacing% w40
-
-; Maximum number of simultaneous F keys inputs during MinLevel
-BrivGemFarm_BrivFeatSwap_Target()
-{
-    global
-    local beforeSubmit := % %A_GuiControl%
-    Gui, ICScriptHub:Submit, NoHide
-    local value := % %A_GuiControl%
-    if value is not digit
-        GuiControl, ICScriptHub:Text, %A_GuiControl%, % beforeSubmit
-}
-
-BrivGemFarm_BrivFeatSwap_Save()
-{
-    global
-    Gui, ICScriptHub:Submit, NoHide
-    GuiControl, ICScriptHub: Disable, BrivGemFarm_BrivFeatSwap_Save
-    g_BrivFeatSwap.Save(BrivGemFarm_BrivFeatSwap_TargetQ, BrivGemFarm_BrivFeatSwap_TargetE)
-    GuiControl, ICScriptHub: Enable, BrivGemFarm_BrivFeatSwap_Save
-}
-
-; Test to see if BrivGemFarm addon is avaialbe.
+; Test to see if BrivGemFarm addon is available.
 if(IsObject(IC_BrivGemFarm_Component))
 {
     IC_BrivGemFarm_BrivFeatSwap_Functions.InjectAddon()
     global g_BrivFeatSwap := new IC_BrivGemFarm_BrivFeatSwap_Component
+    global g_BrivFeatSwapGui := new IC_BrivGemFarm_BrivFeatSwap_GUI
+    g_BrivFeatSwap.Init()
 }
 else
 {
@@ -81,23 +24,35 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
 {
     static SettingsPath := A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json"
 
+    SavedPreferredAdvancedSettings := 0
+    Settings := ""
     TimerFunctions := ""
 
-    __New()
+    Init()
     {
-        settings := g_SF.LoadObjectFromJSON(this.SettingsPath)
+        g_BrivFeatSwapGui.SetupGroups()
+        ; Save the state of the mod50 checkboxes for Preferred Briv Jump Zones in Advanced Settings tab.
+        this.SavedPreferredAdvancedSettings := this.GetSavedPreferredAdvancedSettings()
+        this.SetupPresets()
+        this.Settings := settings := g_SF.LoadObjectFromJSON(this.SettingsPath)
         if (IsObject(settings))
         {
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ, % settings.targetQ
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % settings.targetE
+            GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % settings.Preset
+            Sleep, 50
+            if (settings.Preset)
+                this.SaveMod50Preset()
         }
+        else
+            this.Settings := {}
         this.CreateTimedFunctions()
         g_BrivFarmAddonStartFunctions.Push(ObjBindMethod(this, "Start"))
         g_BrivFarmAddonStopFunctions.Push(ObjBindMethod(this, "Stop"))
         this.Start()
     }
 
-   ; Adds timed functions to be run when briv gem farm is started
+    ; Adds timed functions to be run when briv gem farm is started
     CreateTimedFunctions()
     {
         this.TimerFunctions := {}
@@ -152,11 +107,23 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
     }
 
+    ; Save settings.
+    ; Parameters: - targetQ:int - Target Briv skip value to look for when switching to Q formation.
+    ;             - targetE:int - Target Briv skip value to look for when switching to E formation.
     Save(targetQ, targetE)
     {
-        settings := {targetQ:targetQ, targetE:targetE}
+        settings := this.Settings
+        GuiControlGet, presetName, ICScriptHub:, BGFBFS_Preset
+        if (presetName)
+            settings.Preset := presetName
+        else
+            settings.Preset := ""
+        this.SaveMod50Preset()
+        settings.targetQ := targetQ
+        settings.targetE := targetE
         g_SF.WriteObjectToJSON(this.SettingsPath, settings)
         GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Settings saved
+        ; Apply settings to BrivGemFarm
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
@@ -166,5 +133,114 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         {
             GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Waiting for Gem Farm to start
         }
+    }
+
+    ; Copy the state of the mod50 checkboxes for Preferred Briv Jump Zones in this addon's tab
+    ; into the mod50 checkboxes in Advanced Settings tab, then reload and save.
+    ; Doesn't save settings to the current profile.
+    SaveMod50Preset()
+    {
+        Loop, 50
+        {
+            isChecked := BGFBFS_CopyPasteBGFAS_Mod_50_%A_Index%
+            g_BrivUserSettings[ "PreferredBrivJumpZones" ][A_Index] := isChecked
+        }
+        IC_BrivGemFarm_AdvancedSettings_Functions.LoadPreferredBrivJumpSettings()
+        IC_BrivGemFarm_AdvancedSettings_Component.SaveAdvancedSettings()
+    }
+
+    ; Read the state of the mod50 checkboxes for Preferred Briv Jump Zones in Advanced Settings tab.
+    GetSavedPreferredAdvancedSettings()
+    {
+        value := 0
+        Loop, 50
+        {
+            GuiControlGet, isChecked, ICScriptHub:, PreferredBrivJumpSettingMod_50_%A_Index%
+            if (isChecked)
+                value += 2 ** (A_Index - 1)
+        }
+        return value
+    }
+
+    ; Setup choices for the Presets ListBox.
+    SetupPresets()
+    {
+        choices := "||5J/4J|8J/4J|8J/4J + walk 1/2/3/4|9J/4J"
+        GuiControl, ICScriptHub:, BGFBFS_Preset, % "|" . choices
+        GuiControl, ICScriptHub:Choose, BGFBFS_Preset, |0
+    }
+
+    ; Apply settings for a specific preset.
+    ; Parameters: - name:str - Name of a preset shown in the Presets ListBox.
+    LoadPreset(name)
+    {
+        Switch name
+        {
+            case "5J/4J":
+                this.ApplyPresets(1125891005438934, 5, 4)
+            case "8J/4J":
+                this.ApplyPresets(1125897724754935, 8, 4)
+            case "8J/4J + walk 1/2/3/4":
+                this.ApplyPresets(1125897724754928, 8, 4,, true)
+            case "9J/4J":
+                this.ApplyPresets(580042328931855, 9, 4)
+            case default:
+                this.ApplyPresets(this.SavedPreferredAdvancedSettings, this.Settings.targetQ, this.Settings.targetE, true)
+        }
+        ; Apply BrivMinLevelArea setting to BGFLU addon
+        if (name == "8J/4J + walk 1/2/3/4" && IsObject(g_BrivGemFarm_LevelUp))
+        {
+            GuiControl, ICScriptHub:, BGFBFS_BrivMinLevelArea, 5
+            GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, 5
+        }
+        else
+            GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % g_BrivGemFarm_LevelUp.Settings.BrivMinLevelArea
+    }
+
+    ; Apply temporary GUI settings for the selected preset.
+    ; Parameters: - mod50Value:int - Bitfield representing checked values for each mod50 checkbox.
+    ;             - targetQ:int - Value to apply to the targetQ edit field.
+    ;             - targetE:int - Value to apply to the targetE edit field.
+    ;             - default:bool - Used to toggle mod50 checkboxes. If true, hide mod50 checkboxes.
+    ;             - showBrivMinLevelArea:bool - Used to toggle BrivMinLevelArea setting . If true, hide BrivMinLevelArea.
+    ApplyPresets(mod50Value, targetQ, targetE, default := false, showBrivMinLevelArea := false)
+    {
+        GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ, % targetQ
+        GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % targetE
+        this.LoadMod50(mod50Value)
+        this.ToggleMod50(!default)
+        this.ToggleBrivMinLevelArea(showBrivMinLevelArea)
+    }
+
+    ; Set the state of the mod50 checkboxes for Preferred Briv Jump Zones in BGFBFS tab.
+    ; Parameters: value:int - A bitfield that represents the checked state of each checkbox.
+    LoadMod50(value)
+    {
+        Loop, 50
+        {
+            checked := (value & (2 ** (A_Index - 1))) != 0
+            GuiControl, ICScriptHub:, BGFBFS_CopyPasteBGFAS_Mod_50_%A_Index%, % checked
+        }
+        Gui, ICScriptHub:Submit, NoHide
+    }
+
+    ; Show / hide mod50 checkboxes for Preferred Briv Jump Zones in BGFBFS tab.
+    ; Parameters: - show:bool - If true, show Preferred Briv Jump Zones, else hide it.
+    ToggleMod50(show := true)
+    {
+        value := show ? "Show" : "Hide"
+        Loop, 50
+            GuiControl, ICScriptHub:%value%, BGFBFS_CopyPasteBGFAS_Mod_50_%A_Index%
+        GuiControl, ICScriptHub:%value%, BGFBFS_PreferredBrivJumpZones
+    }
+
+    ; Show / hide BrivMinLevelArea setting in BGFBFS tab.
+    ; Parameters: - show:bool - If true, show BrivMinLevelArea, else hide it.
+    ToggleBrivMinLevelArea(show := true)
+    {
+        value := show ? "Show" : "Hide"
+        GuiControl, ICScriptHub:%value%, BGFBFS_BrivMinLevelArea
+        GuiControl, ICScriptHub:%value%, BGFBFS_BrivMinLevelAreaText
+        GuiControl, ICScriptHub:%value%, BGFBFS_BGFLU
     }
 }

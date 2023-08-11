@@ -18,12 +18,15 @@ else
 /*  IC_BrivGemFarm_BrivFeatSwap_Component
 
     Class that manages the GUI for BrivFeatSwap.
-    Starts automotically on script launch and waits for Briv Gem Farm to be started, then stops/starts every time buttons on the main Briv Gem Farm window are clicked.
+    Starts automotically on script launch and waits for Briv Gem Farm to be started,
+    then stops/starts every time buttons on the main Briv Gem Farm window are clicked.
 */
 Class IC_BrivGemFarm_BrivFeatSwap_Component
 {
     static SettingsPath := A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json"
 
+    DetectedSkipAmount := ""
+    DetectedSkipChance := ""
     SavedPreferredAdvancedSettings := 0
     Settings := ""
     TimerFunctions := ""
@@ -82,6 +85,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Update the GUI, try to read Q/W/E skip amounts
     UpdateStatus()
     {
+        if (this.DetectedSkipAmount == "")
+            this.UpdateDetectedSkipAmount()
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
@@ -105,6 +110,28 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         {
             GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Waiting for Gem Farm to start
         }
+    }
+
+    UpdateDetectedSkipAmount()
+    {
+        existingProcessID := g_UserSettings[ "ExeName"]
+        Process, Exist, %existingProcessID%
+        if (ErrorLevel)
+        {
+            g_SF.Memory.OpenProcessReader()
+            if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "")
+                g_SF.Memory.ActiveEffectKeyHandler.Refresh()
+            skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
+            skipChance := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipChance()
+            this.DetectedSkipAmount := skipAmount
+            this.DetectedSkipChance := skipChance
+            GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
+            this.UpdatePresetWarning(targetQ)
+            str := "Briv skip: " . skipAmount . "J" . Format("{:.2f}", 100 * skipChance) . "%"
+            GuiControl, ICScriptHub:, BGFBFS_DetectedText, % str
+        }
+        else
+            GuiControl, ICScriptHub:, BGFBFS_DetectedText, "Briv skip: Game closed."
     }
 
     ; Save settings.
@@ -207,9 +234,24 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ, % targetQ
         GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % targetE
+        this.UpdatePresetWarning(targetQ)
         this.LoadMod50(mod50Value)
         this.ToggleMod50(!default)
         this.ToggleBrivMinLevelArea(showBrivMinLevelArea)
+    }
+
+    ; Update warning messages depending on read Briv skip values.
+    ; Show a waring if not at perfect 100% chance or if the wrong Briv skip preset has been selected.
+    ; Parameters: - targetQ:int - Currently displayed target Briv skip value for Q formation.
+    UpdatePresetWarning(targetQ)
+    {
+        controlID := "BGFBFS_PresetWarningText"
+        if ((detectedChance := this.DetectedSkipChance) != "" && detectedChance != 1)
+            GuiControl, ICScriptHub:, %controlID%, % "WARNING: Briv not at 100" . "%" . " skip chance."
+        else if ((detectedAmount := this.DetectedSkipAmount) != "" && targetQ != detectedAmount)
+            GuiControl, ICScriptHub:, %controlID%, WARNING: Wrong preset for current Briv skip.
+        else
+            GuiControl, ICScriptHub:, %controlID%
     }
 
     ; Set the state of the mod50 checkboxes for Preferred Briv Jump Zones in BGFBFS tab.

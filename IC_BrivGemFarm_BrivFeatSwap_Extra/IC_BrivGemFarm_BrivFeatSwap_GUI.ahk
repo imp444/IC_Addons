@@ -67,6 +67,9 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Add, Text, Section xs y+%yTitleSpacing% vBGFBFS_PresetText, Presets:
         Gui, ICScriptHub:Font, w400
         Gui, ICScriptHub:Add, DropDownList, x+%xSpacing% yp-3 w100 vBGFBFS_Preset gBGFBFS_Preset
+        GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
+        Gui, ICScriptHub:Add, Text, x+30 ys w270 vBGFBFS_PresetWarningText
+        GUIFunctions.UseThemeTextColor()
         this.SetupSkipSetupGroup()
         this.SetupPreferredBrivJumpZonesGroup()
         this.SetupBGFLUGroup()
@@ -82,7 +85,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Font, w700
         Gui, ICScriptHub:Add, GroupBox, Section xs vBGFBFS_SkipSetup, Skip setup
         Gui, ICScriptHub:Font, w400
-        Gui, ICScriptHub:Add, Text, vBrivFeatSwapReads xs+%xSpacing% ys+%yTitleSpacing% w30, Reads
+        Gui, ICScriptHub:Add, Text, xs+%xSpacing% ys+%yTitleSpacing% w125 vBGFBFS_DetectedText, Briv skip:
+        Gui, ICScriptHub:Add, Text, vBrivFeatSwapReads xs+%xSpacing% y+%ySpacing% w30, Reads
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapTarget x+15 w30, Target
         GuiControlGet, pos, ICScriptHub:Pos, BrivFeatSwapTarget
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapQText xs+%xSpacing% y+%ySpacing% w15, Q:

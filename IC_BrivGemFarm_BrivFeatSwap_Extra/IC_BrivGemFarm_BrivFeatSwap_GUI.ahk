@@ -146,6 +146,15 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Font, w700
         Gui, ICScriptHub:Add, GroupBox, Section xs y+%yTitleSpacing% vBGFBFS_BGFLU, BrivGemFarm LevelUp
         Gui, ICScriptHub:Font, w400
+        ; Link to LevelUp addon
+        Gui, ICScriptHub:Add, Text, Hidden xp yp vBGFBFS_GetLevelUpAddonText, % "Use "
+        GUIFunctions.UseThemeTextColor("SpecialTextColor1")
+        local link := "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_LevelUp_Extra"
+        Gui, ICScriptHub:Add, Link, Hidden x+0 vBGFBFS_GetLevelUpAddonLink hwndBGFBFS_GetLevelUpAddonLink, <a href="%link%">LevelUp</a>
+        this.LinkUseDefaultColor(BGFBFS_GetLevelUpAddonLink)
+        GUIFunctions.UseThemeTextColor()
+        Gui, ICScriptHub:Add, Text, Hidden x+0 vBGFBFS_GetLevelUpAddonText2, % " addon to walk z1-4."
+        ; BrivMinLevelArea
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
         Gui, ICScriptHub:Add, Edit, -Background Disabled xs+%xSpacing% ys+%yTitleSpacing%  w50 Limit4 vBGFBFS_BrivMinLevelArea
         GUIFunctions.UseThemeTextColor()
@@ -157,6 +166,18 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         GuiControlGet, pos, ICScriptHub:Pos, BGFBFS_BrivMinLevelAreaText
         local newWidth := posX + posW - posGX + this.XSection
         GuiControl, ICScriptHub:Move, BGFBFS_BGFLU, h%newHeight% w%newWidth%
+    }
+
+    ; https://www.autohotkey.com/boards/viewtopic.php?t=37894
+    LinkUseDefaultColor(hLink, Use := True)
+    {
+       VarSetCapacity(LITEM, 4278, 0)            ; 16 + (MAX_LINKID_TEXT * 2) + (L_MAX_URL_LENGTH * 2)
+       NumPut(0x03, LITEM, "UInt")               ; LIF_ITEMINDEX (0x01) | LIF_STATE (0x02)
+       NumPut(Use ? 0x10 : 0, LITEM, 8, "UInt")  ; ? LIS_DEFAULTCOLORS : 0
+       NumPut(0x10, LITEM, 12, "UInt")           ; LIS_DEFAULTCOLORS
+       While DllCall("SendMessage", "Ptr", hLink, "UInt", 0x0702, "Ptr", 0, "Ptr", &LITEM, "UInt") ; LM_SETITEM
+          NumPut(A_Index, LITEM, 4, "Int")
+       GuiControl, +Redraw, %hLink%
     }
 
     ; Builds one set of checkboxes for PreferredBrivJumpZones (e.g. Mod5 and associated checks)

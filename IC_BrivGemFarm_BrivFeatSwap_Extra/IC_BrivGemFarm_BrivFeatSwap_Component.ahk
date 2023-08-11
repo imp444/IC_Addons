@@ -18,7 +18,7 @@ else
 /*  IC_BrivGemFarm_BrivFeatSwap_Component
 
     Class that manages the GUI for BrivFeatSwap.
-    Starts automotically on script launch and waits for Briv Gem Farm to be started,
+    Starts automatically on script launch and waits for Briv Gem Farm to be started,
     then stops/starts every time buttons on the main Briv Gem Farm window are clicked.
 */
 Class IC_BrivGemFarm_BrivFeatSwap_Component
@@ -277,12 +277,19 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     }
 
     ; Show / hide BrivMinLevelArea setting in BGFBFS tab.
+    ; If LevelUp addon is not enabled, show link to GitHub.
     ; Parameters: - show:bool - If true, show BrivMinLevelArea, else hide it.
     ToggleBrivMinLevelArea(show := true)
     {
-        value := show ? "Show" : "Hide"
-        GuiControl, ICScriptHub:%value%, BGFBFS_BrivMinLevelArea
-        GuiControl, ICScriptHub:%value%, BGFBFS_BrivMinLevelAreaText
-        GuiControl, ICScriptHub:%value%, BGFBFS_BGFLU
+        valueBGFLUAddonOn := (show && IsObject(g_BrivGemFarm_LevelUp)) ? "Show" : "Hide"
+        valueBGFLUAddonOff := (show && !IsObject(g_BrivGemFarm_LevelUp)) ? "Show" : "Hide"
+        ; BrivMinLevelArea LevelUp setting
+        GuiControl, ICScriptHub:%valueBGFLUAddonOn%, BGFBFS_BrivMinLevelArea
+        GuiControl, ICScriptHub:%valueBGFLUAddonOn%, BGFBFS_BrivMinLevelAreaText
+        GuiControl, ICScriptHub:%valueBGFLUAddonOn%, BGFBFS_BGFLU
+        ; Show get LevelUp addon link
+        GuiControl, ICScriptHub:%valueBGFLUAddonOff%, BGFBFS_GetLevelUpAddonText
+        GuiControl, ICScriptHub:%valueBGFLUAddonOff%, BGFBFS_GetLevelUpAddonLink
+        GuiControl, ICScriptHub:%valueBGFLUAddonOff%, BGFBFS_GetLevelUpAddonText2
     }
 }

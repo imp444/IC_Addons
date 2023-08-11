@@ -161,10 +161,11 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
             if (settings.LastChecksum == "" OR settings.LastChecksum != checksum)
             {
                 settings.LastChecksum := checksum
-                tableChecksums := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetTableChecksums(contents) ; Check table_checksums
+                ;tableChecksums := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetTableChecksums(contents) ; Check table_checksums
                 if (settings.LastTableChecksums == "" OR !IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(settings.LastTableChecksums, tableChecksums))
                 {
                     this.UpdateLoading("New definitions found")
+                    ;settings.LastTableChecksums := tableChecksums
                     g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
                     this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
                     return true

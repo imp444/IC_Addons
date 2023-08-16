@@ -1,36 +1,53 @@
 # Briv Feat Swap
 
 ## Description:
-This Addon will allow to use Briv in E formation so you can take advantage of the "save feats with formation" feature in order to have a faster gem farm (more quick transitions).  
-Indeed, Briv's **Wasting Haste** feat (12500 gems) allows him to cap his **Unnatural haste** ability (level.80) to 800% (4J). Using both Q and E formations you can use Briv's current jump and 4J during the same adventure.  
-This means you will have to get Briv to **5J+** to be able to use this feature.
+This Addon will allow to use Briv in E formation, so you can take advantage of the "save feats with formation" feature in order to have a faster gem farm (more quick transitions).  
+Indeed, Briv's **Wasting Haste** feat (12500 gems) allows him to cap his **Unnatural haste** ability (level.80) to 800% (4J).
+Using both Q and E formations you can alternate between jumping with Briv's current jump and jumping with 4J during the same adventure.  
 
-### Setup:
+This means you will have to get Briv to **5J+** to be able to use this feature.  
+-> Item level required (**Epic** slot 4): **Dull**:15501, **Shiny**: 10251, **Golden**:7626.
+
+## Setup:
 1. Enable/Disable the Addon in **Addon Management** (Jigsaw puzzle piece in IC Script Hub) to turn it on/off. It should start/stop whenever you click on the main Briv Gem Farm tab.
-2. Set up your jumps in **Advanced Settings** tab (IC Script Hub) and save in **Briv Gem Farm** tab.
-3. Set up your Briv feats in **Specialization and Feat Choices** (save formation menu in the game). Hit save for each formation. It is not recommended to save feats for other champions.
-4. Start **Briv Gem Farm** in IC Script Hub.
-5. To prevent input spam, open this addon's tab, enter the number of skips Briv should do in Q/E in the text fields then save.
+2. Set up your **Preferred Briv Jump Zones** in this addon's tab or in **Advanced Settings** tab (IC Script Hub) then save.
+You will have to manually save your profile in **Briv Gem Farm** tab.
+3. To prevent input spam, enter the number of skips Briv should do in Q/E in the text fields then save.
 
-![settings](Images/settings.png)
+![settings](Images/target_settings.png)
+
+4. If you have the LevelUp addon, you can set the BrivMinLevelArea setting to walk the first few zones.
+
+![levelup](Images/levelup_settings.png)
+
+For steps 2 to 4, you can also use one of the **presets** to autofill target Q/E and advanced settings.
+
+![presets](Images/presets.png) 
+
+5. Set up your Briv feats in **Specialization and Feat Choices** (save formation menu in the game).
+Hit save for each formation. It is not recommended to save feats for other champions.
+
+6. Start **Briv Gem Farm** in IC Script Hub.
+
+To stop this addon from working (e.g. to farm chests in events), uncheck **Enabled** next to **Save** then **Save**.
+
+![enable](Images/save_enabled.png) 
+
+**Disclaimer**: You may want to stop BrivGemFarm.ahk beforehand.
 
 ## Recommended settings:
 ### Specialization and Feat Choices
-#### (Q:nJ, E:4J, W:nJ if you are stacking on a checked zone, 4J otherwise)
+#### (Q:nJ, E:4J)
 
-Use the Wasting haste feat if you want to 4J with a specific formation, and another feat if you want to nJ (n > 4)).
+Use the Wasting haste feat if you want to 4J with a specific formation, and another feat if you want to nJ (n > 4).
 
-Stacking with nJ: Q/W/E
+![Q](Images/example_briv_q.png)   ![E](Images/example_briv_e.png)
 
-![Q](Images/example_briv_q.png)  ![W](Images/example_briv_q.png)  ![E](Images/example_briv_w.png)
-
-Stacking with 4J: Q/W/E
-
-![Q](Images/example_briv_q.png)  ![W](Images/example_briv_w.png)  ![E](Images/example_briv_w.png)
+You can fill the slots in W with feats such as HP or overwhelm to boost offline stacking.
 
 ### Advanced Settings Tab:
 
-|                  **5J/4J TT (Untested)**                   |
+|                        **5J/4J TT**                        |
 |:----------------------------------------------------------:|
 | **Path:** 1, 6, *11*, 16, 21, 26, 31, 37, 43, 49, 55, *61* |
 |         **+** 9 jumps /50 vs 10 jumps /50 for 4JTT         |

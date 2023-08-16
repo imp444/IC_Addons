@@ -42,6 +42,9 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         this.Settings := settings := g_SF.LoadObjectFromJSON(this.SettingsPath)
         if (IsObject(settings))
         {
+            if (!settings.HasKey("Enabled"))
+                settings.Enabled := true
+            GuiControl, ICScriptHub:, BGFBFS_Enabled, % settings.Enabled
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ, % settings.targetQ
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % settings.targetE
             ; Fix preset settings from version v1.2.0
@@ -51,6 +54,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             settings.Preset == "9J/4J" ? settings.Preset := "9J/4J Tall Tales" : ""
             GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % settings.Preset
             Sleep, 50
+            BrivGemFarm_BrivFeatSwap_Save()
             if (settings.Preset)
                 this.SaveMod50Preset()
         }
@@ -156,6 +160,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     Save(targetQ, targetE)
     {
         settings := this.Settings
+        GuiControlGet, enabled, ICScriptHub:, BGFBFS_Enabled
+        settings.Enabled := enabled
         settings.Preset := this.GetPresetName()
         this.SaveMod50Preset()
         settings.targetQ := targetQ
@@ -166,6 +172,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
+            SharedRunData.BGFBFS_ToggleAddon(settings.Enabled)
             SharedRunData.BGFBFS_UpdateSettings(targetQ, targetE, settings.Preset)
         }
         catch
@@ -208,7 +215,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         choices := "||5J/4J Tall Tales|8J/4J Tall Tales"
         choices .= "|8J/4J Tall Tales + walk 1/2/3/4|9J/4J Tall Tales"
         GuiControl, ICScriptHub:, BGFBFS_Preset, % "|" . choices
-        GuiControl, ICScriptHub:Choose, BGFBFS_Preset, |0
         ; Resize
         newWidth := IC_BrivGemFarm_BrivFeatSwap_GUI.DropDownSize(choices,,, 8)
         GuiControlGet, hnwd, ICScriptHub:Hwnd, BGFBFS_Preset

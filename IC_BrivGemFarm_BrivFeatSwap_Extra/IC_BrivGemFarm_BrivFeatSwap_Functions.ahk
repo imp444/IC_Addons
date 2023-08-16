@@ -42,6 +42,9 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
     ; Tests to make sure Gem Farm is properly set up before attempting to run.
     PreFlightCheck()
     {
+        settings := g_SF.LoadObjectFromJSON(A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json")
+        if (!settings.Enabled)
+            return this.base.PreFlightCheck()
         memoryVersion := g_SF.Memory.GameManager.GetVersion()
         ; Test Favorite Exists
         txtCheck := "`n`nOther potential solutions:"
@@ -90,6 +93,8 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
     StackFarmSetup(params*)
     {
         this.base.StackFarmSetup(params*)
+        if (!g_SharedData.BGFBFS_Enabled)
+            return
         if (g_SF.IsCurrentFormation(g_SF.Memory.GetFormationByFavorite(2)))
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(2)
     }
@@ -117,6 +122,8 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     ; a method to swap formations and cancel briv's jump animation.
     SetFormation(settings := "")
     {
+        if (!g_SharedData.BGFBFS_Enabled)
+            return base.SetFormation(settings)
         if(settings != "")
         {
             this.Settings := settings
@@ -163,6 +170,8 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     ; True/False on whether Briv should be benched based on game conditions.
     BenchBrivConditions(settings)
     {
+        if (!g_SharedData.BGFBFS_Enabled)
+            return base.BenchBrivConditions(settings)
         ;bench briv if jump animation override is added to list and it isn't a quick transition (reading ReadFormationTransitionDir makes sure QT isn't read too early)
        ; if (this.Memory.ReadTransitionOverrideSize() == 1 AND this.Memory.ReadTransitionDirection() != 2 AND this.Memory.ReadFormationTransitionDir() == 3 )
            ; return true
@@ -184,15 +193,21 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
 ; Overrides IC_SharedData_Class, check for compatibility
 class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Class
 {
+;    BGFBFS_Enabled
+;    BGFBFS_Preset
 ;    BrivFeatSwap_savedQSKipAmount
 ;    BrivFeatSwap_savedWSKipAmount
 ;    BrivFeatSwap_savedESKipAmount
-;    BGFBFS_Preset
 
     ; Return true if the class has been updated by the addon
     BGFBFS_Running()
     {
         return true
+    }
+
+    BGFBFS_ToggleAddon(enabled)
+    {
+        this.BGFBFS_Enabled := enabled
     }
 
     ; Saves current Briv jump amount

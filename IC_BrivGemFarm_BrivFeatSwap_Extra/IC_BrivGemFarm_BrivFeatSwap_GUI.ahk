@@ -108,7 +108,11 @@ BGFBFS_BrivMinLevelArea()
     if (g_BrivFeatSwap.GetPresetName() != "")
         BGFBFS_ValidateInput(%A_GuiControl%, %A_GuiControl%)
     else if ((value := BGFBFS_ValidateInput(1, 99999)) != "RETURN")
+    {
+        if (IsObject(g_BrivGemFarm_LevelUp))
+            GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % value
         g_BrivFeatSwap.UpdatePath()
+    }
 }
 
 Class IC_BrivGemFarm_BrivFeatSwap_GUI

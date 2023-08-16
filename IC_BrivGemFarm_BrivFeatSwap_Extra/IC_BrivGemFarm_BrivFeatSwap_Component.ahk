@@ -164,6 +164,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         settings.Enabled := enabled
         settings.Preset := this.GetPresetName()
         this.SaveMod50Preset()
+        if (IsObject(g_BrivGemFarm_LevelUp))
+            g_BrivGemFarm_LevelUp.SaveSettings(true)
         settings.targetQ := targetQ
         settings.targetE := targetE
         g_SF.WriteObjectToJSON(this.SettingsPath, settings)

@@ -375,7 +375,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         ; Update text controls
         a := path.noMetalbornJumps
         b := path.metalbornJumps
-        jumpsText := (a + b) . " jumps (" . a . " non-Metalborn, " . b . " Metalborn)"
+        jumpsText := (a + b) . " jump" . (a + b == 1 ? "" : "s")
+        jumpsText .= " (" . a . " non-Metalborn, " . b . " Metalborn)"
         GuiControl, ICScriptHub:Text, BGFBFS_JumpsText, % jumpsText
         walksText := path.walks . " walk" . ((path.walks == 1) ? "" : "s")
         GuiControl, ICScriptHub:Text, BGFBFS_WalksText, % walksText

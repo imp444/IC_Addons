@@ -377,7 +377,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         b := path.metalbornJumps
         jumpsText := (a + b) . " jumps (" . a . " non-Metalborn, " . b . " Metalborn)"
         GuiControl, ICScriptHub:Text, BGFBFS_JumpsText, % jumpsText
-        GuiControl, ICScriptHub:Text, BGFBFS_WalksText, % path.walks . " walks"
+        walksText := path.walks . " walk" . ((path.walks == 1) ? "" : "s")
+        GuiControl, ICScriptHub:Text, BGFBFS_WalksText, % walksText
         stacksNeeded := this.CalcBrivStacksNeeded(a, b)
         if (stacksNeeded == "Too many")
             return this.UpdatePath(this.UpdateResetAreaFromStacks(999999999999999))

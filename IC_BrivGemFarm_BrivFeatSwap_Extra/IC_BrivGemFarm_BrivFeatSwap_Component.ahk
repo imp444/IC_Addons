@@ -27,6 +27,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
 
     DetectedSkipAmount := ""
     DetectedSkipChance := ""
+    DetectedResetArea := 2000
+    DisableResetAreaUpdate := false
     SavedPreferredAdvancedSettings := 0
     Settings := ""
     TimerFunctions := ""
@@ -35,7 +37,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         g_BrivFeatSwapGui.SetupGroups()
         ; Save the state of the mod50 checkboxes for Preferred Briv Jump Zones in Advanced Settings tab.
-        this.SavedPreferredAdvancedSettings := this.GetSavedPreferredAdvancedSettings()
+        this.SavedPreferredAdvancedSettings := this.GetPreferredAdvancedSettings(true)
         this.SetupPresets()
         this.Settings := settings := g_SF.LoadObjectFromJSON(this.SettingsPath)
         if (IsObject(settings))
@@ -112,13 +114,22 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
     }
 
-    UpdateDetectedSkipAmount()
+    ; Returns true is the game is open.
+    GameIsReady()
     {
         existingProcessID := g_UserSettings[ "ExeName"]
         Process, Exist, %existingProcessID%
-        if (ErrorLevel)
+        return ErrorLevel && g_SF.Memory.ReadGameStarted()
+    }
+
+    ; Update Briv skip amount/chance.
+    ; Update messages shown if an incorrect preset is selected of if Briv is not 100% skip chance.
+    ; Read the current Modron reset area at the same time.
+    UpdateDetectedSkipAmount()
+    {
+        if (this.GameIsReady())
         {
-            g_SF.Memory.OpenProcessReader()
+            this.GetModronResetArea()
             if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "")
                 g_SF.Memory.ActiveEffectKeyHandler.Refresh()
             skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
@@ -131,7 +142,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             GuiControl, ICScriptHub:, BGFBFS_DetectedText, % str
         }
         else
-            GuiControl, ICScriptHub:, BGFBFS_DetectedText, "Briv skip: Game closed."
+            GuiControl, ICScriptHub:, BGFBFS_DetectedText, Briv skip: Game closed.
     }
 
     ; Save settings.
@@ -167,26 +178,27 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Doesn't save settings to the current profile.
     SaveMod50Preset()
     {
-        Loop, 50
-        {
-            isChecked := BGFBFS_CopyPasteBGFAS_Mod_50_%A_Index%
-            g_BrivUserSettings[ "PreferredBrivJumpZones" ][A_Index] := isChecked
-        }
+        g_BrivUserSettings[ "PreferredBrivJumpZones" ] := this.GetPreferredAdvancedSettings(, true)
         IC_BrivGemFarm_AdvancedSettings_Functions.LoadPreferredBrivJumpSettings()
         IC_BrivGemFarm_AdvancedSettings_Component.SaveAdvancedSettings()
     }
 
-    ; Read the state of the mod50 checkboxes for Preferred Briv Jump Zones in Advanced Settings tab.
-    GetSavedPreferredAdvancedSettings()
+    ; Read the state of the mod50 checkboxes for Preferred Briv Jump Zones.
+    ; Parameters: - advancedSettings:bool - If true, Advanced Settings, else this addon's settings.
+    ;             - toArray:bool - If true, returns an array, else returns a bitfield.
+    GetPreferredAdvancedSettings(advancedSettings := false, toArray := false)
     {
+        rootControlID := (advancedSettings ? "PreferredBrivJumpSetting" : "BGFBFS_CopyPasteBGFAS_") . "Mod_50_"
+        array := []
         value := 0
         Loop, 50
         {
-            GuiControlGet, isChecked, ICScriptHub:, PreferredBrivJumpSettingMod_50_%A_Index%
+            GuiControlGet, isChecked, ICScriptHub:, %rootControlID%%A_Index%
+            array.Push(isChecked)
             if (isChecked)
                 value += 2 ** (A_Index - 1)
         }
-        return value
+        return toArray ? array : value
     }
 
     ; Setup choices for the Presets ListBox.
@@ -201,6 +213,18 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Parameters: - name:str - Name of a preset shown in the Presets ListBox.
     LoadPreset(name)
     {
+        ; Apply BrivMinLevelArea setting to BGFLU addon
+        if (name == "8J/4J + walk 1/2/3/4" && IsObject(g_BrivGemFarm_LevelUp))
+        {
+            GuiControl, ICScriptHub:, BGFBFS_BrivMinLevelArea, 5
+            GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, 5
+        }
+        else
+        {
+            value := g_BrivGemFarm_LevelUp.Settings.BrivMinLevelArea
+            GuiControl, ICScriptHub:, BGFBFS_BrivMinLevelArea, % value == "" ? 1 : value
+            GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % value
+        }
         Switch name
         {
             case "5J/4J":
@@ -214,14 +238,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             case default:
                 this.ApplyPresets(this.SavedPreferredAdvancedSettings, this.Settings.targetQ, this.Settings.targetE, true)
         }
-        ; Apply BrivMinLevelArea setting to BGFLU addon
-        if (name == "8J/4J + walk 1/2/3/4" && IsObject(g_BrivGemFarm_LevelUp))
-        {
-            GuiControl, ICScriptHub:, BGFBFS_BrivMinLevelArea, 5
-            GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, 5
-        }
-        else
-            GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % g_BrivGemFarm_LevelUp.Settings.BrivMinLevelArea
     }
 
     ; Apply temporary GUI settings for the selected preset.
@@ -238,6 +254,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         this.LoadMod50(mod50Value)
         this.ToggleMod50(!default)
         this.ToggleBrivMinLevelArea(showBrivMinLevelArea)
+        this.UpdatePath()
     }
 
     ; Update warning messages depending on read Briv skip values.
@@ -291,5 +308,171 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         GuiControl, ICScriptHub:%valueBGFLUAddonOff%, BGFBFS_GetLevelUpAddonText
         GuiControl, ICScriptHub:%valueBGFLUAddonOff%, BGFBFS_GetLevelUpAddonLink
         GuiControl, ICScriptHub:%valueBGFLUAddonOff%, BGFBFS_GetLevelUpAddonText2
+    }
+
+    ; Save and return the in-game Modron reset setting.
+    ; Update the text next to the reset area dropdown.
+    GetModronResetArea()
+    {
+        if (this.GameIsReady())
+        {
+            g_SF.Memory.OpenProcessReader()
+            if ((resetArea := g_SF.Memory.GetModronResetArea()) > 0) ; -1 on failure
+            {
+                this.DetectedResetArea := resetArea
+                GuiControl, ICScriptHub:Text, BGFBFS_ResetAreaText, % "Reset area (Modron reset: " . resetArea . ")"
+            }
+        }
+        return this.DetectedResetArea
+    }
+
+    ; Update the path from z1 to the reset area.
+    ; Parameters: - resetArea:int - Actual zone where the run is reset.
+    UpdatePath(resetArea := "")
+    {
+        mod50Values := this.GetPreferredAdvancedSettings(, true)
+        GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
+        GuiControlGet, targetE, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE
+        GuiControlGet, brivMinLevelArea, ICScriptHub:, BGFBFS_BrivMinLevelArea
+        GuiControlGet, brivMetalbornArea, ICScriptHub:, BGFBFS_BrivMetalbornArea
+        if (resetArea == "")
+        {
+            resetArea := 2000
+            path := this.Calcpath(mod50Values, resetArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
+            choices := ""
+            for k, v in path.path
+            {
+                choices .= v . "|"
+                if (sel == "" && v >= resetArea)
+                    sel := v
+            }
+            GuiControl, ICScriptHub:, BGFBFS_ResetArea, % "|" . choices
+            GuiControl, ICScriptHub:ChooseString, BGFBFS_ResetArea, % sel
+        }
+        else
+            path := this.Calcpath(mod50Values, resetArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
+        ; Update text controls
+        a := path.noMetalbornJumps
+        b := path.metalbornJumps
+        jumpsText := (a + b) . " jumps (" . a . " non-Metalborn, " . b . " Metalborn)"
+        GuiControl, ICScriptHub:Text, BGFBFS_JumpsText, % jumpsText
+        GuiControl, ICScriptHub:Text, BGFBFS_WalksText, % path.walks . " walks"
+        stacksNeeded := this.CalcBrivStacksNeeded(a, b)
+        if (stacksNeeded == "Too many")
+            return this.UpdatePath(this.UpdateResetAreaFromStacks(999999999999999))
+        this.DisableResetAreaUpdate := true
+        GuiControl, ICScriptHub:Text, BGFBFS_StacksRequired, % stacksNeeded
+    }
+
+    ; Updates the reset area when user has entered a value for maximum stacks.
+    ; Disabled when user selects an area from the ComboBox.
+    ; Parameters: - stacks:int - Maximum Briv stacks.
+    ; Returns: - resetArea:int - Maximum area reached using all stacks.
+    UpdateResetAreaFromStacks(stacks := 50)
+    {
+        mod50Values := this.GetPreferredAdvancedSettings(, true)
+        GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
+        GuiControlGet, targetE, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE
+        GuiControlGet, brivMinLevelArea, ICScriptHub:, BGFBFS_BrivMinLevelArea
+        GuiControlGet, brivMetalbornArea, ICScriptHub:, BGFBFS_BrivMetalbornArea
+        maxArea := this.CalcPathStacks(mod50Values, stacks, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
+        if (!this.DisableResetAreaUpdate)
+            GuiControl, ICScriptHub:Text, BGFBFS_ResetArea, % maxArea
+        this.DisableResetAreaUpdate := false
+        return maxArea
+    }
+
+    ; Return the number of stacks needed to jump noMetalbornJumps + metalbornJumps times.
+    ; Parameters: - noMetalbornJumps:int - Number of times Briv jumps without Metalborn.
+    ;             - metalbornJumps:int - Number of times Briv jumps with Metalborn.
+    CalcBrivStacksNeeded(noMetalbornJumps, metalbornJumps)
+    {
+        stacks := (noMetalbornJumps + metalbornJumps > 0) * 50
+        ; Last jump is always with Metalborn unless Briv never gets to level 170
+        ; Metalborn calculations must apply last meaning backtracking starts with Metalborn
+        Loop, % (metalbornJumps > 0 ? metalbornJumps - 1 : metalbornJumps)
+        {
+            stacks := Ceil((stacks - 0.5) / 0.968)
+            if (stacks > 999999999999999)
+                return "Too many"
+        }
+        Loop, % (metalbornJumps > 0 ? noMetalbornJumps : noMetalbornJumps - 1)
+        {
+            stacks := Ceil((stacks - 0.5) / 0.96)
+            if (stacks > 999999999999999)
+                return "Too many"
+        }
+        return stacks
+    }
+
+    ; Calculates the path from z1 to the reset area.
+    ; Parameters: - mod50value:int - If true, show BrivMinLevelArea, else hide it.
+    ;             - resetArea:int - Actual zone where the run is reset.
+    ;             - skipQ:int - Number of Briv jumps in Q formation.
+    ;             - skipE:int - Number of Briv jumps in E formation.
+    ;             - brivMinLevelArea:int - Minimum level where Briv can jump (LevelUp addon setting).
+    ;             - brivMetalbornArea:int - Minimum level where Briv gets Metalborn (LevelUp addon setting).
+    ; Returns:    - object - array:path, int:walks, int:jumps w/o Metalborn, int:jumps w/ Metalborn
+    CalcPath(mod50values, resetArea, skipQ, skipE, brivMinLevelArea := 1, brivMetalbornArea := 1)
+    {
+        qVal := skipQ + 1
+        eVal := skipE + 1
+        noMbJumps := mbJumps := walks := 0
+        if (!Isobject(mod50values))
+        {
+            mod50Int := mod50values
+            mod50values := []
+            Loop, 50
+                mod50values[A_Index] := (mod50Int & (2 ** (A_Index - 1))) != 0
+        }
+        path := [currentArea := 1]
+        ; Walk
+        Loop, % brivMinLevelArea - 1
+            ++currentArea > resetArea ? break : path.Push(++walks + 1)
+        ; Jump
+        while (currentArea < resetArea)
+        {
+            ; Update metalborn jump counters
+            currentArea < brivMetalbornArea ? ++noMbJumps : ++mbJumps
+            ; Advance
+            mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
+            mod50Value := mod50values[mod50Index]
+            path.Push(currentArea += mod50Value ? qVal : eVal)
+            walks += mod50Value && qVal == 1 || !mod50Value && eVal == 1
+        }
+        return {path:path, walks:walks, metalbornJumps:mbJumps, noMetalbornJumps:noMbJumps}
+    }
+
+    ; Calculates the path from z1 to the area until Briv reaches under 50 stacks.
+    ; Parameters: - mod50value:int - If true, show BrivMinLevelArea, else hide it.
+    ;             - stacks:int - Briv stacks.
+    ;             - skipQ:int - Number of Briv jumps in Q formation.
+    ;             - skipE:int - Number of Briv jumps in E formation.
+    ;             - brivMinLevelArea:int - Minimum level where Briv can jump (LevelUp addon setting).
+    ;             - brivMetalbornArea:int - Minimum level where Briv gets Metalborn (LevelUp addon setting).
+    ; Returns:    - int - Maximum area reached.
+    CalcPathStacks(mod50values, stacks, skipQ, skipE, brivMinLevelArea := 1, brivMetalbornArea := 1)
+    {
+        qVal := skipQ + 1
+        eVal := skipE + 1
+        if (!Isobject(mod50values))
+        {
+            mod50Int := mod50values
+            mod50values := []
+            Loop, 50
+                mod50values[A_Index] := (mod50Int & (2 ** (A_Index - 1))) != 0
+        }
+        ; Walk
+        currentArea := brivMinLevelArea
+        ; Jump
+        while (stacks >= 50)
+        {
+            ; Update stacks
+            stacks := Round(stacks * (currentArea < brivMetalbornArea ? 0.96 : 0.968))
+            ; Advance
+            mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
+            currentArea += mod50values[mod50Index] ? qVal : eVal
+        }
+        return currentArea
     }
 }

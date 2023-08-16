@@ -11,15 +11,39 @@ GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
 Gui, ICScriptHub:Add, Text, xs ys+20 Hidden vBGFBFS_StatusWarning, WARNING: Addon was loaded too late. Stop/start Gem Farm to resume.
 GUIFunctions.UseThemeTextColor()
 
-; Maximum number of simultaneous F keys inputs during MinLevel
-BrivGemFarm_BrivFeatSwap_Target()
+; Validates inputs for targetQ/E and stack setup controls.
+; Returns: - int:input or str:"RETURN" if input is invalid.
+BGFBFS_ValidateInput(min := 0, max := 1)
 {
     global
     local beforeSubmit := % %A_GuiControl%
+    GuiControlGet, input,, %A_GuiControl%
+    if input is not digit
+    {
+        onlyDigits := RegExReplace(beforeSubmit, "[^\d]+")
+        GuiControl, ICScriptHub:Text, %A_GuiControl%, % onlyDigits
+        return "RETURN"
+    }
+    if input not between %min% and %max%
+    {
+        input := input < min ? min : max
+        GuiControl, ICScriptHub:Text, %A_GuiControl%, % input
+    }
+    if (LTrim(input, 0) == beforeSubmit && (input . " ") != (beforeSubmit . " "))
+    {
+        input := LTrim(beforeSubmit, "0")
+        GuiControl, ICScriptHub:Text, %A_GuiControl%, % input
+    }
     Gui, ICScriptHub:Submit, NoHide
-    local value := % %A_GuiControl%
-    if value is not digit
-        GuiControl, ICScriptHub:Text, %A_GuiControl%, % beforeSubmit
+    return input
+}
+
+BrivGemFarm_BrivFeatSwap_Target()
+{
+    global
+    if ((value := BGFBFS_ValidateInput(0, 999)) == "RETURN")
+        return
+    g_BrivFeatSwap.UpdatePath()
 }
 
 BrivGemFarm_BrivFeatSwap_Save()
@@ -37,6 +61,31 @@ BGFBFS_Preset()
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
     g_BrivFeatSwap.LoadPreset(value)
+}
+
+BGFBFS_ResetArea()
+{
+    global
+    if ((value := BGFBFS_ValidateInput(1, 99999)) == "RETURN")
+        return
+    g_BrivFeatSwap.UpdatePath(value)
+}
+
+BGFBFS_BrivMetalbornArea()
+{
+    global
+    if ((value := BGFBFS_ValidateInput(1, 99999)) == "RETURN")
+        return
+    GuiControlGet, value, ICScriptHub:, BGFBFS_ResetArea
+    g_BrivFeatSwap.UpdatePath(value)
+}
+
+BGFBFS_StacksRequired()
+{
+    global
+    if ((value := BGFBFS_ValidateInput(0, 999999999999999)) == "RETURN")
+        return
+    g_BrivFeatSwap.UpdateResetAreaFromStacks(value)
 }
 
 ; Disable mod50 checkboxes.
@@ -68,9 +117,10 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Font, w400
         Gui, ICScriptHub:Add, DropDownList, x+%xSpacing% yp-3 w100 vBGFBFS_Preset gBGFBFS_Preset
         GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-        Gui, ICScriptHub:Add, Text, x+30 ys w270 vBGFBFS_PresetWarningText
+        Gui, ICScriptHub:Add, Text, x+27 ys w270 vBGFBFS_PresetWarningText
         GUIFunctions.UseThemeTextColor()
         this.SetupSkipSetupGroup()
+        this.SetupStacksSetupGroup()
         this.SetupPreferredBrivJumpZonesGroup()
         this.SetupBGFLUGroup()
     }
@@ -79,29 +129,30 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
     {
         global
         local leftAlign := this.LeftAlign
+        local xSection := this.XSection
         local xSpacing := this.XSpacing
         local ySpacing := this.YSpacing
         local yTitleSpacing := this.YTitleSpacing
         Gui, ICScriptHub:Font, w700
         Gui, ICScriptHub:Add, GroupBox, Section xs vBGFBFS_SkipSetup, Skip setup
         Gui, ICScriptHub:Font, w400
-        Gui, ICScriptHub:Add, Text, xs+%xSpacing% ys+%yTitleSpacing% w125 vBGFBFS_DetectedText, Briv skip:
-        Gui, ICScriptHub:Add, Text, vBrivFeatSwapReads xs+%xSpacing% y+%ySpacing% w30, Reads
+        Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%yTitleSpacing% w125 vBGFBFS_DetectedText, Briv skip:
+        Gui, ICScriptHub:Add, Text, vBrivFeatSwapReads xs+%xSection% y+%ySpacing% w30, Reads
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapTarget x+15 w30, Target
         GuiControlGet, pos, ICScriptHub:Pos, BrivFeatSwapTarget
-        Gui, ICScriptHub:Add, Text, vBrivFeatSwapQText xs+%xSpacing% y+%ySpacing% w15, Q:
+        Gui, ICScriptHub:Add, Text, vBrivFeatSwapQText xs+%xSection% y+%ySpacing% w15, Q:
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapQValue x+%xSpacing% w20
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
         Gui, ICScriptHub:Add, Edit, x%posX% y+-16 h19 w33 Limit3 vBrivGemFarm_BrivFeatSwap_TargetQ gBrivGemFarm_BrivFeatSwap_Target, 0
         GUIFunctions.UseThemeTextColor()
-        Gui, ICScriptHub:Add, Text, vBrivFeatSwapWText xs+%XSpacing% y+%ySpacing% w15, W:
+        Gui, ICScriptHub:Add, Text, vBrivFeatSwapWText xs+%xSection% y+%ySpacing% w15, W:
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapWValue x+%xSpacing% w20
-        Gui, ICScriptHub:Add, Text, vBrivFeatSwapEText xs+%XSpacing% y+%ySpacing% w15, E:
+        Gui, ICScriptHub:Add, Text, vBrivFeatSwapEText xs+%xSection% y+%ySpacing% w15, E:
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapEValue x+%xSpacing% w20
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
         Gui, ICScriptHub:Add, Edit, x%posX% y+-16 h19 w33 Limit3 vBrivGemFarm_BrivFeatSwap_TargetE gBrivGemFarm_BrivFeatSwap_Target, 0
         GUIFunctions.UseThemeTextColor()
-        Gui, ICScriptHub:Add, Text, vBrivFeatSwapsMadeThisRunText xs+%XSpacing% y+%ySpacing% w15, SwapsMadeThisRun:
+        Gui, ICScriptHub:Add, Text, vBrivFeatSwapsMadeThisRunText xs+%xSection% y+%ySpacing%, SwapsMadeThisRun:
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapsMadeThisRunValue x+%xSpacing% w40
         ; Resize
         GuiControlGet, posG, ICScriptHub:Pos, BGFBFS_SkipSetup
@@ -113,6 +164,39 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         GuiControlGet, pos, ICScriptHub:Pos, BGFBFS_Preset
         newWidth := posGX + posGW - posX
         GuiControl, ICScriptHub:Move, BGFBFS_Preset, w%newWidth%
+    }
+
+    SetupStacksSetupGroup()
+    {
+        global
+        local xSection := this.XSection
+        local xSpacing := this.XSpacing
+        local ySpacing := this.YSpacing
+        local yTitleSpacing := this.YTitleSpacing
+        GuiControlGet, posG, ICScriptHub:Pos, BGFBFS_SkipSetup
+        local nextPos := posGX + posGW + xSection
+        Gui, ICScriptHub:Font, w700
+        Gui, ICScriptHub:Add, GroupBox, Section x%nextPos% y%posGY% vBGFBFS_StacksSetup, Stacks Calculator
+        Gui, ICScriptHub:Font, w400
+        GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+        Gui, ICScriptHub:Add, ComboBox, xs+%xSection% ys+%yTitleSpacing% w60 Limit5 vBGFBFS_ResetArea gBGFBFS_ResetArea
+        GUIFunctions.UseThemeTextColor()
+        Gui, ICScriptHub:Add, Text, vBGFBFS_ResetAreaText x+5 yp+4, Reset area (Modron reset: Game closed)
+        GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+        Gui, ICScriptHub:Add, Edit, xs+%xSection% y+%ySpacing% w60 Limit5 vBGFBFS_BrivMetalbornArea gBGFBFS_BrivMetalbornArea, 1
+        GUIFunctions.UseThemeTextColor()
+        Gui, ICScriptHub:Add, Text, vBGFBFS_BrivMetalbornAreaText x+5 yp+4, Briv Metalborn area
+        GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+        Gui, ICScriptHub:Add, Edit, xs+%xSection% y+%ySpacing% w100 Limit15 vBGFBFS_StacksRequired gBGFBFS_StacksRequired, 0
+        GUIFunctions.UseThemeTextColor()
+        Gui, ICScriptHub:Add, Text, vBGFBFS_StacksRequiredText x+5 yp+4, Stacks required
+        Gui, ICScriptHub:Add, Text, vBGFBFS_JumpsText xs+%xSection% y+%yTitleSpacing% w260
+        Gui, ICScriptHub:Add, Text, vBGFBFS_WalksText xs+%xSection% y+%ySpacing% w260
+        ; Resize
+        GuiControlGet, posG2, ICScriptHub:Pos, BGFBFS_StacksSetup
+        GuiControlGet, pos, ICScriptHub:Pos, BGFBFS_ResetAreaText
+        local newWidth := posX + posW - posG2X + this.XSection
+        GuiControl, ICScriptHub:Move, BGFBFS_StacksSetup, h%posGH% w%newWidth%
     }
 
     SetupPreferredBrivJumpZonesGroup()
@@ -156,16 +240,15 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Add, Text, Hidden x+0 vBGFBFS_GetLevelUpAddonText2, % " addon to walk z1-4."
         ; BrivMinLevelArea
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-        Gui, ICScriptHub:Add, Edit, -Background Disabled xs+%xSpacing% ys+%yTitleSpacing%  w50 Limit4 vBGFBFS_BrivMinLevelArea
+        Gui, ICScriptHub:Add, Edit, -Background Disabled xs+%xSpacing% ys+%yTitleSpacing% w50 Limit4 vBGFBFS_BrivMinLevelArea, 1
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, x+5 yp+4 vBGFBFS_BrivMinLevelAreaText, Minimum area to reach before leveling Briv
         ; Resize
         GuiControlGet, posG, ICScriptHub:Pos, BGFBFS_BGFLU
+        GuiControlGet, posG2, ICScriptHub:Pos, BGFBFS_PreferredBrivJumpZones
         GuiControlGet, pos, ICScriptHub:Pos, BGFBFS_BrivMinLevelArea
         local newHeight := posY + posH - posGY + this.YSection
-        GuiControlGet, pos, ICScriptHub:Pos, BGFBFS_BrivMinLevelAreaText
-        local newWidth := posX + posW - posGX + this.XSection
-        GuiControl, ICScriptHub:Move, BGFBFS_BGFLU, h%newHeight% w%newWidth%
+        GuiControl, ICScriptHub:Move, BGFBFS_BGFLU, h%newHeight% w%posG2W%
     }
 
     ; https://www.autohotkey.com/boards/viewtopic.php?t=37894

@@ -41,9 +41,10 @@ BGFBFS_ValidateInput(min := 0, max := 1)
 BrivGemFarm_BrivFeatSwap_Target()
 {
     global
-    if ((value := BGFBFS_ValidateInput(0, 999)) == "RETURN")
-        return
-    g_BrivFeatSwap.UpdatePath()
+    if (g_BrivFeatSwap.GetPresetName() != "")
+        BGFBFS_ValidateInput(%A_GuiControl%, %A_GuiControl%)
+    else if ((value := BGFBFS_ValidateInput(0, 999)) != "RETURN")
+        g_BrivFeatSwap.UpdatePath()
 }
 
 BrivGemFarm_BrivFeatSwap_Save()
@@ -66,9 +67,8 @@ BGFBFS_Preset()
 BGFBFS_ResetArea()
 {
     global
-    if ((value := BGFBFS_ValidateInput(1, 99999)) == "RETURN")
-        return
-    g_BrivFeatSwap.UpdatePath(value)
+    if ((value := BGFBFS_ValidateInput(1, 99999)) != "RETURN")
+        g_BrivFeatSwap.UpdatePath(value)
 }
 
 BGFBFS_BrivMetalbornArea()
@@ -83,15 +83,16 @@ BGFBFS_BrivMetalbornArea()
 BGFBFS_StacksRequired()
 {
     global
-    if ((value := BGFBFS_ValidateInput(0, 999999999999999)) == "RETURN")
-        return
-    g_BrivFeatSwap.UpdateResetAreaFromStacks(value)
+    if ((value := BGFBFS_ValidateInput(0, 999999999999999)) != "RETURN")
+        g_BrivFeatSwap.UpdateResetAreaFromStacks(value)
 }
 
-; Disable mod50 checkboxes.
-BGFBFS_DisabledCheckBox()
+; Disable mod50 checkboxes when a preset has been selected.
+BGFBFS_Mod50CheckBoxes()
 {
     global
+    if (g_BrivFeatSwap.GetPresetName() == "")
+        return
     local beforeSubmit := % %A_GuiControl%
     GuiControl, ICScriptHub:, %A_GuiControl%, % beforeSubmit
     Gui, ICScriptHub:Submit, NoHide
@@ -283,6 +284,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
     AddControlCheckbox(xLoc, yLoc, loopCount)
     {
         global
-        Gui, ICScriptHub:Add, Checkbox, vBGFBFS_CopyPasteBGFAS_Mod_50_%loopCount% Checked x%xLoc% y%yLoc% gBGFBFS_DisabledCheckBox, % loopCount
+        Gui, ICScriptHub:Add, Checkbox, vBGFBFS_CopyPasteBGFAS_Mod_50_%loopCount% Checked x%xLoc% y%yLoc% gBGFBFS_Mod50CheckBoxes, % loopCount
     }
 }

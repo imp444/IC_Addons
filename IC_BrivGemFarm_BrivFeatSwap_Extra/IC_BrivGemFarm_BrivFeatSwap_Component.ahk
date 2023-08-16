@@ -151,11 +151,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     Save(targetQ, targetE)
     {
         settings := this.Settings
-        GuiControlGet, presetName, ICScriptHub:, BGFBFS_Preset
-        if (presetName)
-            settings.Preset := presetName
-        else
-            settings.Preset := ""
+        settings.Preset := this.GetPresetName()
         this.SaveMod50Preset()
         settings.targetQ := targetQ
         settings.targetE := targetE
@@ -207,6 +203,13 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         choices := "||5J/4J|8J/4J|8J/4J + walk 1/2/3/4|9J/4J"
         GuiControl, ICScriptHub:, BGFBFS_Preset, % "|" . choices
         GuiControl, ICScriptHub:Choose, BGFBFS_Preset, |0
+    }
+
+    ; Returns the name of the currently selected preset.
+    GetPresetName()
+    {
+        GuiControlGet, presetName, ICScriptHub:, BGFBFS_Preset
+        return presetName
     }
 
     ; Apply settings for a specific preset.

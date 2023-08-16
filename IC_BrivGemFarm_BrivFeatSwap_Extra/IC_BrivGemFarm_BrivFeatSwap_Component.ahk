@@ -52,7 +52,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             settings.Preset == "8J/4J" ? settings.Preset := "8J/4J Tall Tales" : ""
             settings.Preset == "8J/4J + walk 1/2/3/4" ? settings.Preset := "8J/4J Tall Tales + walk 1/2/3/4" : ""
             settings.Preset == "9J/4J" ? settings.Preset := "9J/4J Tall Tales" : ""
-            GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % settings.Preset
+            GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % "|" . settings.Preset
             Sleep, 50
             BrivGemFarm_BrivFeatSwap_Save()
             if (settings.Preset)
@@ -233,7 +233,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     LoadPreset(name)
     {
         ; Apply BrivMinLevelArea setting to BGFLU addon
-        if (name == "8J/4J Tall Tales + walk 1/2/3/4" && IsObject(g_BrivGemFarm_LevelUp))
+        if (name == "8J/4J Tall Tales + walk 1/2/3/4" && IsObject(IC_BrivGemFarm_LevelUp_Component))
         {
             GuiControl, ICScriptHub:, BGFBFS_BrivMinLevelArea, 5
             GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, 5

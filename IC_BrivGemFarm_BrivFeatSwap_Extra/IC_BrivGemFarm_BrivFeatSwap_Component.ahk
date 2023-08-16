@@ -44,6 +44,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         {
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ, % settings.targetQ
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % settings.targetE
+            ; Fix preset settings from version v1.2.0
+            settings.Preset == "5J/4J" ? settings.Preset := "5J/4J Tall Tales" : ""
+            settings.Preset == "8J/4J" ? settings.Preset := "8J/4J Tall Tales" : ""
+            settings.Preset == "8J/4J + walk 1/2/3/4" ? settings.Preset := "8J/4J Tall Tales + walk 1/2/3/4" : ""
+            settings.Preset == "9J/4J" ? settings.Preset := "9J/4J Tall Tales" : ""
             GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % settings.Preset
             Sleep, 50
             if (settings.Preset)
@@ -198,11 +203,16 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     }
 
     ; Setup choices for the Presets ListBox.
-    SetupPresets()
+    SetupPresets() ; TODO: Proper preset settings
     {
-        choices := "||5J/4J|8J/4J|8J/4J + walk 1/2/3/4|9J/4J"
+        choices := "||5J/4J Tall Tales|8J/4J Tall Tales"
+        choices .= "|8J/4J Tall Tales + walk 1/2/3/4|9J/4J Tall Tales"
         GuiControl, ICScriptHub:, BGFBFS_Preset, % "|" . choices
         GuiControl, ICScriptHub:Choose, BGFBFS_Preset, |0
+        ; Resize
+        newWidth := IC_BrivGemFarm_BrivFeatSwap_GUI.DropDownSize(choices,,, 8)
+        GuiControlGet, hnwd, ICScriptHub:Hwnd, BGFBFS_Preset
+        SendMessage, 0x0160, newWidth, 0,, ahk_id %hnwd% ; CB_SETDROPPEDWIDTH
     }
 
     ; Returns the name of the currently selected preset.
@@ -217,7 +227,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     LoadPreset(name)
     {
         ; Apply BrivMinLevelArea setting to BGFLU addon
-        if (name == "8J/4J + walk 1/2/3/4" && IsObject(g_BrivGemFarm_LevelUp))
+        if (name == "8J/4J Tall Tales + walk 1/2/3/4" && IsObject(g_BrivGemFarm_LevelUp))
         {
             GuiControl, ICScriptHub:, BGFBFS_BrivMinLevelArea, 5
             GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, 5
@@ -230,13 +240,13 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
         Switch name
         {
-            case "5J/4J":
+            case "5J/4J Tall Tales":
                 this.ApplyPresets(1125891005438934, 5, 4)
-            case "8J/4J":
+            case "8J/4J Tall Tales":
                 this.ApplyPresets(1125897724754935, 8, 4)
-            case "8J/4J + walk 1/2/3/4":
+            case "8J/4J Tall Tales + walk 1/2/3/4":
                 this.ApplyPresets(1125897724754928, 8, 4,, true)
-            case "9J/4J":
+            case "9J/4J Tall Tales":
                 this.ApplyPresets(580042328931855, 9, 4)
             case default:
                 this.ApplyPresets(this.SavedPreferredAdvancedSettings, this.Settings.targetQ, this.Settings.targetE, true)

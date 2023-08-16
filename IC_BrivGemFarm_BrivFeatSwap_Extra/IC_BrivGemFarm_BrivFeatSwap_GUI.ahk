@@ -277,7 +277,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
        GuiControl, +Redraw, %hLink%
     }
 
-    ; Builds one set of checkboxes for PreferredBrivJumpZones (e.g. Mod5 and associated checks)
+    ; Builds mod50 checkboxes for PreferredBrivJumpZones.
     BuildModTable(xLoc, yLoc)
     {
         leftAlign := xLoc
@@ -294,9 +294,25 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         }
     }
 
+    ; Adds a single checkBox for PreferredBrivJumpZones.
     AddControlCheckbox(xLoc, yLoc, loopCount)
     {
         global
         Gui, ICScriptHub:Add, Checkbox, vBGFBFS_CopyPasteBGFAS_Mod_50_%loopCount% Checked x%xLoc% y%yLoc% gBGFBFS_Mod50CheckBoxes, % loopCount
+    }
+
+    ; Returns the width of DDL accomodating the longest item in list
+    DropDownSize(List, Font:="", FontSize:=10, Padding:=24)
+    {
+        Loop, Parse, List, |
+        {
+            if Font
+                Gui DropDownSize:Font, s%FontSize%, %Font%
+            Gui DropDownSize:Add, Text, R1, %A_LoopField%
+            GuiControlGet T, DropDownSize:Pos, Static%A_Index%
+            TW > X ? X := TW :
+        }
+        Gui DropDownSize:Destroy
+        return X + Padding
     }
 }

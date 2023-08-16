@@ -92,10 +92,23 @@ BGFBFS_Mod50CheckBoxes()
 {
     global
     if (g_BrivFeatSwap.GetPresetName() == "")
-        return
-    local beforeSubmit := % %A_GuiControl%
-    GuiControl, ICScriptHub:, %A_GuiControl%, % beforeSubmit
-    Gui, ICScriptHub:Submit, NoHide
+        g_BrivFeatSwap.UpdatePath()
+    else
+    {
+        local beforeSubmit := % %A_GuiControl%
+        GuiControl, ICScriptHub:, %A_GuiControl%, % beforeSubmit
+        Gui, ICScriptHub:Submit, NoHide
+    }
+}
+
+; Disable BrivMinLevelArea editing when a preset has been selected.
+BGFBFS_BrivMinLevelArea()
+{
+    global
+    if (g_BrivFeatSwap.GetPresetName() != "")
+        BGFBFS_ValidateInput(%A_GuiControl%, %A_GuiControl%)
+    else if ((value := BGFBFS_ValidateInput(1, 99999)) != "RETURN")
+        g_BrivFeatSwap.UpdatePath()
 }
 
 Class IC_BrivGemFarm_BrivFeatSwap_GUI
@@ -231,17 +244,9 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Font, w700
         Gui, ICScriptHub:Add, GroupBox, Section xs y+%yTitleSpacing% vBGFBFS_BGFLU, BrivGemFarm LevelUp
         Gui, ICScriptHub:Font, w400
-        ; Link to LevelUp addon
-        Gui, ICScriptHub:Add, Text, Hidden xp yp vBGFBFS_GetLevelUpAddonText, % "Use "
-        GUIFunctions.UseThemeTextColor("SpecialTextColor1")
-        local link := "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_LevelUp_Extra"
-        Gui, ICScriptHub:Add, Link, Hidden x+0 vBGFBFS_GetLevelUpAddonLink hwndBGFBFS_GetLevelUpAddonLink, <a href="%link%">LevelUp</a>
-        this.LinkUseDefaultColor(BGFBFS_GetLevelUpAddonLink)
-        GUIFunctions.UseThemeTextColor()
-        Gui, ICScriptHub:Add, Text, Hidden x+0 vBGFBFS_GetLevelUpAddonText2, % " addon to walk z1-4."
         ; BrivMinLevelArea
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-        Gui, ICScriptHub:Add, Edit, -Background Disabled xs+%xSpacing% ys+%yTitleSpacing% w50 Limit4 vBGFBFS_BrivMinLevelArea, 1
+        Gui, ICScriptHub:Add, Edit, xs+%xSpacing% ys+%yTitleSpacing% w50 Limit5 vBGFBFS_BrivMinLevelArea gBGFBFS_BrivMinLevelArea, 1
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, x+5 yp+4 vBGFBFS_BrivMinLevelAreaText, Minimum area to reach before leveling Briv
         ; Resize
@@ -250,6 +255,14 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         GuiControlGet, pos, ICScriptHub:Pos, BGFBFS_BrivMinLevelArea
         local newHeight := posY + posH - posGY + this.YSection
         GuiControl, ICScriptHub:Move, BGFBFS_BGFLU, h%newHeight% w%posG2W%
+        ; Link to LevelUp addon
+        Gui, ICScriptHub:Add, Text, Hidden xs+%xSpacing% y+%yTitleSpacing% vBGFBFS_GetLevelUpAddonText, % "Use "
+        GUIFunctions.UseThemeTextColor("SpecialTextColor1")
+        local link := "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_LevelUp_Extra"
+        Gui, ICScriptHub:Add, Link, Hidden x+0 vBGFBFS_GetLevelUpAddonLink hwndBGFBFS_GetLevelUpAddonLink, <a href="%link%">LevelUp</a>
+        this.LinkUseDefaultColor(BGFBFS_GetLevelUpAddonLink)
+        GUIFunctions.UseThemeTextColor()
+        Gui, ICScriptHub:Add, Text, Hidden x+0 vBGFBFS_GetLevelUpAddonText2, % " addon to walk early zones."
     }
 
     ; https://www.autohotkey.com/boards/viewtopic.php?t=37894

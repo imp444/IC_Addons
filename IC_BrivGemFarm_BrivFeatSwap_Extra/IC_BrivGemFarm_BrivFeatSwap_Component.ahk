@@ -255,8 +255,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % targetE
         this.UpdatePresetWarning(targetQ)
         this.LoadMod50(mod50Value)
-        this.ToggleMod50(!default)
-        this.ToggleBrivMinLevelArea(showBrivMinLevelArea)
+        this.ToggleMod50(true)
+        this.ToggleBrivMinLevelArea(showBrivMinLevelArea || default)
         this.UpdatePath()
     }
 
@@ -301,16 +301,16 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Parameters: - show:bool - If true, show BrivMinLevelArea, else hide it.
     ToggleBrivMinLevelArea(show := true)
     {
-        valueBGFLUAddonOn := (show && IsObject(g_BrivGemFarm_LevelUp)) ? "Show" : "Hide"
-        valueBGFLUAddonOff := (show && !IsObject(g_BrivGemFarm_LevelUp)) ? "Show" : "Hide"
+        showSetting := show ? "Show" : "Hide"
         ; BrivMinLevelArea LevelUp setting
-        GuiControl, ICScriptHub:%valueBGFLUAddonOn%, BGFBFS_BrivMinLevelArea
-        GuiControl, ICScriptHub:%valueBGFLUAddonOn%, BGFBFS_BrivMinLevelAreaText
-        GuiControl, ICScriptHub:%valueBGFLUAddonOn%, BGFBFS_BGFLU
+        GuiControl, ICScriptHub:%showSetting%, BGFBFS_BrivMinLevelArea
+        GuiControl, ICScriptHub:%showSetting%, BGFBFS_BrivMinLevelAreaText
+        GuiControl, ICScriptHub:%showSetting%, BGFBFS_BGFLU
         ; Show get LevelUp addon link
-        GuiControl, ICScriptHub:%valueBGFLUAddonOff%, BGFBFS_GetLevelUpAddonText
-        GuiControl, ICScriptHub:%valueBGFLUAddonOff%, BGFBFS_GetLevelUpAddonLink
-        GuiControl, ICScriptHub:%valueBGFLUAddonOff%, BGFBFS_GetLevelUpAddonText2
+        showLink := (show && !IsObject(IC_BrivGemFarm_LevelUp_Component)) ? "Show" : "Hide"
+        GuiControl, ICScriptHub:%showLink%, BGFBFS_GetLevelUpAddonText
+        GuiControl, ICScriptHub:%showLink%, BGFBFS_GetLevelUpAddonLink
+        GuiControl, ICScriptHub:%showLink%, BGFBFS_GetLevelUpAddonText2
     }
 
     ; Save and return the in-game Modron reset setting.

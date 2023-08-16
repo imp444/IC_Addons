@@ -110,7 +110,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
                 GuiControl, ICScriptHub:Text, BrivFeatSwapWValue, % SharedRunData.BrivFeatSwap_savedWSKipAmount
                 GuiControl, ICScriptHub:Text, BrivFeatSwapEValue, % SharedRunData.BrivFeatSwap_savedESKipAmount
                 GuiControl, ICScriptHub:Text, BrivFeatSwapsMadeThisRunValue, % SharedRunData.SwapsMadeThisRun
-                GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Running
+                GuiControl, ICScriptHub:Text, BGFBFS_StatusText, % "Running " . SharedRunData.BGFBFS_Preset
             }
         }
         catch
@@ -166,7 +166,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            SharedRunData.UpdateTargetAmounts(targetQ, targetE)
+            SharedRunData.BGFBFS_UpdateSettings(targetQ, targetE, settings.Preset)
         }
         catch
         {

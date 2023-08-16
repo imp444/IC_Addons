@@ -110,7 +110,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         ; Retry once at most
         if (!IsObject(settings) && !IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class.RetryInit++)
             return false
-        g_SharedData.UpdateTargetAmounts(settings.targetQ, settings.targetE)
+        g_SharedData.BGFBFS_UpdateSettings(settings.targetQ, settings.targetE, settings.Preset)
         return true
     }
 
@@ -184,6 +184,11 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
 ; Overrides IC_SharedData_Class, check for compatibility
 class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Class
 {
+;    BrivFeatSwap_savedQSKipAmount
+;    BrivFeatSwap_savedWSKipAmount
+;    BrivFeatSwap_savedESKipAmount
+;    BGFBFS_Preset
+
     ; Return true if the class has been updated by the addon
     BGFBFS_Running()
     {
@@ -209,9 +214,11 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
     }
 
     ; Update target values used to check for briv Q/E formation swaps
-    UpdateTargetAmounts(targetQ := 0, targetE := 0)
+    ; Update preset name
+    BGFBFS_UpdateSettings(targetQ := 0, targetE := 0, preset := "")
     {
         g_BrivUserSettingsFromAddons[ "TargetQ" ] := targetQ
         g_BrivUserSettingsFromAddons[ "TargetE" ] := targetE
+        this.BGFBFS_Preset := preset
     }
 }

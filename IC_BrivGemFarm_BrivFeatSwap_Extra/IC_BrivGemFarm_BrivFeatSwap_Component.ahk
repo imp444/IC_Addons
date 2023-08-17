@@ -110,11 +110,16 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             }
             else
             {
-                GuiControl, ICScriptHub:Text, BrivFeatSwapQValue, % SharedRunData.BrivFeatSwap_savedQSKipAmount
-                GuiControl, ICScriptHub:Text, BrivFeatSwapWValue, % SharedRunData.BrivFeatSwap_savedWSKipAmount
-                GuiControl, ICScriptHub:Text, BrivFeatSwapEValue, % SharedRunData.BrivFeatSwap_savedESKipAmount
-                GuiControl, ICScriptHub:Text, BrivFeatSwapsMadeThisRunValue, % SharedRunData.SwapsMadeThisRun
-                GuiControl, ICScriptHub:Text, BGFBFS_StatusText, % "Running " . SharedRunData.BGFBFS_Preset
+                if (SharedRunData.BGFBFS_Enabled)
+                {
+                    GuiControl, ICScriptHub:Text, BrivFeatSwapQValue, % SharedRunData.BrivFeatSwap_savedQSKipAmount
+                    GuiControl, ICScriptHub:Text, BrivFeatSwapWValue, % SharedRunData.BrivFeatSwap_savedWSKipAmount
+                    GuiControl, ICScriptHub:Text, BrivFeatSwapEValue, % SharedRunData.BrivFeatSwap_savedESKipAmount
+                    GuiControl, ICScriptHub:Text, BrivFeatSwapsMadeThisRunValue, % SharedRunData.SwapsMadeThisRun
+                    GuiControl, ICScriptHub:Text, BGFBFS_StatusText, % "Running " . SharedRunData.BGFBFS_Preset
+                }
+                else
+                    GuiControl, ICScriptHub:Text, BGFBFS_StatusText, % "Disabled"
             }
         }
         catch

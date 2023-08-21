@@ -1,3 +1,7 @@
+August 21, 2023 - v1.3.1
+    - Fixed loading enabled setting when starting BrivGemFarm.
+    - Fixed showing Briv with 4J100% value when reading skip value while in a formation where Briv has Wasting Haste equipped.
+
 August 16, 2023 - v1.3.0
     New features:
         - Added a calculator for target stacks needed to reach a specific area.

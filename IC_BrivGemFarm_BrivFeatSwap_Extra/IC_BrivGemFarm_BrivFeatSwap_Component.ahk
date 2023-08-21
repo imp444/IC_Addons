@@ -53,7 +53,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             settings.Preset == "8J/4J + walk 1/2/3/4" ? settings.Preset := "8J/4J Tall Tales + walk 1/2/3/4" : ""
             settings.Preset == "9J/4J" ? settings.Preset := "9J/4J Tall Tales" : ""
             GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % "|" . settings.Preset
-            Sleep, 50
             BrivGemFarm_BrivFeatSwap_Save()
             if (settings.Preset)
                 this.SaveMod50Preset()
@@ -147,6 +146,9 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "")
                 g_SF.Memory.ActiveEffectKeyHandler.Refresh()
             skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
+            ; Don't raed formation with Wasting Haste.
+            if (skipAmount == 4)
+                return
             skipChance := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipChance()
             this.DetectedSkipAmount := skipAmount
             this.DetectedSkipChance := skipChance

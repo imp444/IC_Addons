@@ -45,6 +45,8 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
         settings := g_SF.LoadObjectFromJSON(A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json")
         if (!settings.Enabled)
             return this.base.PreFlightCheck()
+        else
+            g_SharedData.BGFBFS_ToggleAddon(true)
         memoryVersion := g_SF.Memory.GameManager.GetVersion()
         ; Test Favorite Exists
         txtCheck := "`n`nOther potential solutions:"

@@ -112,7 +112,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     BrivFeatSwap_Init()
     {
         if (g_SharedData.BrivGemFarmLevelUpRunning()) ; LevelUp addon check
-            IC_BrivGemFarm_BrivFeatSwap_Class.base := IC_BrivGemFarm_LevelUp_Class
+            g_BrivGemFarm.base := IC_BrivGemFarm_LevelUp_Class
         settings := this.LoadObjectFromJSON(A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json")
         ; Retry once at most
         if (!IsObject(settings) && !IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class.RetryInit++)

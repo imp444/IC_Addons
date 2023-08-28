@@ -117,7 +117,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         ; Retry once at most
         if (!IsObject(settings) && !IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class.RetryInit++)
             return false
-        g_SharedData.BGFBFS_UpdateSettings(settings.targetQ, settings.targetE, settings.Preset)
+        g_SharedData.BGFBFS_UpdateSettings(settings.targetQ, settings.targetE, settings.Preset, settings.MouseClick)
         return true
     }
 
@@ -134,22 +134,36 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         }
         if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "") ; Not refreshed if for DoDashWait() is skipped
             this.Memory.ActiveEffectKeyHandler.Refresh()
+        currentZone := this.Memory.ReadCurrentZone()
+        ;bench briv if jump animation override is added to list and it isn't a quick transition (reading ReadFormationTransitionDir makes sure QT isn't read too early)
+        ; Using click on "Cancel" to clear champions out the formation
+        currentFormation := this.Memory.GetCurrentFormation()
+        if (g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ])
+        {
+            if (!this.BGFBFS_IsFormationEmpty(currentFormation))
+            {
+                if (this.Memory.ReadTransitionOverrideSize() == 1 AND this.Memory.ReadTransitionDirection() != 2 AND this.Memory.ReadFormationTransitionDir() == 3 || currentZone == 22 && g_SharedData.BGFBFS_Preset == "7J/4J Tall Tales")
+                    return this.BGFBFS_MouseClickCancel()
+            }
+            else if (this.Memory.ReadTransitionOverrideSize() == 1 || currentZone == 22 && g_SharedData.BGFBFS_Preset == "7J/4J Tall Tales")
+                return
+        }
         ;check to bench briv
-        if (g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetE" ] AND this.BenchBrivConditions(this.Settings))
+        if ((g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetE" ] AND this.BenchBrivConditions(this.Settings)) || this.BGFBFS_IsFormationEmpty(currentFormation))
         {
             this.DirectedInput(,,["{e}"]*)
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(3)
             return
         }
         ;check to unbench briv
-        if (g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetQ" ] AND this.UnBenchBrivConditions(this.Settings))
+        if ((g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetQ" ] AND this.UnBenchBrivConditions(this.Settings)) || this.BGFBFS_IsFormationEmpty(currentFormation))
         {
             this.DirectedInput(,,["{q}"]*)
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(1)
             return
         }
         ; Prevent incorrect read if Briv is the only champion leveled in Q/E (e.g. using "Level Briv/Shandie to MinLevel first" LevelUp addon option)
-        if (this.Memory.ReadCurrentZone() == 1)
+        if (currentZone == 1)
             return
         isFormation2 := this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2))
         isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( this.Memory.ReadCurrentZone(), 50) == 0 ? 50 : Mod( this.Memory.ReadCurrentZone(), 50)] == 0
@@ -187,8 +201,36 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         maxSwapArea := this.ModronResetZone - settings[ "BrivJumpBuffer" ]
         if (this.Memory.ReadCurrentZone() >= maxSwapArea)
             return true
-
         return false
+    }
+
+    UnBenchBrivConditions(settings)
+    {
+        if (!g_SharedData.BGFBFS_Enabled)
+            return base.UnBenchBrivConditions(settings)
+        return base.UnBenchBrivConditions(settings) || this.BGFBFS_IsFormationEmpty() && this.Memory.ReadTransitionOverrideSize() != 1
+    }
+
+    ; Returns true if there are no champions in the current formation.
+    BGFBFS_IsFormationEmpty(formation)
+    {
+        for k, v in formation
+        {
+            if (v != -1)
+                return false
+        }
+        return true
+    }
+
+    BGFBFS_MouseClickCancel()
+    {
+        WinGetActiveTitle, savedActive
+        this.SavedActiveWindow := savedActive
+        yClick := g_SF.Memory.ReadScreenHeight() - 30
+        xClick := 30
+        WinActivate, ahk_exe IdleDragons.exe
+        MouseClick, Left, xClick, yClick, 1, 0
+        this.ActivateLastWindow()
     }
 }
 
@@ -232,10 +274,11 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
 
     ; Update target values used to check for briv Q/E formation swaps
     ; Update preset name
-    BGFBFS_UpdateSettings(targetQ := 0, targetE := 0, preset := "")
+    BGFBFS_UpdateSettings(targetQ := 0, targetE := 0, preset := "", mouseClick := false)
     {
         g_BrivUserSettingsFromAddons[ "TargetQ" ] := targetQ
         g_BrivUserSettingsFromAddons[ "TargetE" ] := targetE
         this.BGFBFS_Preset := preset
+        g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] := mouseClick
     }
 }

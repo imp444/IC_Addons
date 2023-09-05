@@ -264,6 +264,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.LevelToSoftCapFailedConversion := true
         settings.LevelToSoftCapFailedConversionBriv := false
         minLevels := {}, maxLevels := {}
+        ; Speed champions
         minLevels[58] := 170, maxLevels[58] := 1300 ; Briv
         minLevels[47] := 120, maxLevels[47] := 120 ; Shandie
         minLevels[91] := 260, maxLevels[91] := 350 ; Widdle 260 310 350
@@ -284,13 +285,16 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[95] := 100, maxLevels[95] := 250 ; Vi 100 250
         minLevels[70] := 90, maxLevels[70] := 90 ; Ezmeralda 90 315
         minLevels[12] := 65, maxLevels[12] := 65 ; Arkhan
+        ; Gold find % champions
         minLevels[4] := 1, maxLevels[4] := 2050 ; Jarlaxle
         minLevels[39] := 1, maxLevels[39] := 2930 ; Paultin
         minLevels[103] := 1, maxLevels[103] := 2000 ; Valentine
         minLevels[124] := 1, maxLevels[124] := 890 ; Evandra
         minLevels[113] := 1, maxLevels[113] := 1370 ; Egbert
+        minLevels[129] := 1, maxLevels[129] := 2490 ; Astarion
         minLevels[94] := 1, maxLevels[94] := 2520 ; Rust
         minLevels[30] := 1, maxLevels[30] := 2020 ; Azaka
+        ; Other
         minLevels[118] := 0, maxLevels[118] := 60 ; Fen
         minLevels[40] := 0, maxLevels[40] := 215 ; Black Viper
         minLevels[97] := 0, maxLevels[97] := 80 ; Tatyana

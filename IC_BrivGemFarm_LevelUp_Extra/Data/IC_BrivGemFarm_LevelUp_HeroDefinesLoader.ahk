@@ -160,14 +160,19 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
             IC_BrivGemFarm_LevelUp_ToolTip.UpdateDefsCNETime(current_time)
             ; Check file checksum
             settings := g_BrivGemFarm_LevelUp.Settings
+            if (!IsObject(settings))
+                settings := {}
             if (settings.LastChecksum == "" OR settings.LastChecksum != checksum)
             {
                 settings.LastChecksum := checksum
-                ;tableChecksums := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetTableChecksums(contents) ; Check table_checksums
-                if (settings.LastTableChecksums == "" OR !IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(settings.LastTableChecksums, tableChecksums))
+                ; Check table_checksums
+                tableChecksums := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetTableChecksums(contents)
+                lastTableChecksums := settings.LastTableChecksums
+                sameChecksums := IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(lastTableChecksums, tableChecksums)
+                if (lastTableChecksums == "" OR !sameChecksums)
                 {
                     this.UpdateLoading("New definitions found")
-                    ;settings.LastTableChecksums := tableChecksums
+                    settings.LastTableChecksums := tableChecksums
                     g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
                     this.CachedHeroDefines := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.GetHeroDefs(contents)
                     return true
@@ -473,83 +478,94 @@ Class IC_BrivGemFarm_LevelUp_CachedDefinitionsReader extends JSON
     _CreateObject(jsObject, filter := "") {
         if !IsObject(jsObject)
             return jsObject
-
         result := jsObject.IsArray()
-
         if (result = "")
             return jsObject
-        else if (result = -1) {
+        else if (result = -1)
+        {
             object := []
-
             Loop % jsObject.length
                 object[A_Index] := this._CreateObject(jsObject[A_Index - 1])
         }
-        else if (result = 0) {
+        else if (result = 0)
+        {
             object := {}
-            keys := jsObject.GetKeys()
-
             if (filter == "")
             {
-                Loop % keys.length
-                    k := keys[A_Index - 1], object[k] := this._CreateObject(jsObject[k])
+                for k in this.GetKeysObject(jsObject)
+                    object[k] := this._CreateObject(jsObject[k])
             }
             else if (IsObject(filter))
             {
                 for k, v in filter
                 {
-                    if (jsObject[k] != "")
-                        object[k] := this._CreateObject(jsObject[k], v)
+                    try
+                    {
+                        jsObj := jsObject[k]
+                        object[k] := this._CreateObject(jsObj, v)
+                    }
+                    catch
+                    {
+                        ; Create objects from all keys on error.
+                        for k in this.GetKeysObject(jsObject)
+                            object[k] := this._CreateObject(jsObject[k])
+                    }
                 }
             }
             else
                  object[filter] := this._CreateObject(jsObject[filter])
         }
-
         return object
     }
 
     ; Filter table_checksums from cachedDefinitions.json
     GetTableChecksums(ByRef script)
     {
-        jsObject := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.UpdateFilters(script)
-        filter := {}, childrenFilter := {}
-        childrenFilter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.HeroFilter] := ""
-        childrenFilter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.EffectKeyFilter] := ""
-        childrenFilter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.AttackFilter] := ""
-        childrenFilter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.TextFilter] := ""
-        for k, v in IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.UpgradeFilter
+        ; Update indexes for upgrade_defines and effect_defines.
+        jsObject := this.UpdateFilters(script)
+        ; Create filters.
+        filter := {}
+        childrenFilter := {}
+        childrenFilter[this.HeroFilter] := ""
+        childrenFilter[this.EffectKeyFilter] := ""
+        childrenFilter[this.AttackFilter] := ""
+        childrenFilter[this.TextFilter] := ""
+        for k, v in this.UpgradeFilter
             childrenFilter[v] := ""
-        for k, v in IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.EffectFilter
+        for k, v in this.EffectFilter
             childrenFilter[v] := ""
-        filter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.TableFilter] := childrenFilter
-        return IC_BrivGemFarm_LevelUp_CachedDefinitionsReader._CreateObject(jsObject, filter)[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.TableFilter]
+        filter[this.TableFilter] := childrenFilter
+        return this._CreateObject(jsObject, filter)[this.TableFilter]
     }
 
-    ; Filter relevant keys from cachedDefinitions.json
+    ; Filter relevant keys from cachedDefinitions.json.
+    ; Returns the js object parsed from script.
     GetHeroDefs(ByRef script)
     {
-        jsObject := IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.UpdateFilters(script)
+        ; Update indexes for upgrade_defines and effect_defines.
+        jsObject := this.UpdateFilters(script)
+        ; Create filters.
         filter := {}
-        filter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.HeroFilter] := ""
-        filter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.EffectKeyFilter] := ""
-        filter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.AttackFilter] := ""
-        filter[IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.TextFilter] := ""
-        for k, v in IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.UpgradeFilter
+        filter[this.HeroFilter] := ""
+        filter[this.EffectKeyFilter] := ""
+        filter[this.AttackFilter] := ""
+        filter[this.TextFilter] := ""
+        for k, v in this.UpgradeFilter
             filter[v] := ""
-        for k, v in IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.EffectFilter
+        for k, v in this.EffectFilter
             filter[v] := ""
-        return IC_BrivGemFarm_LevelUp_CachedDefinitionsReader._CreateObject(jsObject, filter)
+        return this._CreateObject(jsObject, filter)
     }
 
-    ; Update key filters from cachedDefinitions.json
+    ; Update key filters from cachedDefinitions.json,
+    ; upgrade_defines and effect_defines.
+    ; Returns the js object parsed from script.
     UpdateFilters(ByRef script)
     {
         jsObject := this.verify(script)
-        keys := jsObject.GetKeys()
-        keysObj := {}
-        Loop % keys.length
-            k := keys[A_Index - 1], keysObj[k] := k
-        upgradeFilter := [], effectFilter := []
+        keysObj := this.GetKeysObject(jsObject)
+        upgradeFilter := []
+        effectFilter := []
         for k in keysObj
         {
             if (RegExMatch(k, "upgrade_defines_(\d+)", upgradeKey))
@@ -557,8 +573,21 @@ Class IC_BrivGemFarm_LevelUp_CachedDefinitionsReader extends JSON
             else if (RegExMatch(k, "effect_defines_(\d+)", upgradeKey))
                 effectFilter.Push(upgradeKey)
         }
-        IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.UpgradeFilter := upgradeFilter
-        IC_BrivGemFarm_LevelUp_CachedDefinitionsReader.EffectFilter := effectFilter
+        this.UpgradeFilter := upgradeFilter
+        this.EffectFilter := effectFilter
         return jsObject
+    }
+
+    ; Returns a dict with the name and position of all keys in jsObject.
+    GetKeysObject(jsObject)
+    {
+        keysObj := {}
+        keys := jsObject.GetKeys()
+        Loop % keys.length
+        {
+            k := keys[A_Index - 1]
+            keysObj[k] := A_Index - 1
+        }
+        return keysObj
     }
 }

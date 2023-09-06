@@ -38,24 +38,72 @@ class IC_BrivGemFarm_LevelUp_Functions
         return false
     }
 
-    ; Returns true if the two objects have identical key/value pairs
+    ; Returns true if the two objects have identical key/value pairs.
     AreObjectsEqual(obj1 := "", obj2 := "")
     {
         if (obj1.Count() != obj2.Count())
             return false
+        if (!IsObject(obj1))
+            return !IsObject(obj2) && (obj1 == obj2)
         for k, v in obj1
         {
-            if (IsObject(v) AND !this.AreObjectsEqual(obj2[k], v) OR !IsObject(v) AND obj2[k] != v AND obj2.HasKey(k))
+            if (IsObject(v) && !this.AreObjectsEqual(obj2[k], v))
+                return false
+            else if (!IsObject(v) && obj2[k] != v && obj2.HasKey(k))
                 return false
         }
         return true
+    }
+
+    ; Returns true if the two values are identical, false otherwise.
+    ; Returns an object that contains all the differences between the
+    ; key/value pairs of both objects.
+    ; Return object format: {key:[value(obj1),value(obj2)], ...}
+    AreObjectsEqualDiff(obj1 := "", obj2 := "", key := "")
+    {
+        static diff := {}
+
+        if (key == "")
+            diff := {}
+        if (!IsObject(obj1) && !IsObject(obj2))
+        {
+            if (obj1 != obj2)
+                diff[key] := [obj1, obj2]
+        }
+        for k, v in obj1
+        {
+            subKey := (key != "") ? key . "." . k : k
+            if (IsObject(v))
+                this.AreObjectsEqualDiff(v, obj2[k], subKey)
+            else if (!IsObject(v) && obj2[k] != v)
+            {
+                if (!diff.HasKey(subKey))
+                    diff[subKey] := [v, obj2[k]]
+            }
+        }
+        for k, v in obj2
+        {
+            subKey := (key != "") ? key . "." . k : k
+            if (IsObject(v))
+                this.AreObjectsEqualDiff(obj1[k], v, subKey)
+            else if (!IsObject(v) && obj1[k] != v)
+            {
+                if (!diff.HasKey(subKey))
+                    diff[subKey] := [obj1[k], v]
+            }
+        }
+        if (key != "")
+            return diff.Count()
+        ret := diff.Count() ? this.ObjFullyClone(diff) : true
+        diff := {}
+        return ret
     }
 
     ; Creates a deep clone of an object
     ObjFullyClone(obj)
     {
         nobj := obj.Clone()
-        for k,v in nobj
+        for k, v in nobj
         {
             if IsObject(v)
                 nobj[k] := this.ObjFullyClone(v)

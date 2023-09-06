@@ -509,6 +509,7 @@ Class IC_BrivGemFarm_LevelUp_CachedDefinitionsReader extends JSON
                         ; Create objects from all keys on error.
                         for k in this.GetKeysObject(jsObject)
                             object[k] := this._CreateObject(jsObject[k])
+                        break
                     }
                 }
             }

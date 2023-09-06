@@ -153,10 +153,12 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         if (fileExists)
         {
             FileRead, contents, %fileName%
-            RegExMatch(contents, "(\d)+", checksum, InStr(contents, "checksum")) ; Check file checksum
-            RegExMatch(contents, "(\d)+", current_time, InStr(contents, "current_time")) ; Check file checksum
+            RegExMatch(contents, "(\d)+", checksum, InStr(contents, "checksum"))
+            ; Update server time
+            RegExMatch(contents, "(\d)+", current_time, InStr(contents, """current_time"":"))
             this.CNETime := current_time
             IC_BrivGemFarm_LevelUp_ToolTip.UpdateDefsCNETime(current_time)
+            ; Check file checksum
             settings := g_BrivGemFarm_LevelUp.Settings
             if (settings.LastChecksum == "" OR settings.LastChecksum != checksum)
             {

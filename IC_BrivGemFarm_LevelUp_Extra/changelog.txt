@@ -1,9 +1,15 @@
+September 06, 2023 - v0.6.4
+    - Added default min/max level settings for Astarion.
+    - Fixes:
+        - Fixed the definitions timestamp being incorrectly parsed in some cases.
+        - Implemented better error handling for the table_checksums filter and re-enabled it.
+
 August 22, 2023 - v0.6.3
     - Added Lae'Zel in the champion list that prioritizes speed champions for min leveling.
 
 August 11, 2023 - v0.6.2
-    Improved search for cached_definitions file speed.
-    Hotfixes:
+    - Improved search for cached_definitions file speed.
+    - Hotfixes:
         - Disabled automatic cached_definitions search for EG.
         - Disabled table_checksums because of a parsing error (the addon may load "new" definitions at the start more often).
 

@@ -153,7 +153,7 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         if (fileExists)
         {
             FileRead, contents, %fileName%
-            RegExMatch(contents, "(\d)+", checksum, InStr(contents, "checksum"))
+            RegExMatch(contents, "(\d)+", checksum, InStr(contents, """checksum"":"))
             ; Update server time
             RegExMatch(contents, "(\d)+", current_time, InStr(contents, """current_time"":"))
             this.CNETime := current_time

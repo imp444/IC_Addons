@@ -102,7 +102,9 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
     }
 }
 
-; Overrides IC_BrivSharedFunctions_Class, check for compatibility
+; Overrides IC_BrivSharedFunctions_Class.SetFormation()
+; Overrides IC_BrivSharedFunctions_Class.BenchBrivConditions()
+; Overrides IC_BrivSharedFunctions_Class.KillCurrentBoss()
 class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
     static BrivFeatSwap_Initialized := false
@@ -189,6 +191,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
             return true
 
         return false
+    }
+
+    ; If Briv has enough stacks to jump, don't force switch to e and wait for the boss to be killed.
+    KillCurrentBoss(params*)
+    {
+        if (!g_SharedData.BGFBFS_Enabled || this.Memory.ReadHasteStacks() < 50)
+            return base.KillCurrentBoss(params*)
+        return true
     }
 }
 

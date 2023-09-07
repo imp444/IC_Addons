@@ -39,6 +39,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         ; Save the state of the mod50 checkboxes for Preferred Briv Jump Zones in Advanced Settings tab.
         this.SavedPreferredAdvancedSettings := this.GetPreferredAdvancedSettings(true)
         this.SetupPresets()
+        this.UpdateStatus()
         this.Settings := settings := g_SF.LoadObjectFromJSON(this.SettingsPath)
         if (IsObject(settings))
         {
@@ -98,6 +99,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         if (this.DetectedSkipAmount == "")
             this.UpdateDetectedSkipAmount()
+        else
+            this.GetModronResetArea()
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
@@ -131,9 +134,21 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Returns true is the game is open.
     GameIsReady()
     {
+        static memReadReady := false
+
         existingProcessID := g_UserSettings[ "ExeName"]
         Process, Exist, %existingProcessID%
-        return ErrorLevel && g_SF.Memory.ReadGameStarted()
+        if (ErrorLevel)
+        {
+            if (!memReadReady)
+            {
+                g_SF.Memory.OpenProcessReader()
+                memReadReady := true
+            }
+            return g_SF.Memory.ReadGameStarted()
+        }
+        else
+            memReadReady := false
     }
 
     ; Update Briv skip amount/chance.
@@ -345,7 +360,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         if (this.GameIsReady())
         {
-            g_SF.Memory.OpenProcessReader()
             if ((resetArea := g_SF.Memory.GetModronResetArea()) > 0) ; -1 on failure
             {
                 this.DetectedResetArea := resetArea
@@ -366,7 +380,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         GuiControlGet, brivMetalbornArea, ICScriptHub:, BGFBFS_BrivMetalbornArea
         if (resetArea == "")
         {
-            resetArea := 2000
+            resetArea := this.DetectedResetArea
             path := this.Calcpath(mod50Values, resetArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
             choices := ""
             for k, v in path.path

@@ -423,8 +423,12 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         GuiControlGet, brivMetalbornArea, ICScriptHub:, BGFBFS_BrivMetalbornArea
         maxArea := this.CalcPathStacks(mod50Values, stacks, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
         GuiControlGet, runs, ICScriptHub:, BGFBFS_Runs
+        if (!this.DisableResetAreaUpdate && runs == 1)
+            GuiControl, ICScriptHub:Text, BGFBFS_ResetArea, % maxArea
+        else if (!this.DisableResetAreaUpdate)
+            this.UpdateStacksFromRunCount(runs, stacks)
         ; Update text controls
-        if (runs == 1)
+        if (!this.DisableResetAreaUpdate && runs == 1)
         {
             path := this.CalcPath(mod50values, maxArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
             a := path.noMetalbornJumps
@@ -432,10 +436,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             totalWalks := path.walks
             this.UpdateWalkJumpText(totalWalks, a, b)
         }
-        if (!this.DisableResetAreaUpdate && runs == 1)
-            GuiControl, ICScriptHub:Text, BGFBFS_ResetArea, % maxArea
-        else if (!this.DisableResetAreaUpdate)
-            this.UpdateStacksFromRunCount(runs, stacks)
         this.DisableResetAreaUpdate := false
         return maxArea
     }

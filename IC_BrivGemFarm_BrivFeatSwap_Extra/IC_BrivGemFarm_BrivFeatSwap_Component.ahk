@@ -477,13 +477,17 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         ; Jump
         while (currentArea < resetArea)
         {
-            ; Update metalborn jump counters
-            currentArea < brivMetalbornArea ? ++noMbJumps : ++mbJumps
-            ; Advance
+            ; Area progress
             mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
             mod50Value := mod50values[mod50Index]
-            path.Push(currentArea += mod50Value ? qVal : eVal)
-            walks += mod50Value && qVal == 1 || !mod50Value && eVal == 1
+            move := mod50Value ? qVal : eVal
+            ; Update walk and metalborn jump counters
+            if (move == 1)
+                ++walks
+            else
+                currentArea < brivMetalbornArea ? ++noMbJumps : ++mbJumps
+            ; Update path
+            path.Push(currentArea += move)
         }
         return {path:path, walks:walks, metalbornJumps:mbJumps, noMetalbornJumps:noMbJumps}
     }
@@ -512,11 +516,13 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         ; Jump
         while (stacks >= 50)
         {
-            ; Update stacks
-            stacks := Round(stacks * (currentArea < brivMetalbornArea ? 0.96 : 0.968))
-            ; Advance
+            ; Area progress
             mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
-            currentArea += mod50values[mod50Index] ? qVal : eVal
+            move := mod50values[mod50Index] ? qVal : eVal
+            currentArea += move
+            ; Update stacks
+            if (move > 1)
+                stacks := Round(stacks * (currentArea < brivMetalbornArea ? 0.96 : 0.968))
         }
         return currentArea
     }

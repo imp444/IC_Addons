@@ -1,3 +1,16 @@
+September 07, 2023 - v1.4.0
+    New features:
+        - Added an option to simulate multiple runs to the Briv stacks calculator.
+        - Added tooltips.
+    Fixes:
+        - Briv will be allowed to stack on a boss zone to prevent deviating from the normal path.
+          If this effect is undesirable, update the "Farm SB after this zone" setting in the BrivGemFarm tab.
+        - If using a preset, advanced settings are correctly loaded/saved.
+        - If the game is open while starting ICScriptHub, the Modron reset area will be used
+          as the default selection for the stacks calculator reset area.
+        - If no preset is selected, the correct walk/jump/stacks values are shown
+          when simulating walks in Q or E (targetQ or targetE set to 0).
+
 August 21, 2023 - v1.3.1
     - Fixed loading enabled setting when starting BrivGemFarm.
     - Fixed showing Briv with 4J100% value when reading skip value while in a formation where Briv has Wasting Haste equipped.

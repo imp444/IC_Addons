@@ -151,6 +151,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         this.SetupPreferredBrivJumpZonesGroup()
         this.SetupBGFLUGroup()
         this.SetupMouseClickGroup()
+        this.AddToolTips()
     }
 
     SetupSkipSetupGroup()
@@ -342,5 +343,22 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         }
         Gui DropDownSize:Destroy
         return X + Padding
+    }
+
+    ; Show tooltips on mouseover
+    AddToolTips()
+    {
+        GUIFunctions.AddToolTip("BGFBFS_Enabled", "Enable/disable this addon.")
+        GUIFunctions.AddToolTip("BGFBFS_PresetText", "Select a preset. Choose the blank option to use custom settings.")
+        GUIFunctions.AddToolTip("BGFBFS_Preset", "Select a preset. Choose the blank option to use custom settings.")
+        GUIFunctions.AddToolTip("BrivGemFarm_BrivFeatSwap_TargetQ", "Number of areas Briv will skip in Q formation. To simulate walking, enter 0.")
+        GUIFunctions.AddToolTip("BrivGemFarm_BrivFeatSwap_TargetE", "Number of areas Briv will skip in E formation. To simulate walking, enter 0.")
+        GUIFunctions.AddToolTip("BGFBFS_Runs", "Number of runs with a single stack setup.")
+        GUIFunctions.AddToolTip("BGFBFS_ResetArea", "Reset area (should be equal to the modron reset area + 1).")
+        GUIFunctions.AddToolTip("BGFBFS_ResetAreaText", "Reset area (should be equal to the modron reset area + 1).")
+        GUIFunctions.AddToolTip("BGFBFS_BrivMetalbornArea", "Lowest area where Briv gets his Metalborn upgrade (level 170).")
+        GUIFunctions.AddToolTip("BGFBFS_StacksRequired", "Stacks required to jump all the way to the reset zone, including walks.")
+        GUIFunctions.AddToolTip("BGFBFS_BrivMinLevelArea", "Option from the LevelUp addon used to delay the leveling of Briv.")
+        GUIFunctions.AddToolTip("BGFBFS_BrivMinLevelAreaText", "Option from the LevelUp addon used to delay the leveling of Briv.")
     }
 }

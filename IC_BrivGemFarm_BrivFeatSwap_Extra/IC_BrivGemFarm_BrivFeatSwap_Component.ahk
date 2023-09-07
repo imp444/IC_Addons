@@ -41,6 +41,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         ; Save the state of the mod50 checkboxes for Preferred Briv Jump Zones in Advanced Settings tab.
         this.SavedPreferredAdvancedSettings := this.GetPreferredAdvancedSettings(true)
         this.SetupPresets()
+        this.UpdateStatus()
         this.Settings := settings := g_SF.LoadObjectFromJSON(this.SettingsPath)
         if (IsObject(settings))
         {
@@ -57,7 +58,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             settings.Preset == "8J/4J" ? settings.Preset := "8J/4J Tall Tales" : ""
             settings.Preset == "8J/4J + walk 1/2/3/4" ? settings.Preset := "8J/4J Tall Tales + walk 1/2/3/4" : ""
             settings.Preset == "9J/4J" ? settings.Preset := "9J/4J Tall Tales" : ""
-            GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % "|" . settings.Preset
+            GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % settings.Preset
+            this.LoadPreset(settings.Preset)
             BrivGemFarm_BrivFeatSwap_Save()
             if (settings.Preset)
                 this.SaveMod50Preset()
@@ -102,6 +104,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         if (this.DetectedSkipAmount == "")
             this.UpdateDetectedSkipAmount()
+        else
+            this.GetModronResetArea()
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
@@ -135,9 +139,21 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Returns true is the game is open.
     GameIsReady()
     {
+        static memReadReady := false
+
         existingProcessID := g_UserSettings[ "ExeName"]
         Process, Exist, %existingProcessID%
-        return ErrorLevel && g_SF.Memory.ReadGameStarted()
+        if (ErrorLevel)
+        {
+            if (!memReadReady)
+            {
+                g_SF.Memory.OpenProcessReader()
+                memReadReady := true
+            }
+            return g_SF.Memory.ReadGameStarted()
+        }
+        else
+            memReadReady := false
     }
 
     ; Update Briv skip amount/chance.
@@ -357,7 +373,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         if (this.GameIsReady())
         {
-            g_SF.Memory.OpenProcessReader()
             if ((resetArea := g_SF.Memory.GetModronResetArea()) > 0) ; -1 on failure
             {
                 this.DetectedResetArea := resetArea
@@ -378,7 +393,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         GuiControlGet, brivMetalbornArea, ICScriptHub:, BGFBFS_BrivMetalbornArea
         if (resetArea == "")
         {
-            resetArea := 2000
+            resetArea := this.DetectedResetArea
             path := this.Calcpath(mod50Values, resetArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
             choices := ""
             for k, v in path.path
@@ -423,11 +438,15 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             GuiControl, ICScriptHub:Text, BGFBFS_ResetArea, % maxArea
         else if (!this.DisableResetAreaUpdate)
             this.UpdateStacksFromRunCount(runs, stacks)
-        ; Update walks/jumps text
-        path := this.Calcpath(mod50Values, maxArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
-        a := runs * path.noMetalbornJumps
-        b := runs * path.metalbornJumps
-        this.UpdateWalkJumpText(runs * path.walks, a, b)
+        ; Update text controls
+        if (!this.DisableResetAreaUpdate && runs == 1)
+        {
+            path := this.CalcPath(mod50values, maxArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
+            a := path.noMetalbornJumps
+            b := path.metalbornJumps
+            totalWalks := path.walks
+            this.UpdateWalkJumpText(totalWalks, a, b)
+        }
         this.DisableResetAreaUpdate := false
         return maxArea
     }
@@ -544,13 +563,17 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
                 ++walks
                 continue
             }
-            ; Update metalborn jump counters
-            currentArea < brivMetalbornArea ? ++noMbJumps : ++mbJumps
-            ; Advance
+            ; Area progress
             mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
             mod50Value := mod50values[mod50Index]
-            path.Push(currentArea += mod50Value ? qVal : eVal)
-            walks += mod50Value && qVal == 1 || !mod50Value && eVal == 1
+            move := mod50Value ? qVal : eVal
+            ; Update walk and metalborn jump counters
+            if (move == 1)
+                ++walks
+            else
+                currentArea < brivMetalbornArea ? ++noMbJumps : ++mbJumps
+            ; Update path
+            path.Push(currentArea += move)
         }
         return {path:path, walks:walks, metalbornJumps:mbJumps, noMetalbornJumps:noMbJumps}
     }
@@ -586,11 +609,13 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
                 ++currentArea
                 continue
             }
-            ; Update stacks
-            stacks := Round(stacks * (currentArea < brivMetalbornArea ? 0.96 : 0.968))
-            ; Advance
+            ; Area progress
             mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
-            currentArea += mod50values[mod50Index] ? qVal : eVal
+            move := mod50values[mod50Index] ? qVal : eVal
+            currentArea += move
+            ; Update stacks
+            if (move > 1)
+                stacks := Round(stacks * (currentArea < brivMetalbornArea ? 0.96 : 0.968))
         }
         return currentArea
     }

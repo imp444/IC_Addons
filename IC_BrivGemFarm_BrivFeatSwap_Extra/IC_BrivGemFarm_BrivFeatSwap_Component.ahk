@@ -52,7 +52,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             settings.Preset == "8J/4J" ? settings.Preset := "8J/4J Tall Tales" : ""
             settings.Preset == "8J/4J + walk 1/2/3/4" ? settings.Preset := "8J/4J Tall Tales + walk 1/2/3/4" : ""
             settings.Preset == "9J/4J" ? settings.Preset := "9J/4J Tall Tales" : ""
-            GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % "|" . settings.Preset
+            GuiControl, ICScriptHub:ChooseString, BGFBFS_Preset, % settings.Preset
+            this.LoadPreset(settings.Preset)
             BrivGemFarm_BrivFeatSwap_Save()
             if (settings.Preset)
                 this.SaveMod50Preset()

@@ -64,6 +64,14 @@ BGFBFS_Preset()
     g_BrivFeatSwap.LoadPreset(value)
 }
 
+BGFBFS_Runs()
+{
+    global
+    if ((value := BGFBFS_ValidateInput(1, 99)) == "RETURN")
+        return
+    g_BrivFeatSwap.UpdateStacksFromRunCount(value)
+}
+
 BGFBFS_ResetArea()
 {
     global
@@ -198,7 +206,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Add, GroupBox, Section x%nextPos% y%posGY% vBGFBFS_StacksSetup, Stacks Calculator
         Gui, ICScriptHub:Font, w400
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-        Gui, ICScriptHub:Add, ComboBox, xs+%xSection% ys+%yTitleSpacing% w60 Limit5 vBGFBFS_ResetArea gBGFBFS_ResetArea
+        Gui, ICScriptHub:Add, Edit, xs+%xSection% ys+%yTitleSpacing% w60 Limit2 vBGFBFS_Runs gBGFBFS_Runs, 1
+        GUIFunctions.UseThemeTextColor()
+        Gui, ICScriptHub:Add, Text, vBGFBFS_RunsText x+5 yp+4, Runs
+        GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+        Gui, ICScriptHub:Add, ComboBox, xs+%xSection% y+%ySpacing% w60 Limit5 vBGFBFS_ResetArea gBGFBFS_ResetArea
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, vBGFBFS_ResetAreaText x+5 yp+4, Reset area (Modron reset: Game closed)
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
@@ -209,8 +221,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Add, Edit, xs+%xSection% y+%ySpacing% w100 Limit15 vBGFBFS_StacksRequired gBGFBFS_StacksRequired, 0
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, vBGFBFS_StacksRequiredText x+5 yp+4, Stacks required
-        Gui, ICScriptHub:Add, Text, vBGFBFS_JumpsText xs+%xSection% y+%yTitleSpacing% w260
-        Gui, ICScriptHub:Add, Text, vBGFBFS_WalksText xs+%xSection% y+%ySpacing% w260
+        Gui, ICScriptHub:Add, Text, vBGFBFS_JumpsText xs+%xSection% y+%ySpacing% w260
+        Gui, ICScriptHub:Add, Text, vBGFBFS_WalksText xs+%xSection% y+5 w260
         ; Resize
         GuiControlGet, posG2, ICScriptHub:Pos, BGFBFS_StacksSetup
         GuiControlGet, pos, ICScriptHub:Pos, BGFBFS_ResetAreaText

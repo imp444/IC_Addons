@@ -29,9 +29,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     DetectedSkipChance := ""
     DetectedResetArea := 2000
     DisableResetAreaUpdate := false
+    DisableStacksRequiredUpdate := false
     SavedPreferredAdvancedSettings := 0
     Settings := ""
     TimerFunctions := ""
+    CurrentPath := ""
 
     Init()
     {
@@ -394,14 +396,13 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
         else
             path := this.Calcpath(mod50Values, resetArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
+        this.CurrentPath := path
+        GuiControlGet, runs, ICScriptHub:, BGFBFS_Runs
         ; Update text controls
-        a := path.noMetalbornJumps
-        b := path.metalbornJumps
-        jumpsText := (a + b) . " jump" . (a + b == 1 ? "" : "s")
-        jumpsText .= " (" . a . " non-Metalborn, " . b . " Metalborn)"
-        GuiControl, ICScriptHub:Text, BGFBFS_JumpsText, % jumpsText
-        walksText := path.walks . " walk" . ((path.walks == 1) ? "" : "s")
-        GuiControl, ICScriptHub:Text, BGFBFS_WalksText, % walksText
+        a := runs * path.noMetalbornJumps
+        b := runs * path.metalbornJumps
+        totalWalks := runs * path.walks
+        this.UpdateWalkJumpText(totalWalks, a, b)
         stacksNeeded := this.CalcBrivStacksNeeded(a, b)
         if (stacksNeeded == "Too many")
             return this.UpdatePath(this.UpdateResetAreaFromStacks(999999999999999))
@@ -421,10 +422,76 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         GuiControlGet, brivMinLevelArea, ICScriptHub:, BGFBFS_BrivMinLevelArea
         GuiControlGet, brivMetalbornArea, ICScriptHub:, BGFBFS_BrivMetalbornArea
         maxArea := this.CalcPathStacks(mod50Values, stacks, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
-        if (!this.DisableResetAreaUpdate)
+        GuiControlGet, runs, ICScriptHub:, BGFBFS_Runs
+        ; Update text controls
+        if (runs == 1)
+        {
+            path := this.CalcPath(mod50values, maxArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
+            a := path.noMetalbornJumps
+            b := path.metalbornJumps
+            totalWalks := path.walks
+            this.UpdateWalkJumpText(totalWalks, a, b)
+        }
+        if (!this.DisableResetAreaUpdate && runs == 1)
             GuiControl, ICScriptHub:Text, BGFBFS_ResetArea, % maxArea
+        else if (!this.DisableResetAreaUpdate)
+            this.UpdateStacksFromRunCount(runs, stacks)
         this.DisableResetAreaUpdate := false
         return maxArea
+    }
+
+    ; Update stacks needed depending on a number of runs done stacking only once.
+    ; If the number of stacks is too high, lower run count until valid.
+    ; Parameters: - runs:int - Number of runs from one restack.
+    UpdateStacksFromRunCount(runs := 1, stackLimit := "")
+    {
+        path := this.CurrentPath
+        a := runs * path.noMetalbornJumps
+        b := runs * path.metalbornJumps
+        stacksNeeded := this.CalcBrivStacksNeeded(a, b)
+        ; Increment/decrement run value depending on input stacks
+        if (stackLimit != "" && stacksNeeded > stackLimit)
+            stacksNeeded := "Too many"
+        else if (stackLimit != "")
+            return this.UpdateStacksFromRunCount(runs + 2, stackLimit)
+        ; Limit runs to the maximum value possible from max stacks
+        while (stacksNeeded == "Too many" && runs > 0)
+        {
+            a := --runs * path.noMetalbornJumps
+            b := runs * path.metalbornJumps
+            stacksNeeded := this.CalcBrivStacksNeeded(a, b)
+        }
+        this.DisableResetAreaUpdate := true
+        if (!this.DisableStacksRequiredUpdate)
+        {
+            GuiControl, ICScriptHub:Text, BGFBFS_StacksRequired, % stacksNeeded
+            this.UpdateWalkJumpText(runs * path.walks, a, b)
+            this.DisableStacksRequiredUpdate := true
+            GuiControl, ICScriptHub:Text, BGFBFS_Runs, % runs
+            Sleep, 50
+        }
+        this.DisableStacksRequiredUpdate := false
+        return stacksNeeded
+    }
+
+    ; Update the text that shows walks, jumps w and w/o Metalborn for the current path.
+    ; Parameters: - walks:int - Number of times Briv walks.
+    ;             - noMbJumps:int - Number of times Briv jumps without Metalborn.
+    ;             - mbJumps:int - Number of times Briv jumps with Metalborn.
+    UpdateWalkJumpText(walks, noMbJumps, mbJumps)
+    {
+        jumpsText := (noMbJumps + mbJumps) . " jump" . this.Plural(noMbJumps + mbJumps)
+        jumpsText .= " (" . noMbJumps . " non-Metalborn, " . mbJumps . " Metalborn)"
+        GuiControl, ICScriptHub:Text, BGFBFS_JumpsText, % jumpsText
+        walksText := walks . " walk" . this.Plural(walks)
+        GuiControl, ICScriptHub:Text, BGFBFS_WalksText, % walksText
+    }
+
+    ; Returns the text to append for values not equal to 1.
+    ; Parameters: - value:int - Value of anything countable.
+    Plural(value)
+    {
+        return value == 1 ? "" : "s"
     }
 
     ; Return the number of stacks needed to jump noMetalbornJumps + metalbornJumps times.

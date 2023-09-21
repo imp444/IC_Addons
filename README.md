@@ -19,6 +19,9 @@ Addon used to restrict the game's process to a selection of cores.
 
 ## Install:
 
-![code](download_code.png)  
-Click on the code button in the top right corner and download zip,then copy the folder of the addon
-that you want to use in the ICScriptHub **AddOns** folder.
+<picture>
+  <img alt="Image Alt Text" src="download_code.png">
+</picture>
+
+Click on the code button in the top right corner and download zip, then copy/paste the folder
+of the addon that you want to use in the ICScriptHub **AddOns** folder.

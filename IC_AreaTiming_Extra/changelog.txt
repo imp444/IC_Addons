@@ -8,6 +8,7 @@ September 21, 2023 - v1.0.0
         - View multiple sessions.
         - View individual runs.
         - Show cumulative run time.
+        - Show resetting time.
         - Show game speed (option to show uncapped speed).
         - Option to show mod50 values without z1/stack zone/reset outliers.
         - Show stacks gained online/offline.

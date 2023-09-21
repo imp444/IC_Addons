@@ -16,3 +16,9 @@ Addon used to optimize leveling of champions during BrivGemFarm. (WIP)
 **IC_ProcessAffinity_Extra**
 
 Addon used to restrict the game's process to a selection of cores.
+
+## Install:
+
+![code](download_code.png)  
+Click on the code button in the top right corner and download zip,then copy the folder of the addon
+that you want to use in the ICScriptHub **AddOns** folder.

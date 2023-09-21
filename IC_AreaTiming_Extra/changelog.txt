@@ -1,7 +1,28 @@
+September 21, 2023 - v1.0.0
+    Complete rewrite of the addon.
+    - New features:
+        - Launches a separate script to record values. Stats can be viewed as long as the script remains open.
+          When closing ICScriptHub using the upper right corner control, a message will pop
+          asking if the script should be closed or not.
+        - Option to start/stop the script when clicking on BrivGemFarm tab buttons.
+        - View multiple sessions.
+        - View individual runs.
+        - Show cumulative run time.
+        - Show game speed (option to show uncapped speed).
+        - Option to show mod50 values without z1/stack zone/reset outliers.
+        - Show stacks gained online/offline.
+        - Additional average data visualization.
+        - Right-click opens a context menu to copy rows (or Ctrl+C).
+        - Ctrl+A or double click to select all rows.
+    - Fixes:
+        - Zone recording being interrupted by scrolling the UI.
+        - Zone recording is actually reliable overall.
+        - Reduced memory usage.
+
 April 25, 2023 - v.0.1.1
-    Added timers that closer reflect the actual game mechanics.
-    Known issues : zone skipping when dragging the vertical bar, inaccurate or negative values.
+    - Added timers that closer reflect the actual game mechanics.
+    - Known issues : zone skipping when dragging the vertical bar, inaccurate or negative values.
 
 April 24, 2023 - v.0.1.0
-    Area timing functions for Idle Champions.
-    Known issues: Timing transitions starts from when the zone is completed, registering the animation from Briv jump returns.
+    - Area timing functions for Idle Champions.
+    - Known issues: Timing transitions starts from when the zone is completed, registering the animation from Briv jump returns.

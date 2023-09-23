@@ -643,7 +643,6 @@ Class IC_AreaTiming_Component
     ; Area|Next|T_area|T_tran|T_time|AvgT_area|AvgT_tran|AvgT_time|T_run|AvgT_run|Count|Game speed|AvgGame speed
     UpdateRunGUI(session, run)
     {
-        t0 := A_TickCount
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "AreaTimingView")
         LV_Delete()
         g_AreaTimingGui.BuildAreaTimingView()
@@ -662,9 +661,7 @@ Class IC_AreaTiming_Component
             runTime += obj.TotalTime
             runTimeRounded := Round(runTime / 1000, 2)
             ; Average
-            t1 := A_TickCount
             avgCount := session.GetAverageCount(obj.Zones)
-            dt1 := Round((A_TickCount - t1) / 1000, 2)
             count := avgCount[1]
             avgAreaTime := Round(avgCount[2] / 1000, 2)
             avgTransitionTime := Round(avgCount[3] / 1000, 2)
@@ -686,14 +683,12 @@ Class IC_AreaTiming_Component
         Loop % LV_GetCount("Col")
             LV_ModifyCol(A_Index, "AutoHdr")
         this.UpdateMod50GUI(session, mod50Vals)
-        dt := Round((A_TickCount - t0) / 1000, 2)
     }
 
     ; Function that updates the AreaTiming GUI (all runs).
     ; Area|Next|AvgT_area|AvgT_tran|AvgT_time|AvgT_run|CountGame speed|AvgGame speed
     UpdateRunGUIAll(session)
     {
-        t0 := A_TickCount
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "AreaTimingView")
         LV_Delete()
         g_AreaTimingGui.BuildAreaTimingView(true)
@@ -706,9 +701,7 @@ Class IC_AreaTiming_Component
             area := key >>> 16
             next := key & 0xFFFF
             ; Average
-            t1 := A_TickCount
             avgCount := session.GetAverageCount(key)
-            dt1 := Round((A_TickCount - t1) / 1000, 2)
             count := avgCount[1]
             avgAreaTime := Round(avgCount[2] / 1000, 2)
             avgTransitionTime := Round(avgCount[3] / 1000, 2)
@@ -729,7 +722,6 @@ Class IC_AreaTiming_Component
         Loop % LV_GetCount("Col")
             LV_ModifyCol(A_Index, "AutoHdr")
         this.UpdateMod50GUIAll(session, mod50Vals)
-        dt := Round((A_TickCount - t0) / 1000, 2)
     }
 
     ; Function that updates the AreaTiming Mod50 GUI.
@@ -761,9 +753,7 @@ Class IC_AreaTiming_Component
             transitionTime := Round(averageTransitionTime / 1000, 2)
             time := Round(averageTime / 1000, 2)
             ; Average
-            t1 := A_TickCount
             avgCount := excludeOutliers ? session.GetAverageMod50CountEx(v[1].Mod50Zones) : session.GetAverageMod50Count(v[1].Mod50Zones)
-            dt1 := Round((A_TickCount - t1) / 1000, 2)
             avgAreaTime := Round(avgCount[2] / 1000, 2)
             avgTransitionTime := Round(avgCount[3] / 1000, 2)
             avgTime := Round(avgCount[4] / 1000, 2)
@@ -788,9 +778,7 @@ Class IC_AreaTiming_Component
             area := v.Mod50StartZone
             next := v.Mod50EndZone
             ; Average
-            t1 := A_TickCount
             avgCount := excludeOutliers ? session.GetAverageMod50CountEx(v.Mod50Zones) : session.GetAverageMod50Count(v.Mod50Zones)
-            dt1 := Round((A_TickCount - t1) / 1000, 2)
             avgAreaTime := Round(avgCount[2] / 1000, 2)
             avgTransitionTime := Round(avgCount[3] / 1000, 2)
             avgTime := Round(avgCount[4] / 1000, 2)

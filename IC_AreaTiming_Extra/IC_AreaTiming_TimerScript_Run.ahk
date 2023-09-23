@@ -127,8 +127,8 @@ Class IC_AreaTiming_TimerScript
             ; Modron reset
             if (g_SF.Memory.ReadResetsCount() > lastResetCount)
             {
-                currentRun.AddItem(timeObj)
                 timeObj.SetAreaTransitioned(currentZone)
+                currentRun.AddItem(new IC_AreaTiming_TimeObject(timeObj))
             }
             stacking := stackingGameSpeedTrigger := false
             offlineTrigger := offlineStartZoneUpdate := false
@@ -137,7 +137,7 @@ Class IC_AreaTiming_TimerScript
             ; Mark previous run as finished
             currentRun.EndRun()
             currentRun := g_AT_SharedData.CurrentSession.NewRun()
-            timeObj := new IC_AreaTiming_TimeObject(currentZone)
+            timeObj := new IC_AreaTiming_TimeObjectSimple(currentZone)
             lastResetCount := g_SF.Memory.ReadResetsCount()
             lastZone := 1
             ; Update formations
@@ -162,10 +162,10 @@ Class IC_AreaTiming_TimerScript
             ; Skip first value
             if (!skipFirstValue && timeObj.StartZone != currentZone)
             {
-                currentRun.AddItem(timeObj)
                 timeObj.SetAreaTransitioned(currentZone)
+                currentRun.AddItem(new IC_AreaTiming_TimeObject(timeObj))
             }
-            timeObj := new IC_AreaTiming_TimeObject(currentZone)
+            timeObj := new IC_AreaTiming_TimeObjectSimple(currentZone)
             lastZone := currentZone
             areaClearTrigger := false
         }
@@ -185,7 +185,7 @@ Class IC_AreaTiming_TimerScript
                 stacking := true
                 stacksBefore := g_SF.Memory.ReadSBStacks()
                 currentZone := g_SF.Memory.ReadCurrentZone()
-                stacksTimeObj := new IC_AreaTiming_StacksTimeObject(currentZone)
+                stacksTimeObj := new IC_AreaTiming_StacksTimeObjectsimpleObj(currentZone)
                 stacksTimeObj.SetAreaComplete()
             }
         }
@@ -232,7 +232,8 @@ Class IC_AreaTiming_TimerScript
                 dStacks := stacksAfter - stacksBefore
                 currentZone := g_SF.Memory.ReadCurrentZone()
                 stacksTimeObj.SetAreaTransitioned(currentZone, dStacks)
-                currentRun.AddStacksItem(stacksTimeObj)
+                currentRun.AddStacksItem(new IC_AreaTiming_StacksTimeObject(stacksTimeObj))
+                stacksTimeObj := ""
             }
         }
         Critical, Off

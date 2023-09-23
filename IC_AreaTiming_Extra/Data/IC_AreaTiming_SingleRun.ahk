@@ -1,4 +1,5 @@
 #include %A_LineFile%\..\IC_AreaTiming_TimeObject.ahk
+#include %A_LineFile%\..\IC_AreaTiming_TimeObjectSimple.ahk
 
 Class IC_AreaTiming_SingleRun
 {

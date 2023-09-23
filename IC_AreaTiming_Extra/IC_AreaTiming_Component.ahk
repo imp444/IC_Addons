@@ -703,8 +703,8 @@ Class IC_AreaTiming_Component
         Loop, % keys.Length()
         {
             key := keys[A_Index]
-            area := key >>> 32
-            next := key & 0xFFFFFFFF
+            area := key >>> 16
+            next := key & 0xFFFF
             ; Average
             t1 := A_TickCount
             avgCount := session.GetAverageCount(key)
@@ -718,11 +718,11 @@ Class IC_AreaTiming_Component
             avgGameSpeed := avgCount[6]
             avgGameSpeedRounded := uncapped ? Round(avgGameSpeed, 3) : Round(Min(avgGameSpeed, 10), 3)
             ; Mod50
-            dummyObj := new IC_AreaTiming_TimeObject(area)
-            dummyObj.SetAreaTransitioned(next)
-            mod50Key:= dummyObj.Mod50Zones
+            simpleObj := new IC_AreaTiming_TimeObjectSimple(area)
+            simpleObj.SetAreaTransitioned(next)
+            mod50Key:= simpleObj.Mod50Zones
             if (!mod50Vals.HasKey(mod50Key))
-                mod50Vals[mod50Key] := dummyObj
+                mod50Vals[mod50Key] := simpleObj
             LV_Add(, area, next, avgAreaTime, avgTransitionTime, avgTime, avgRunTime, count, avgGameSpeedRounded)
         }
         ; Resize columns

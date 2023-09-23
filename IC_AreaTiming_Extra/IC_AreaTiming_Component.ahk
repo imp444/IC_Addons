@@ -488,7 +488,7 @@ Class IC_AreaTiming_Component
     ; Params: timestamp:int - Unix epoch time.
     GetFormattedTimeStamp(timestamp)
     {
-        mSec := timestamp & 1000
+        mSec := Mod(timestamp, 1000)
         unixTime := Round((timestamp - mSec)/ 1000)
         time := this.UnixToUTC(unixTime)
         FormatTime, timeStrDate, % time, ShortDate

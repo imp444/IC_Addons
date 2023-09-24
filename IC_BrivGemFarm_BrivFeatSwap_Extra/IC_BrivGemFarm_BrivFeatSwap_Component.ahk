@@ -47,9 +47,12 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         {
             if (!settings.HasKey("Enabled"))
                 settings.Enabled := true
+            if (!settings.HasKey("MouseClick"))
+                settings.MouseClick := false
             GuiControl, ICScriptHub:, BGFBFS_Enabled, % settings.Enabled
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ, % settings.targetQ
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % settings.targetE
+            GuiControl, ICScriptHub:, BGFBFS_MouseClick, % settings.MouseClick
             ; Fix preset settings from version v1.2.0
             settings.Preset == "5J/4J" ? settings.Preset := "5J/4J Tall Tales" : ""
             settings.Preset == "8J/4J" ? settings.Preset := "8J/4J Tall Tales" : ""
@@ -187,6 +190,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         settings := this.Settings
         GuiControlGet, enabled, ICScriptHub:, BGFBFS_Enabled
         settings.Enabled := enabled
+        GuiControlGet, mouseClick, ICScriptHub:, BGFBFS_MouseClick
+        settings.MouseClick := mouseClick
         settings.Preset := this.GetPresetName()
         this.SaveMod50Preset()
         if (IsObject(g_BrivGemFarm_LevelUp))
@@ -200,7 +205,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
             SharedRunData.BGFBFS_ToggleAddon(settings.Enabled)
-            SharedRunData.BGFBFS_UpdateSettings(targetQ, targetE, settings.Preset)
+            SharedRunData.BGFBFS_UpdateSettings(targetQ, targetE, settings.Preset, settings.MouseClick)
         }
         catch
         {
@@ -239,7 +244,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Setup choices for the Presets ListBox.
     SetupPresets() ; TODO: Proper preset settings
     {
-        choices := "||5J/4J Tall Tales|8J/4J Tall Tales"
+        choices := "||5J/4J Tall Tales|6J/4J Resolve Amongst Chaos|6J/4J Tall Tales|7J/4J Tall Tales|8J/4J Tall Tales"
         choices .= "|8J/4J Tall Tales + walk 1/2/3/4|9J/4J Tall Tales"
         GuiControl, ICScriptHub:, BGFBFS_Preset, % "|" . choices
         ; Resize
@@ -275,6 +280,12 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         {
             case "5J/4J Tall Tales":
                 this.ApplyPresets(1125891005438934, 5, 4)
+            case "6J/4J Resolve Amongst Chaos":
+                this.ApplyPresets(984745802461018, 6, 4)
+            case "6J/4J Tall Tales":
+                this.ApplyPresets(835626480921599, 6, 4)
+            case "7J/4J Tall Tales":
+                this.ApplyPresets(560671369426559, 7, 4)
             case "8J/4J Tall Tales":
                 this.ApplyPresets(1125897724754935, 8, 4)
             case "8J/4J Tall Tales + walk 1/2/3/4":
@@ -527,6 +538,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Returns:    - object - array:path, int:walks, int:jumps w/o Metalborn, int:jumps w/ Metalborn
     CalcPath(mod50values, resetArea, skipQ, skipE, brivMinLevelArea := 1, brivMetalbornArea := 1)
     {
+        preset :=  this.GetPresetName()
         qVal := skipQ + 1
         eVal := skipE + 1
         noMbJumps := mbJumps := walks := 0
@@ -544,6 +556,13 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         ; Jump
         while (currentArea < resetArea)
         {
+            ; 7J/4J special walk
+            if (currentArea == 22 && preset == "7J/4J Tall Tales")
+            {
+                path.Push(++currentArea)
+                ++walks
+                continue
+            }
             ; Area progress
             mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
             mod50Value := mod50values[mod50Index]
@@ -569,6 +588,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Returns:    - int - Maximum area reached.
     CalcPathStacks(mod50values, stacks, skipQ, skipE, brivMinLevelArea := 1, brivMetalbornArea := 1)
     {
+        preset :=  this.GetPresetName()
         qVal := skipQ + 1
         eVal := skipE + 1
         if (!Isobject(mod50values))
@@ -583,6 +603,12 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         ; Jump
         while (stacks >= 50)
         {
+            ; 7J/4J special walk
+            if (currentArea == 22 && preset == "7J/4J Tall Tales")
+            {
+                ++currentArea
+                continue
+            }
             ; Area progress
             mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
             move := mod50values[mod50Index] ? qVal : eVal
@@ -593,4 +619,19 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
         return currentArea
     }
+
+    ; Enabled/Disables mouseclicks.
+    ToggleClicks()
+    {
+        mouseClick := this.Settings.MouseClick
+        GuiControl, ICScriptHub:, BGFBFS_MouseClick, % !mouseClick
+        BrivGemFarm_BrivFeatSwap_Save()
+    }
+}
+
+Hotkey, ^!x, BGFBFS_ToggleClicks
+
+BGFBFS_ToggleClicks()
+{
+    g_BrivFeatSwap.ToggleClicks()
 }

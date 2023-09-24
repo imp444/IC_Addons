@@ -150,6 +150,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         this.SetupStacksSetupGroup()
         this.SetupPreferredBrivJumpZonesGroup()
         this.SetupBGFLUGroup()
+        this.SetupMouseClickGroup()
         this.AddToolTips()
     }
 
@@ -281,6 +282,16 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         this.LinkUseDefaultColor(BGFBFS_GetLevelUpAddonLink)
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, Hidden x+0 vBGFBFS_GetLevelUpAddonText2, % " addon to walk early zones."
+    }
+
+    SetupMouseClickGroup()
+    {
+        global
+        Gui, ICScriptHub:Add, CheckBox, xs yp+5 vBGFBFS_MouseClick, Enable mouse clicks to cancel Briv's jump animation (Ctrl+Alt+X to toggle on/off)
+        Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickText, (Recommended for 5J/4J TT and 8J/4J TT, required for 6J/4J TT/RAC, 7J/4J TT)
+        GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
+        Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickTextWarning, This option should NOT be used if actively using the computer.
+        GUIFunctions.UseThemeTextColor()
     }
 
     ; https://www.autohotkey.com/boards/viewtopic.php?t=37894

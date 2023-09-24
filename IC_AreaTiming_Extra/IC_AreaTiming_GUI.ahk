@@ -135,11 +135,7 @@ AT_SelectSessionID()
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
     if value is not digit
-    {
-        GuiControl, ICScriptHub:Text, %A_GuiControl%, % beforeSubmit
-        Gui, ICScriptHub:Submit, NoHide
-        return
-    }
+        return AT_Undo(A_GuiControl)
     if (beforeSubmit == value)
         return
     g_AreaTiming.LoadSession(,,value)
@@ -153,11 +149,7 @@ AT_SelectRunID()
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
     if value is not digit
-    {
-        GuiControl, ICScriptHub:Text, %A_GuiControl%, % beforeSubmit
-        Gui, ICScriptHub:Submit, NoHide
-        return
-    }
+        return AT_Undo(A_GuiControl)
     if (beforeSubmit == value)
         return
     g_AreaTiming.LoadRun(,,,value)
@@ -210,6 +202,13 @@ AT_RefreshSize()
     Sleep, 100
     g_AreaTimingGui.DoResizeEvent()
     Gui, ICScriptHub:Show, % "w" . g_TabControlWidth . " h" . (g_TabControlHeight)
+}
+
+; Undo last operation
+AT_Undo(ctrlID)
+{
+    GuiControlGet, hwnd, ICScriptHub:Hwnd, %ctrlID%
+    SendMessage, 0x0304, 0, 0,, ahk_id %hwnd% ; WM_UNDO
 }
 
 Class IC_AreaTiming_GUI

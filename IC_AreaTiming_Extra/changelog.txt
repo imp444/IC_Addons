@@ -1,3 +1,12 @@
+September 24, 2023 - v1.0.1
+    - Reduced memory usage.
+    - Fixes:
+        - The mod50 "exclude outliers" setting filters single run averages properly.
+          Both run and session counters will be shown.
+        - Fixed synchronization with BrivGemFarm Start/Stop buttons.
+        - When updating the selection of runs after a new run begins, the dropdown list is not closed.
+        - Fixed a computation error that would sometimes display run/session start timestamp off by one second.
+
 September 21, 2023 - v1.0.0
     Complete rewrite of the addon.
     - New features:

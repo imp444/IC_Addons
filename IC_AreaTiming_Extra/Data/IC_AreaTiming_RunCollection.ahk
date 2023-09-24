@@ -178,14 +178,15 @@ Class IC_AreaTiming_RunCollection
 
     ; Get average mod50 stats from all runs.
     ; Params: key:int - IC_AreaTiming_TimeObject.Mod50Zones.
+    ;         runs:array - List of runs, default to all runs from this session.
     ; Returns: - arr:array - All mod50 average data.
-    GetAverageMod50Count(key)
+    GetAverageMod50Count(key, runs := "")
     {
         count := 0
         sumAreaTime := 0
         sumTransitionTime := 0
         sumTime := 0
-        runs := this.Runs
+        runs := runs == "" ? this.Runs : runs
         ; Loop all runs
         Loop, % runs.Length()
         {
@@ -215,14 +216,15 @@ Class IC_AreaTiming_RunCollection
     ; Get average mod50 stats from all runs.
     ; Exclude z1, stacking area and reset from result.
     ; Params: key:int - IC_AreaTiming_TimeObject.Mod50Zones.
+    ;         runs:array - List of runs, default to all runs from this session.
     ; Returns: - arr:array - All mod50 average data.
-    GetAverageMod50CountEx(key)
+    GetAverageMod50CountEx(key, runs := "")
     {
         count := 0
         sumAreaTime := 0
         sumTransitionTime := 0
         sumTime := 0
-        runs := this.Runs
+        runs := runs == "" ? this.Runs : runs
         ; Loop all runs
         Loop, % runs.Length()
         {

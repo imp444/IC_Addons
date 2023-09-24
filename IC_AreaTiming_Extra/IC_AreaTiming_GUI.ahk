@@ -290,7 +290,7 @@ Class IC_AreaTiming_GUI
     {
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ModAreaTimingView")
         cols := LV_GetCount("Col")
-        if (cols == 9 && !all || cols == 6 && all)
+        if (cols == 10 && !all || cols == 6 && all)
             return
         Loop, % cols
             LV_DeleteCol(1)
@@ -305,6 +305,8 @@ Class IC_AreaTiming_GUI
         pos := all ? pos : LV_InsertCol(pos + 1, "Float Center", "T_tran")
         ; T_time
         pos := all ? pos : LV_InsertCol(pos + 1, "Float Center", "T_time")
+        ; Count_run
+        pos := all ? pos : LV_InsertCol(pos + 1, "Integer Center", "Count_run")
         ; AvgT_area
         pos := LV_InsertCol(pos + 1, "Float Center", "AvgT_area")
         ; AvgT_tran

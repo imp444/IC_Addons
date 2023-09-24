@@ -682,7 +682,7 @@ Class IC_AreaTiming_Component
         ; Resize columns
         Loop % LV_GetCount("Col")
             LV_ModifyCol(A_Index, "AutoHdr")
-        this.UpdateMod50GUI(session, mod50Vals)
+        this.UpdateMod50GUI(session, run, mod50Vals)
     }
 
     ; Function that updates the AreaTiming GUI (all runs).
@@ -726,7 +726,7 @@ Class IC_AreaTiming_Component
 
     ; Function that updates the AreaTiming Mod50 GUI.
     ; Area|Next|T_area|T_tran|T_time|AvgT_area|AvgT_tran|AvgT_time|Count
-    UpdateMod50GUI(session, mod50Vals)
+    UpdateMod50GUI(session, run, mod50Vals)
     {
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ModAreaTimingView")
         LV_Delete()
@@ -736,28 +736,19 @@ Class IC_AreaTiming_Component
         {
             area := v[1].Mod50StartZone
             next := v[1].Mod50EndZone
-            sumAreaTime:= 0
-            sumTransitionTime := 0
-            sumTime := 0
-            for k1, v1 in v
-            {
-                sumAreaTime += v1.AreaTime
-                sumTransitionTime += v1.TransitionTime
-                sumTime += v1.TotalTime
-            }
-            itemsCount := v.Length()
-            averageAreaTime := sumAreaTime / itemsCount
-            averageTransitionTime := sumTransitionTime / itemsCount
-            averageTime := sumTime / itemsCount
-            areaTime := Round(averageAreaTime / 1000, 2)
-            transitionTime := Round(averageTransitionTime / 1000, 2)
-            time := Round(averageTime / 1000, 2)
-            ; Average
+            ; Run average
+            avgCount := excludeOutliers ? session.GetAverageMod50CountEx(v[1].Mod50Zones, [run]) : session.GetAverageMod50Count(v[1].Mod50Zones, [run])
+            countRun := avgCount[1]
+            areaTime := Round(avgCount[2] / 1000, 2)
+            transitionTime := Round(avgCount[3] / 1000, 2)
+            time := Round(avgCount[4] / 1000, 2)
+            ; Session average
             avgCount := excludeOutliers ? session.GetAverageMod50CountEx(v[1].Mod50Zones) : session.GetAverageMod50Count(v[1].Mod50Zones)
+            count := avgCount[1]
             avgAreaTime := Round(avgCount[2] / 1000, 2)
             avgTransitionTime := Round(avgCount[3] / 1000, 2)
             avgTime := Round(avgCount[4] / 1000, 2)
-            LV_Add(, area, next, areaTime, transitionTime, time, avgAreaTime, avgTransitionTime, avgTime, itemsCount)
+            LV_Add(, area, next, areaTime, transitionTime, time, countRun, avgAreaTime, avgTransitionTime, avgTime, count)
         }
         ; Resize columns
         Loop % LV_GetCount("Col")

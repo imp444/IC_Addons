@@ -53,7 +53,8 @@ Every recording is made of an area-to-next pair. Stack recording can be either t
 - **T_tran:** Transition time between area and next area (black screen).
 - **T_Time:** Total area to next time (T_area + T_tran).
 - **T_run:** Cumulative run time from z1.
-- **Count:** Total number of identical zone to zone items in the current session (or in the current run if viewing single run in mod50 mode).
+- **Count:** Total number of identical zone to zone items in the current session  
+(if viewing a single run with the mod50 filter, **Count_run** also shows the total number of identical items in the current run).
 - **Game speed:** Game speed at the time when the area was completed.  
 ### Stacks data
 - **Stacks:** Number of stacks gained during a single stacking event.

@@ -25,6 +25,7 @@ Class IC_AreaTiming_Component
     Session := ""
     Run := ""
     RunEnded := false
+    LastSelectRunText := ""
 
     __New()
     {
@@ -478,7 +479,18 @@ Class IC_AreaTiming_Component
             sel := 2
         ; Update choices
         GuiControl, ICScriptHub:, AreaTimingSelectRun, % "|" . choices
-        GuiControl, ICScriptHub:Choose, AreaTimingSelectRun, % sel
+        if ((ctrlID := g_AreaTimingGui.GetCurrentlyDroppedCombo()) == "")
+            GuiControl, ICScriptHub:Choose, AreaTimingSelectRun, % sel
+        else
+        {
+            text := this.LastSelectRunText
+            GuiControl, ICScriptHub:ChooseString, AreaTimingSelectRun, % text
+            GuiControlGet, hwnd, ICScriptHub:Hwnd, %ctrlID%
+            SendMessage, 0x014f, 1, 0,, ahk_id %hwnd% ; CB_SHOWDROPDOWN
+            GuiControlGet, runID, ICScriptHub:, AT_SelectRunID
+            g_AreaTimingGui.UpdateSelectRunText(runID, runCount)
+            return
+        }
         ; Update counter
         runID := showCurrent ? Min(sel - 2, runCount) : 1
         runID := (runID < 1 ) ? "-" : runID
@@ -592,6 +604,7 @@ Class IC_AreaTiming_Component
             {
                 g_AreaTimingGui.ToggleSelection(false)
                 this.Run := ""
+                this.LastSelectRunText := "All"
                 g_AreaTimingGui.UpdateSelectRunText("-", runCount)
                 this.UpdateRunGUIAll(session)
                 this.UpdateStacksGUI(session)
@@ -632,6 +645,9 @@ Class IC_AreaTiming_Component
                 SetTimer, %func%, -30
             }
         }
+        ; Remember current selection
+        GuiControlGet, sel, ICScriptHub:, AreaTimingSelectRun, Text
+        this.LastSelectRunText := sel
         g_AreaTimingGui.ToggleSelection(true)
     }
 

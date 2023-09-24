@@ -413,7 +413,7 @@ Class IC_AreaTiming_GUI
     CheckResizeEvent(WM)
     {
         global
-        GuiControlGet, currentTab,, ModronTabControl, Tab
+        GuiControlGet, currentTab, ICScriptHub:, ModronTabControl, Tab
         if (WM == WM_ENTERSIZEMOVE AND currentTab == "Area Timing")
             SetTimer, AreaTiming_DoResizeEvent, 200
         else if (WM == WM_EXITSIZEMOVE)
@@ -608,7 +608,7 @@ Class IC_AreaTiming_GUI
         this.ToggleSelectEvents()
     }
 
-    ; Temporarily disable edits gLabels from firing to prevent feedback loops.
+    ; Temporarily disable Edit gLabels from firing to prevent feedback loops.
     ; Params: - on:bool - If true, enable edit events, else disable them.
     ToggleSelectEvents(on := true)
     {
@@ -622,5 +622,21 @@ Class IC_AreaTiming_GUI
             GuiControl, ICScriptHub:-g, AT_SelectSessionID
             GuiControl, ICScriptHub:-g, AT_SelectRunID
         }
+    }
+
+    ; Returns the controlID of the currently dropped combo (session/run).
+    GetCurrentlyDroppedCombo()
+    {
+        GuiControlGet, currentTab, ICScriptHub:, ModronTabControl, Tab
+        if (currentTab != "Area Timing")
+            return
+        GuiControlGet, hwnd, ICScriptHub:Hwnd, AreaTimingSelectSession
+        SendMessage, 0x0157, 0, 0,, ahk_id %hwnd% ; CB_GETDROPPEDSTATE
+        if (Errorlevel)
+            return "AreaTimingSelectSession"
+        GuiControlGet, hwnd, ICScriptHub:Hwnd, AreaTimingSelectRun
+            SendMessage, 0x0157, 0, 0,, ahk_id %hwnd% ; CB_GETDROPPEDSTATE
+        if (Errorlevel)
+            return "AreaTimingSelectRun"
     }
 }

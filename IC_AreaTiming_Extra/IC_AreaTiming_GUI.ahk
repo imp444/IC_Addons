@@ -222,7 +222,6 @@ Class IC_AreaTiming_GUI
         this.AddToolTips()
         GuiControl, ICScriptHub:, AreaTimingShowAllAreas, 1
         this.ShowListView("AreaTimingShowAllAreas")
-        sync := g_AreaTiming.Settings.BrivGemFarmSync
         this.ApplySortingOptions()
         this.DoResizeEvent()
         ; Trigger resize event to show LV scrollbars.

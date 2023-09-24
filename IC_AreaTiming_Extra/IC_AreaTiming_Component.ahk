@@ -40,6 +40,7 @@ Class IC_AreaTiming_Component
         GuiControl, ICScriptHub:, AreaTimingBGFSync, % settings.BrivGemFarmSync
         GuiControl, ICScriptHub:, AreaTimingUncappedSpeed, % settings.ShowUncappedGameSpeed
         GuiControl, ICScriptHub:, AT_ExcludeMod50Outliers, % settings.ExcludeMod50Outliers
+        this.BGFSync(settings.BrivGemFarmSync)
         ; Try to reconnect if the timer script was already launched.
         this.UpdateLastGUID()
         this.CreateTimedFunctions()

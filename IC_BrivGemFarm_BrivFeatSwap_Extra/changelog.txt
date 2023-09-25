@@ -1,3 +1,7 @@
+September 25, 2023 - v1.5.0
+    - Added presets for 6j/4J and 7J/4J.
+    - Added an option to use mouse clicks to cancel Briv's jump animation using the clear foramtion button that doesn't have a hotkey.
+
 September 07, 2023 - v1.4.0
     New features:
         - Added an option to simulate multiple runs to the Briv stacks calculator.

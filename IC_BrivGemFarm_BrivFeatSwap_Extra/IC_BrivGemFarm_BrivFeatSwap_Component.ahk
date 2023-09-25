@@ -624,12 +624,18 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         return currentArea
     }
 
-    ; Enabled/Disables mouseclicks.
+    ; Enables/disables mouse clicks.
+    ; Can only be turned on when this addon's tab is active.
     ToggleClicks()
     {
+        GuiControlGet, currentTab, ICScriptHub:, ModronTabControl, Tab
+        activeTab := (currentTab == "Briv Feat Swap") && WinActive("IC Script Hub")
         mouseClick := this.Settings.MouseClick
-        GuiControl, ICScriptHub:, BGFBFS_MouseClick, % !mouseClick
-        BrivGemFarm_BrivFeatSwap_Save()
+        if ((!mouseClick && activeTab) || mouseClick)
+        {
+            GuiControl, ICScriptHub:, BGFBFS_MouseClick, % !mouseClick
+            BrivGemFarm_BrivFeatSwap_Save()
+        }
     }
 }
 

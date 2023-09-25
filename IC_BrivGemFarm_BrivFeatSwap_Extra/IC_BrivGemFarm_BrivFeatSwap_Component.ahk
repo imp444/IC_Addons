@@ -272,8 +272,12 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
         else
         {
-            value := g_BrivGemFarm_LevelUp.Settings.BrivMinLevelArea
-            GuiControl, ICScriptHub:, BGFBFS_BrivMinLevelArea, % value == "" ? 1 : value
+            if (this.Settings.Preset == "8J/4J Tall Tales + walk 1/2/3/4")
+                value := 1
+            else
+                value := g_BrivGemFarm_LevelUp.Settings.BrivMinLevelArea
+            value := value == "" ? 1 : value
+            GuiControl, ICScriptHub:, BGFBFS_BrivMinLevelArea, % value
             GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % value
         }
         Switch name

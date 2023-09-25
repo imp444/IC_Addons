@@ -5,7 +5,7 @@ Gui, ICScriptHub:Tab, Briv Feat Swap
 
 GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
 Gui, ICScriptHub:Add, Text, Section vBGFBFS_Status, Status:
-Gui, ICScriptHub:Add, Text, x+5 w170 vBGFBFS_StatusText, Not Running
+Gui, ICScriptHub:Add, Text, x+5 w420 vBGFBFS_StatusText, Not Running
 GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
 
 Gui, ICScriptHub:Add, Text, xs ys+20 Hidden vBGFBFS_StatusWarning, WARNING: Addon was loaded too late. Stop/start Gem Farm to resume.
@@ -144,7 +144,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Font, w400
         Gui, ICScriptHub:Add, DropDownList, x+%xSpacing% yp-3 w100 vBGFBFS_Preset gBGFBFS_Preset
         GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-        Gui, ICScriptHub:Add, Text, x+27 ys w270 vBGFBFS_PresetWarningText
+        Gui, ICScriptHub:Add, Text, x+27 ys w300 vBGFBFS_PresetWarningText
         GUIFunctions.UseThemeTextColor()
         this.SetupSkipSetupGroup()
         this.SetupStacksSetupGroup()

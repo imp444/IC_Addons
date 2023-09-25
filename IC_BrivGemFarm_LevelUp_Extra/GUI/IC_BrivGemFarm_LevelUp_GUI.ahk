@@ -228,8 +228,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
         if (firstSection < 2)
             firstSection := 2
         cursor := this.GetDefaultSettingsGroupYPos()
-        GuiControlGet, maxPos, ICScriptHub:Pos, ModronTabControl
-        maxHeight := maxPosH + maxPosY
+        maxHeight := this.GetMaxDisplayHeight()
         belowGroupCount := this.Groups.Length() - firstSection + 1
         Loop, % belowGroupCount
         {
@@ -284,5 +283,21 @@ Class IC_BrivGemFarm_LevelUp_GUI
         controlID := group.GroupID
         GuiControlGet, nextGroupPos, ICScriptHub:Pos, %controlID%
         return nextGroupPosH
+    }
+
+    ; Returns the maximum visible height of this addon's tab.
+    GetMaxDisplayHeight()
+    {
+        GuiControlGet, maxPos, ICScriptHub:Pos, ModronTabControl
+        maxTabHeight := maxPosH + maxPosY
+        ; Get monitor height without task bar
+        monitor := IC_BrivGemFarm_LevelUp_Functions.GetMonitor("ModronTabControl")
+        SysGet, monitorCoords, MonitorWorkArea, %monitor%
+        ; Get ICScriptHub window coords
+        GuiControlGet, hnwd, ICScriptHub:Hwnd, ModronTabControl
+        WinGetPos, x, y, w, h, IC Script Hub
+        maxDisplayHeight := monitorCoordsBottom - y - h + maxTabHeight
+        maxDisplayHeight := Min(maxTabHeight, maxDisplayHeight)
+        return maxDisplayHeight
     }
 }

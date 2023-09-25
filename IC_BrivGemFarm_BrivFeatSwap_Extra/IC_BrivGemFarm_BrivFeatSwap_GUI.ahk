@@ -292,6 +292,9 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
         Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickTextWarning, This option should NOT be used if actively using the computer.
         GUIFunctions.UseThemeTextColor()
+        text := "Since clearing formation will reset the effect of both Sentry and BBEG quest reduction abilities,`n"
+        text .= "it is advised to switch to using Virgil + 2 Rivals of Waterdeep instead."
+        Gui, ICScriptHub:Add, Text, xs y+5 R2 vBGFBFS_MouseClickTextChamps, % text
     }
 
     ; https://www.autohotkey.com/boards/viewtopic.php?t=37894

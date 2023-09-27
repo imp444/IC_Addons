@@ -18,7 +18,7 @@ Class IC_AreaTiming_TimeObjectSimple
     {
         get
         {
-            return this.Zones >>> 16
+            return this.Zones >> 16
         }
     }
 

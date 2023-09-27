@@ -715,7 +715,7 @@ Class IC_AreaTiming_Component
         Loop, % keys.Length()
         {
             key := keys[A_Index]
-            area := key >>> 16
+            area := key >> 16
             next := key & 0xFFFF
             ; Average
             avgCount := session.GetAverageCount(key)

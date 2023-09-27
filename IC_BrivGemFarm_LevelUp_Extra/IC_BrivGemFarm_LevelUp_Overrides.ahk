@@ -170,10 +170,34 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ]) ; Need to walk while Briv is in all formations
             champIDs.RemoveAt(1)
         keyspam := []
+        if (!forceBrivShandie)
+        {
+            nonSpeedIDs := {}
+            for k, champID in formationFavorite1
+            {
+                if (champID != -1 && champID != "")
+                    nonSpeedIDs[champID] := champID
+            }
+        }
+        ; Get Fkeys for speed champs
         for k, champID in champIDs
         {
-            if (g_SF.IsChampInFormation(champID, formationFavorite1) AND g_SF.Memory.ReadChampLvlByID(champID) < minLevels[champID])
-                keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
+            if (g_SF.IsChampInFormation(champID, formationFavorite1))
+            {
+                if (g_SF.Memory.ReadChampLvlByID(champID) < minLevels[champID])
+                    keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
+                if (!forceBrivShandie)
+                    nonSpeedIDs.Delete(champID)
+            }
+        }
+        ; Get Fkeys for other champs
+        if (!forceBrivShandie)
+        {
+            for k, champID in nonSpeedIDs
+            {
+                if (g_SF.Memory.ReadChampLvlByID(champID) < minLevels[champID])
+                        keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
+            }
         }
         StartTime := A_TickCount, ElapsedTime := 0
         if (timeout == "")

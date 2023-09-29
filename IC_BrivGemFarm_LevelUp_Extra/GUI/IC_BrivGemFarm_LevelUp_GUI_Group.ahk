@@ -1,8 +1,10 @@
 ; Class that allows to group controls under a GroupBox control.
-Class IC_BrivGemFarm_LevelUp_GUI_Group
+Class IC_BrivGemFarm_LevelUp_GUI_Group extends IC_BrivGemFarm_LevelUp_GUI_Control
 {
+    static GroupsByName := {}
+
     Controls := []
-    GroupID := 0
+    ControlsByName := {}
     Height := 0
     Width := 0
     XSpacing := 10
@@ -10,26 +12,28 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group
     YTitleSpacing := 20
     XSection := 10
     YSection := 10
-    Hidden := false
+    Borderless := false
 
     ; Creates a new GroupBox.
     ; Parameters: - name:str - The name/reference of the group.
     ;             - title:str - The title of the control that will appear on the outline.
-    ;             - previous:str - The reference control that is used to position the new group.
+    ;             - group:str - The group that contanis this group.
     ;             - tabS:bool - If true, adds an x offset to this group from the previous control equal to XSection.
     ;             - newLine:bool - If true, position the group under the previous control.
-    __New(name, title := "", previous := "BGFLU_DefaultSettingsGroup", tabS := true, newLine := true)
+    ;             - previous:str - The reference control that is used to position the new group.
+    __New(name, title := "", group := "BGFLU_DefaultSettingsGroup", tabS := true, newLine := true, previous := "")
     {
-        global
-        this.GroupID := name
+        this.ControlID := name
+        previous := previous != "" ? previous : group
         GuiControlGet, previousPos, ICScriptHub:Pos, %previous%
-        local groupX := previousPosX + (tabS ? this.XSection : 0) + (newLine ? 0 : previousPosW)
-        local options := "Section w0 h10 v" . name . " x" . groupX
-        local ySpacing := previousPosY + previousPosH + (newLine ? this.YSpacing : 0)
+        groupX := previousPosX + (tabS ? this.XSection : 0) + (newLine ? 0 : previousPosW)
+        options := "Section w0 h10 v" . name . " x" . groupX
+        ySpacing := previousPosY + previousPosH + (newLine ? this.YSpacing : 0)
         options .= " y" . (newLine ? ySpacing : "s")
         Gui, ICScriptHub:Font, w700
-        Gui, ICScriptHub:Add, GroupBox, %options% , %title%
+        base.__New(name, "GroupBox", options, title, IC_BrivGemFarm_LevelUp_GUI_Group.GroupsByName[group])
         Gui, ICScriptHub:Font, w400
+        IC_BrivGemFarm_LevelUp_GUI_Group.GroupsByName[name] := this
     }
 
     ; Creates and adds a control to the GroupBox.
@@ -38,68 +42,92 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group
     ;             - options:str - Options to apply to the control. X/Y positionals override the default values.
     ;             - text:str - The initial text of the control.
     ;             - newLine:bool - If true, position the control under the previous ones.
-    AddControl(controlID, controlType := "", options := "", text := "", newLine := false)
+    AddControl(controlID, controlType, options := "", text := "", newLine := false)
     {
-        global
-        if (controlType != "")
+        if (controlID == "")
+            return
+        if (!RegExMatch(options, "\bx(\d+|\+|\-|m|p|s[^\s])"))
         {
-            if controlType in ComboBox,DropDownList,Edit,ListBox
-                GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-            if (!RegExMatch(options, "x(\d+|\+|\-|m|p|s[^\s])"))
-            {
-                if (newLine)
-                    options .= " xs+" . this.XSection
-                else
-                    options .= " x+" . this.XSpacing
-            }
-            if (!RegExMatch(options, "y(\d+|\+|\-|m|p|s[^\s])"))
-            {
-                if (this.Controls.Length() == 0)
-                    options .= " ys+" . this.YTitleSpacing
-                else if (newLine)
-                    options .= " y+" . this.YSpacing
-            }
-            options .= " v" . controlID
-            Gui, ICScriptHub:Add, %controlType%, %options%, % text
-            GUIFunctions.UseThemeTextColor()
+            if (newLine)
+                options .= " xs+" . this.XSection
+            else
+                options .= " x+" . this.XSpacing
         }
-        this.Controls.Push(controlID)
+        if (!RegExMatch(options, "\by(\d+|\+|\-|m|p|s[^\s])"))
+        {
+            if (this.Controls.Length() == 0)
+                options .= " ys+" . this.YTitleSpacing
+            else if (newLine)
+                options .= " y+" . this.YSpacing
+        }
+        if (controlType != "")
+            control := new IC_BrivGemFarm_LevelUp_GUI_Control(controlID, controlType, options, text, this)
+        this.Controls.Push(control)
+        this.ControlsByName[controlID] := control
+    }
+
+    ; Adds a previously created control to this group.
+    AddExistingControl(control)
+    {
+        this.Controls.Push(control)
+        this.ControlsByName[control.ControlID] := control
     }
 
     ; Creates and adds a CheckBox control to the GroupBox.
     ; The function BGFLU_CheckBoxEvent handles Checkbox events.
-    AddCheckBox(controlID, options := "", text := "", newLine := false)
+    AddCheckBox(controlID, saveSetting := true, options := "", text := "", newLine := false)
     {
-        options .= " gBGFLU_CheckBoxEvent"
+        if (saveSetting)
+            options .= " gBGFLU_CheckBoxEvent"
         return this.AddControl(controlID, "CheckBox", options, text, newLine)
     }
 
     ; Creates and adds a Edit control to the GroupBox.
     ; The function BGFLU_EditEvent handles Edit events.
-    AddEdit(controlID, options := "", text := "", newLine := false)
+    AddEdit(controlID, saveSetting := true, options := "", text := "", newLine := false)
     {
-        options .= " gBGFLU_EditEvent"
+        if (saveSetting)
+            options .= " gBGFLU_EditEvent"
         return this.AddControl(controlID, "Edit", options, text, newLine)
+    }
+
+    ; Returns the control that precedes control in this group.
+    GetPreviousControl(control)
+    {
+        for k, v in this.Controls
+        {
+            if (v == control AND k > 1)
+                return this.Controls[k - 1]
+        }
+        return this
+    }
+
+    ; Returns the control that follows control in this group.
+    GetNextControl(control)
+    {
+        for k, v in this.Controls
+        {
+            if (v == control AND k < this.Controls.Length())
+                return this.Controls[k + 1]
+        }
+        return this
     }
 
     ; Show the GroupBox outline and its controls.
     Show()
     {
         for k, v in this.Controls
-            GuiControl, ICScriptHub:Show, %v%
-        controlID := this.GroupID
-        GuiControl, ICScriptHub:Show, %controlID%
-        this.Hidden := false
+            v.Show()
+        if (!this.Borderless)
+            base.Show()
     }
 
     ; Hide the GroupBox outline and its controls.
     Hide()
     {
         for k, v in this.Controls
-            GuiControl, ICScriptHub:Hide, %v%
-        controlID := this.GroupID
-        GuiControl, ICScriptHub:Hide, %controlID%
-        this.Hidden := true
+            v.Hide()
+        base.Hide()
     }
 
     ; Moves the GroupBox outline and its controls to a new position.
@@ -107,7 +135,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group
     ;             - y:int - New Y postion of the GroupBox.
     Move(x := "", y := "")
     {
-        controlID := this.GroupID
+        controlID := this.ControlID
         GuiControlGet, oldPos, ICScriptHub:Pos, %controlID%
         x := x == "" ? oldPosX : x
         y := y == "" ? oldPosY : y
@@ -121,12 +149,22 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group
         xOffset := xFixBug - oldPosX
         yOffset := yFixBug - oldPosY
         GuiControl, ICScriptHub:MoveDraw, %controlID%, x%xFixBug% y%yFixBug%
-        for k, v in this.Controls
+        this.MoveControls(xOffset, yOffset)
+    }
+
+    ; Moves the GroupBox controls to a new position.
+    ; Parameters: - xOffset:int - New X postion of the controls.
+    ;             - yOffset:int - New Y postion of the controls.
+    MoveControls(xOffset := 0, yOffset := 0)
+    {
+        for k, v in this.ControlsByName
         {
-            GuiControlGet, oldPos, ICScriptHub:Pos, %v%
+            GuiControlGet, oldPos, ICScriptHub:Pos, %k%
             newX := oldPosX + xOffset
             newY := oldPosY + yOffset
-            GuiControl, ICScriptHub:MoveDraw, %v%, x%newX% y%newY%
+            if (v.ControlsByName)
+                v.MoveControls(xOffset, yOffset)
+            GuiControl, ICScriptHub:MoveDraw, %k%, x%newX% y%newY%
         }
     }
 
@@ -136,15 +174,15 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group
     {
         yMax := 0
         lowest := ""
-        for k, v in this.Controls
+        for k, v in this.ControlsByName
         {
-            if (IC_BrivGemFarm_LevelUp_GUI.GroupsByName[v].Hidden)
+            if (v.Hidden)
                 continue
-            GuiControlGet, pos, ICScriptHub:Pos, %v%
+            GuiControlGet, pos, ICScriptHub:Pos, %k%
             if (posY + posH > yMax)
             {
                 yMax := posY + posH
-                lowest := v
+                lowest := k
             }
         }
         return lowest
@@ -156,28 +194,31 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group
     {
         xMax := 0
         rightMost := ""
-        for k, v in this.Controls
+        for k, v in this.ControlsByName
         {
-            if (IC_BrivGemFarm_LevelUp_GUI.GroupsByName[v].Hidden)
+            if (v.Hidden)
                 continue
-            GuiControlGet, pos, ICScriptHub:Pos, %v%
+            GuiControlGet, pos, ICScriptHub:Pos, %k%
             if (posX + posW > xMax)
             {
                 xMax := posX + posW
-                rightMost := v
+                rightMost := k
             }
         }
         return rightMost
     }
 
     ; Calculates the size of this GroupBox's outline that contours all of its controls.
-    AutoResize()
+    ; Parameters: - init:bool - If true, resizes the GroupBox outline.
+    AutoResize(init := false)
     {
+        if (!init)
+            return
         lowest := this.GetLowestControl()
         GuiControlGet, posL, ICScriptHub:Pos, %lowest%
         rightMost := this.GetRightMostControl()
         GuiControlGet, posR, ICScriptHub:Pos, %rightMost%
-        controlID := this.GroupID
+        controlID := this.ControlID
         GuiControlGet, posS, ICScriptHub:Pos, %controlID%
         newHeight := posLY + posLH - posSY + this.YSection
         newWidth := posRX + posRW - posSX + this.XSection
@@ -189,7 +230,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group
     ;             - newWidth:int - New width of the GroupBox.
     UpdateSize(newHeight := "", newWidth := "")
     {
-        controlID := this.GroupID
+        controlID := this.ControlID
         if (newHeight != "")
             this.Height := newHeight
         else
@@ -199,5 +240,62 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group
         else
             newWidth := this.Width
         GuiControl, ICScriptHub:Move, %controlID%, h%newHeight% w%newWidth%
+    }
+
+    ; Align this group to the right of its parent group.
+    RightAlign()
+    {
+        controlID := this.ControlID
+        groupID := this.Group.ControlID
+        previousID := this.PreviousControl.ControlID
+        GuiControlGet, oldPos, ICScriptHub:Pos, %controlID%
+        GuiControlGet, minPos, ICScriptHub:Pos, %previousID%
+        GuiControlGet, maxPosM, ICScriptHub:Pos, ModronTabControl
+        GuiControlGet, maxPosG, ICScriptHub:Pos, %groupID%
+        leftBound := minPosX + minPosW + (this.Borderless ? 0 : this.Group.XSpacing)
+        rightBound := Min(maxPosMX + maxPosMW, maxPosGX + maxPosGW) - oldPosW - this.Group.XSection
+        this.Move(Max(leftBound, rightBound))
+    }
+}
+
+; Class that allows to group controls under a GroupBox control, but doesn't show the outline.
+Class IC_BrivGemFarm_LevelUp_GUI_BorderLessGroup extends IC_BrivGemFarm_LevelUp_GUI_Group
+{
+    ; Creates a new GroupBox.
+    ; Parameters: - name:str - The name/reference of the group.
+    ;             - title:str - The title of the control that will appear on the outline.
+    ;             - group:str - The group that contanis this group.
+    ;             - tabS:bool - If true, adds an x offset to this group from the previous control equal to XSection.
+    ;             - newLine:bool - If true, position the group under the previous control.
+    ;             - previous:str - The reference control that is used to position the new group.
+    __New(name, title := "", group := "BGFLU_DefaultSettingsGroup", tabS := true, newLine := true, previous := "")
+    {
+        this.Borderless := true
+        this.XSection := this.YSection := 0
+        this.YTitleSpacing := 0
+        base.__New(name, title, group, tabS, newLine, previous)
+        this.Hide()
+    }
+}
+
+; Class that contains multiple groups.
+Class IC_BrivGemFarm_LevelUp_GUI_Group_Main extends IC_BrivGemFarm_LevelUp_GUI_Group
+{
+    static Groups := []
+
+    AddGroup(group)
+    {
+        this.Groups.Push(group)
+        this.AddExistingControl(group)
+    }
+
+    AutoResize()
+    {
+        for k, v in this.Controls
+        {
+            if (!v.Hidden)
+                v.AutoResize()
+        }
+        base.AutoResize(true)
     }
 }

@@ -175,6 +175,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             nonSpeedIDs := {}
             for k, champID in formationFavorite1
             {
+                if (champID == 58 && (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ])) ; Need to walk while Briv is in all formations
+                    continue
                 if (champID != -1 && champID != "")
                     nonSpeedIDs[champID] := champID
             }

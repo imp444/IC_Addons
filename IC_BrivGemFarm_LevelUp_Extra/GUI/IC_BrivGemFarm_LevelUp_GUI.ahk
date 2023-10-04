@@ -175,7 +175,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
         width := IC_BrivGemFarm_LevelUp_Functions.DropDownSize(languages)
         definitionsGroup.AddControl("BGFLU_SelectLanguage", "DropDownList", "x+0 w" . width . " AltSubmit gBGFLU_SelectLanguage", languages, true)
         definitionsGroup.AddControl("BGFLU_LoadDefinitions", "Button", "Disabled h20 gBGFLU_LoadDefinitions", "Load Definitions")
-        definitionsGroup.AddControl("BGFLU_LoadDefinitionsProgress", "Progress", "h20 w200 Range0-10")
+        definitionsGroup.AddControl("BGFLU_LoadDefinitionsProgress", "Progress", "h20 w285 Range0-11")
         definitionsGroup.AddControl("BGFLU_DefinitionsStatus", "Text", "xs+0 w300", "No definitions.", true)
         definitionsGroup.AutoResize(true, true)
         group.AddExistingControl(definitionsGroup)

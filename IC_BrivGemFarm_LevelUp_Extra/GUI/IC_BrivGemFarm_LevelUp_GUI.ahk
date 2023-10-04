@@ -360,6 +360,8 @@ Class IC_BrivGemFarm_LevelUp_GUI
                 text := "Server timeout."
             case cl.DEFS_LOAD_FAIL:
                 text := "Failed to load definitions"
+            case cl.LOADER_FILE_MISSING:
+                text := "Error: Script not found."
         }
         GuiControl, ICScriptHub:, BGFLU_DefinitionsStatus, % text
     }

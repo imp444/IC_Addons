@@ -21,6 +21,7 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
     static HERO_DATA_FINISHED_NOUPDATE := 101
     static SERVER_TIMEOUT := 200
     static DEFS_LOAD_FAIL := 201
+    static LOADER_FILE_MISSING := 202
 
     CurrentState := 0
     GUID := ""
@@ -34,8 +35,12 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
             return
         ; Start worker
         scriptLocation := this.WorkerPath
-        if (!FileExist(IC_BrivGemFarm_LevelUp_Functions.HeroDefsPath))
-            return this.UpdateLoading("Error: Script " . scriptLocation . " not found.")
+        if (!FileExist(this.WorkerPath))
+        {
+            state := this.LOADER_FILE_MISSING
+            g_BrivGemFarm_LevelUpGui.MoveProgressBar(state)
+            return g_BrivGemFarm_LevelUpGui.UpdateLoadingText(state)
+        }
         this.GUID := guid := ComObjCreate("Scriptlet.TypeLib").Guid
         ObjRegisterActive(this, guid)
         OnExit(ObjBindMethod(this, "ComObjectRevoke"))

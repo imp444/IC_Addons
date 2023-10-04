@@ -86,13 +86,27 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
         return ""
     }
 
+    ; Parse contents looking for <table_checksums>.
     FindTableChecksums(contents)
     {
         RegExMatch(contents, "{([^}]+)}", tableChecksums, InStr(contents, """table_checksums"":"))
-        tableChecksums := StrReplace(tableChecksums1, "`r`n")
-        tableChecksums := StrReplace(tableChecksums, "`t")
-        tableChecksums := StrReplace(tableChecksums, """")
-        return tableChecksums
+        return this.GetCommaSeparatedKeys(tableChecksums1)
+    }
+
+    ; Parse contents looking for <passed_table_checksums>.
+    FindPassedTableChecksums(contents)
+    {
+        RegExMatch(contents, "\[([^]]+)\]", passedChecksums, InStr(contents, """passed_table_checksums"":"))
+        return this.GetCommaSeparatedKeys(passedChecksums1)
+    }
+
+    ; Format checksums so they are separated by commas without colons.
+    ; Input: <"key":int> -> Output: <key:int.>.
+    GetCommaSeparatedKeys(contents)
+    {
+        contents := StrReplace(contents, "`r`n")
+        contents := StrReplace(contents, "`t")
+        return StrReplace(contents, """")
     }
 
     ; Check if the latest table_checksums from the server match previous table_checksums.
@@ -106,10 +120,44 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
         new := this.FindTableChecksums(response)
         if (new != last || last == "")
         {
+            if (last != "")
+            {
+                ; Only update if new keys are part of filter.
+                passed := this.FindPassedTableChecksums(response)
+                if (this.CompareTableCheckSums(new, passed, this.Filter))
+                    return false
+            }
             this.LastTableChecksums := new
             return true
         }
         return false
+    }
+
+    ; Check if new checksums have keys present in filter.
+    ; Params: - new:str - List of key/value pairs separated by commas.
+    ;         - passed:str - List of key/value pairs separated by commas.
+    ;         - filter:str - List of keys separated by commas.
+    ; All keys in <passed> should also be found in <new>.
+    CompareTableCheckSums(new, passed, filter := "")
+    {
+        regexKey := "O)(\w+):\d+"
+        regexBaseKey := "(\w+)_\d+"
+        nextPos := 1
+        ; Get keys (e.g. attack_defines)
+        while (nextPos := RegExMatch(new, regexKey, matchO, nextPos) + matchO.len())
+        {
+            key := matchO.value(1)
+            ; Get base key (e.g. upgrade_defines_0 -> upgrade_defines)
+            RegExMatch(key, regexBaseKey, baseKey)
+            basekey := basekey1 == "" ? key : basekey1
+            if baseKey in %filter%
+            {
+                ; New checksum for filtered key
+                if key not in %passed%
+                    return false
+            }
+        }
+        return true
     }
 
     Filter

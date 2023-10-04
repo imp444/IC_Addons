@@ -73,6 +73,11 @@ BGFLU_MaxDefault()
     IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_MaxDefault()
 }
 
+BGFLU_SelectLanguage()
+{
+    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_SelectLanguage()
+}
+
 BGFLU_LoadDefinitions()
 {
     IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_LoadDefinitions()
@@ -246,10 +251,26 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         g_BrivGemFarm_LevelUp.FillMissingDefaultSettings()
     }
 
+    ; Select language used for defintions.
+    ; Doesn't save to temp settings, loads a new language immediately.
+    BGFLU_SelectLanguage()
+    {
+        global
+        local beforeSubmit := % %A_GuiControl%
+        Gui, ICScriptHub:Submit, NoHide
+        local value := % %A_GuiControl%
+        if (value != beforeSubmit)
+        {
+            g_BrivGemFarm_LevelUp.SetSetting("DefinitionsLanguage", BGFLU_SelectLanguage)
+            this.BGFLU_LoadDefinitions()
+        }
+    }
+
     ; Load new definitions
     BGFLU_LoadDefinitions()
     {
         global
+        GuiControl, ICScriptHub:Disable, BGFLU_SelectLanguage
         GuiControl, ICScriptHub:Disable, BGFLU_LoadDefinitions
         g_DefinesLoader.Start(false, true)
     }

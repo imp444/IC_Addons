@@ -3,6 +3,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group extends IC_BrivGemFarm_LevelUp_GUI_Contro
 {
     static GroupsByName := {}
 
+    ControlID := ""
     Controls := []
     ControlsByName := {}
     Height := 0
@@ -13,6 +14,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group extends IC_BrivGemFarm_LevelUp_GUI_Contro
     XSection := 10
     YSection := 10
     Borderless := false
+    RightAlignWithMain := true
 
     ; Creates a new GroupBox.
     ; Parameters: - name:str - The name/reference of the group.
@@ -174,10 +176,22 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group extends IC_BrivGemFarm_LevelUp_GUI_Contro
     {
         yMax := 0
         lowest := ""
+        groupsByName := IC_BrivGemFarm_LevelUp_GUI_Group.GroupsByName
         for k, v in this.ControlsByName
         {
             if (v.Hidden)
                 continue
+            ; Subgroup
+            if (groupsByName.HasKey(k))
+            {
+                controlID := groupsByName[k].GetLowestControl()
+                GuiControlGet, pos, ICScriptHub:Pos, %controlID%
+                if (posY + posH > yMax)
+                {
+                    yMax := posY + posH
+                    lowest := controlID
+                }
+            }
             GuiControlGet, pos, ICScriptHub:Pos, %k%
             if (posY + posH > yMax)
             {
@@ -194,10 +208,22 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group extends IC_BrivGemFarm_LevelUp_GUI_Contro
     {
         xMax := 0
         rightMost := ""
+        groupsByName := IC_BrivGemFarm_LevelUp_GUI_Group.GroupsByName
         for k, v in this.ControlsByName
         {
             if (v.Hidden)
                 continue
+            ; Subgroup
+            if (groupsByName.HasKey(k))
+            {
+                controlID := groupsByName[k].GetRightMostControl()
+                GuiControlGet, pos, ICScriptHub:Pos, %controlID%
+                if (posX + posW > xMax)
+                {
+                    xMax := posX + posW
+                    rightMost := controlID
+                }
+            }
             GuiControlGet, pos, ICScriptHub:Pos, %k%
             if (posX + posW > xMax)
             {
@@ -210,17 +236,23 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group extends IC_BrivGemFarm_LevelUp_GUI_Contro
 
     ; Calculates the size of this GroupBox's outline that contours all of its controls.
     ; Parameters: - init:bool - If true, resizes the GroupBox outline.
-    AutoResize(init := false)
+    ; Parameters: - line:bool - If true, displays a thin line instead of a box around controls.
+    AutoResize(init := false, line := false)
     {
         if (!init)
             return
-        lowest := this.GetLowestControl()
-        GuiControlGet, posL, ICScriptHub:Pos, %lowest%
-        rightMost := this.GetRightMostControl()
-        GuiControlGet, posR, ICScriptHub:Pos, %rightMost%
         controlID := this.ControlID
         GuiControlGet, posS, ICScriptHub:Pos, %controlID%
-        newHeight := posLY + posLH - posSY + this.YSection
+        if (line)
+            newHeight := 10
+        else
+        {
+            lowest := this.GetLowestControl()
+            GuiControlGet, posL, ICScriptHub:Pos, %lowest%
+            newHeight := posLY + posLH - posSY + this.YSection
+        }
+        rightMost := this.GetRightMostControl()
+        GuiControlGet, posR, ICScriptHub:Pos, %rightMost%
         newWidth := posRX + posRW - posSX + this.XSection
         this.UpdateSize(newHeight, newWidth)
     }
@@ -240,6 +272,19 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group extends IC_BrivGemFarm_LevelUp_GUI_Contro
         else
             newWidth := this.Width
         GuiControl, ICScriptHub:Move, %controlID%, h%newHeight% w%newWidth%
+        ; Resize subgroups
+        groupsByName := IC_BrivGemFarm_LevelUp_GUI_Group.GroupsByName
+        for k, v in this.ControlsByName
+        {
+            if (v.Hidden || !v.RightAlignWithMain)
+                continue
+            ; Subgroup
+            if (groupsByName.HasKey(k))
+            {
+                group := groupsByName[k]
+                group.UpdateSize(, newWidth - 2 * this.XSection)
+            }
+        }
     }
 
     ; Align this group to the right of its parent group.

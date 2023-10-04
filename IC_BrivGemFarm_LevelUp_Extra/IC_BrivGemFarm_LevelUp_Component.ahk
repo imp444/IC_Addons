@@ -1,6 +1,6 @@
 #include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_Functions.ahk
 #include %A_LineFile%\..\GUI\IC_BrivGemFarm_LevelUp_GUI.ahk
-#include %A_LineFile%\..\Data\IC_BrivGemFarm_LevelUp_HeroDefinesLoader.ahk
+#include %A_LineFile%\..\Data\Loader\IC_BrivGemFarm_LevelUp_HeroDefinesLoader.ahk
 #include %A_LineFile%\..\Data\IC_BrivGemFarm_LevelUp_HeroDefinesData.ahk
 
 ; Test to see if BrivGemFarm addon is avaialbe.
@@ -13,6 +13,7 @@ else
 }
 
 global g_BrivGemFarm_LevelUp := new IC_BrivGemFarm_LevelUp_Component
+global g_BrivGemFarm_LevelUpGui := IC_BrivGemFarm_LevelUp_GUI
 global g_DefinesLoader := new IC_BrivGemFarm_LevelUp_HeroDefinesLoader
 global g_HeroDefines := IC_BrivGemFarm_LevelUp_HeroDefinesData
 
@@ -48,6 +49,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
+        GuiControl, ICScriptHub:Choose, BGFLU_SelectLanguage, % this.Settings.DefinitionsLanguage
         IC_BrivGemFarm_LevelUp_ToolTip.AddToolTips()
         g_DefinesLoader.Start()
         this.CreateTimedFunctions()
@@ -160,15 +162,17 @@ Class IC_BrivGemFarm_LevelUp_Component
                 levelSettings.maxLevels[heroID] := this.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1
             }
         }
-        GuiControl, ICScriptHub: Enable, BGFLU_LoadFormation
-        GuiControl, ICScriptHub: Enable, BGFLU_Default
-        GuiControl, ICScriptHub: Enable, BGFLU_LoadDefinitions
+        GuiControl, ICScriptHub:Enable, BGFLU_LoadFormation
+        GuiControl, ICScriptHub:Enable, BGFLU_Default
+        GuiControl, ICScriptHub:Enable, BGFLU_SelectLanguage
+        GuiControl, ICScriptHub:Enable, BGFLU_LoadDefinitions
     }
 
     ; Allows to click on the button to manually load hero definitions
     OnHeroDefinesFailed()
     {
-        GuiControl, ICScriptHub: Enable, BGFLU_LoadDefinitions
+        GuiControl, ICScriptHub:Enable, BGFLU_SelectLanguage
+        GuiControl, ICScriptHub:Enable, BGFLU_LoadDefinitions
     }
 
     /*  LoadSettings - Load GUI settings
@@ -263,6 +267,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.DefaultMaxLevel := 1
         settings.LevelToSoftCapFailedConversion := true
         settings.LevelToSoftCapFailedConversionBriv := false
+        settings.DefinitionsLanguage := 1
         minLevels := {}, maxLevels := {}
         ; Speed champions
         minLevels[58] := 170, maxLevels[58] := 1300 ; Briv
@@ -405,7 +410,6 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:Text, BGFLU_SettingsStatusText,
             GuiControl, ICScriptHub:Text, BrivGemFarm_LevelUp_Text, % "Status: " . text
         }
-        this.UpdateLastUpdated()
         if (this.TempSettings.HasChanges())
         {
             GuiControl, ICScriptHub:Hide, BGFLU_SettingsStatusText
@@ -424,21 +428,6 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:Text, BGFLU_NoFormationText, % text
         else
             GuiControl, ICScriptHub:Text, BGFLU_NoFormationText,
-    }
-
-    ; Update the text that shows the last time cached_definitions.json was loaded
-    UpdateLastUpdated(lastUpdateString := "", save := false)
-    {
-        settings := this.Settings
-        if (lastUpdateString == "")
-            lastUpdateString := settings.LastUpdateString
-        if (save)
-        {
-            settings.LastUpdateString := lastUpdateString
-            g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
-        }
-        GuiControl, ICScriptHub:, BGFLU_DefinitionsStatus, % lastUpdateString
-        GuiControl, ICScriptHub:, BGFLU_DefinitionsPath, % settings.LastCachedPath
     }
 
     ; Loads formation from champIDs into the GUI, defaults to Q formation
@@ -515,10 +504,28 @@ Class IC_BrivGemFarm_LevelUp_Component
             IC_BrivGemFarm_LevelUp_Seat.Seats[A_Index].ToggleSpoilers(value)
     }
 
+    ; Returns a temp setting, saved settings if no temp.
+    ; Parameter: - key:str - Name of setting.
+    ; TODO:: Support for nested settings
+    GetSetting(key)
+    {
+        temp := this.TempSettings.TempSettings
+        return temp.HasKey(key) ? temp[key] : this.Settings[key]
+    }
+
     ; Returns saved min/max settings
     GetLevelSettings()
     {
         return this.Settings.BrivGemFarm_LevelUp_Settings
+    }
+
+    ; Returns a temp setting, saved settings if no temp.
+    ; Parameter: - key:str - Name of setting.
+    ; TODO:: Support for nested settings
+    SetSetting(key, value)
+    {
+        this.Settings[key] := value
+        this.SaveSettings()
     }
 
     UpdateBrivMinLevelStackingList()

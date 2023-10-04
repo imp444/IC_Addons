@@ -54,7 +54,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
         local rightMostGroupWidth := this.MainGroup.Width - 2 * this.MainGroup.XSection
         for k, v in this.MainGroup.Groups
         {
-            if (k > 1) ; BGFLU_DefaultSettingsGroup
+            if (v.RightAlignWithMain) ; Exclude BGFLU_DefaultSettingsGroup
                 v.UpdateSize(, rightMostGroupWidth)
         }
         this.ShowSection()
@@ -84,6 +84,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
     {
         global
         local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_DefaultSettingsGroup", "Default Settings", "BGFLU_SettingsGroup")
+        group.RightAlignWithMain := false
         group.AddControl("BGFLU_Default", "Button", "Disabled gBGFLU_Default", "Load default settings", true)
         group.AddControl("BGFLU_SettingsStatusText", "Text", "yp+5 w100", "No settings.")
         group.AddControl("BGFLU_Save", "Button", "xp yp-5 Hidden gBGFLU_Save", "Save")
@@ -169,10 +170,15 @@ Class IC_BrivGemFarm_LevelUp_GUI
     {
         global
         local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_GUISettingsGroup", "GUI Settings",, false)
-        group.AddControl("BGFLU_LoadDefinitions", "Button", "Disabled gBGFLU_LoadDefinitions", "Load Definitions", true)
-        group.AddControl("BGFLU_DefinitionsStatus", "Text", "yp+4 w450 R3", "No definitions.")
-        group.AddControl("BGFLU_DefinitionsPathText", "Text",, "Current location:", true)
-        group.AddControl("BGFLU_DefinitionsPath", "Edit", "-Background -VScroll Disabled w450 R2",, true)
+        local definitionsGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_DefinitionsGroup", "Definitions", "BGFLU_GUISettingsGroup")
+        languages := "English||Deutsch|Pусский|Français|Português|Español|中文"
+        width := IC_BrivGemFarm_LevelUp_Functions.DropDownSize(languages)
+        definitionsGroup.AddControl("BGFLU_SelectLanguage", "DropDownList", "x+0 w" . width . " AltSubmit gBGFLU_SelectLanguage", languages, true)
+        definitionsGroup.AddControl("BGFLU_LoadDefinitions", "Button", "Disabled h20 gBGFLU_LoadDefinitions", "Load Definitions")
+        definitionsGroup.AddControl("BGFLU_LoadDefinitionsProgress", "Progress", "h20 w200 Range0-10")
+        definitionsGroup.AddControl("BGFLU_DefinitionsStatus", "Text", "xs+0 w300", "No definitions.", true)
+        definitionsGroup.AutoResize(true, true)
+        group.AddExistingControl(definitionsGroup)
         this.AddGroup(group)
     }
 
@@ -297,5 +303,123 @@ Class IC_BrivGemFarm_LevelUp_GUI
         maxDisplayHeight := monitorCoordsBottom - y - h + maxTabHeight
         maxDisplayHeight := Min(maxTabHeight, maxDisplayHeight)
         return maxDisplayHeight
+    }
+
+    ; Update the progress bar during definitions loading.
+    ; The bar uses colors from the current theme, or default colors.
+    MoveProgressBar(state)
+    {
+        cl := IC_BrivGemFarm_LevelUp_HeroDefinesLoader
+        GuiControlGet, currentState, ICScriptHub:, BGFLU_LoadDefinitionsProgress
+        if (state != currentState)
+        {
+            GuiControl, ICScriptHub:, BGFLU_LoadDefinitionsProgress, % state
+            if (state >= cl.SERVER_TIMEOUT)
+                color := this.GetHexColorFromTheme("ErrorTextColor") ; Red
+            else if (state >= cl.HERO_DATA_FINISHED)
+                color := this.GetHexColorFromTheme("SpecialTextColor2") ; Green
+            else
+                color := this.GetHexColorFromTheme("SpecialTextColor1") ; Blue
+            GuiControl, ICScriptHub:+c%color%, BGFLU_LoadDefinitionsProgress
+        }
+    }
+
+    ; Update the text displayed during definitions loading.
+    UpdateLoadingText(state)
+    {
+        cl := IC_BrivGemFarm_LevelUp_HeroDefinesLoader
+        switch state
+        {
+            case cl.STOPPED:
+                text := ""
+            case cl.GET_PLAYSERVER:
+                text := "Getting playserver..."
+            case cl.CHECK_TABLECHECKSUMS:
+                text := "Checking for new definitions..."
+            case cl.FILE_PARSING:
+                text := "Parsing definitions..."
+            case cl.TEXT_DEFS:
+                text := "Processing text_defines..."
+            case cl.HERO_DEFS:
+                text := "Processing hero_defines..."
+            case cl.ATTACK_DEFS:
+                text := "Processing attack_defines..."
+            case cl.UPGRADE_DEFS:
+                text := "Processing upgrade_defines..."
+            case cl.EFFECT_DEFS:
+                text := "Processing effect_defines..."
+            case cl.EFFECT_KEY_DEFS:
+                text := "Processing effect_key_defines..."
+            case cl.FILE_SAVING:
+                text := "Saving definitions..."
+            case cl.HERO_DATA_FINISHED:
+                text := "New definitions loaded."
+            case cl.HERO_DATA_FINISHED_NOUPDATE:
+                text := "No new definitions."
+            case cl.SERVER_TIMEOUT:
+                text := "Server timeout."
+            case cl.DEFS_LOAD_FAIL:
+                text := "Failed to load definitions"
+        }
+        GuiControl, ICScriptHub:, BGFLU_DefinitionsStatus, % text
+    }
+
+    ; Returns the color in hex format from the Themes addon settings.
+    ; Parameters: - textType:str - Text type setting (eg:DefaultTextColor).
+    GetHexColorFromTheme(textType)
+    {
+        if ((color := GUIFunctions.CurrentTheme[textType]) * 1 == "")
+        {
+            if (textType == "ErrorTextColor")
+                color := "Red"
+            else if (textType == "SpecialTextColor1")
+                color := "Blue"
+            else if (textType == "SpecialTextColor2")
+                color := "Green"
+            else if (color == "Default")
+                color := "White"
+            return this.ColorNameToHexColor(color)
+        }
+        else
+            return Format("{:#x}", color)
+    }
+
+    ColorNameToHexColor(name)
+    {
+        switch name
+        {
+            case "Black":
+                return 0x000000
+            case "Silver":
+                return 0xC0C0C0
+            case "Gray":
+                return 0x808080
+            case "White":
+                return 0xFFFFFF
+            case "Maroon":
+                return 0x800000
+            case "Red":
+                return 0xFF0000
+            case "Purple":
+                return 0x800080
+            case "Fuchsia":
+                return 0xFF00FF
+            case "Green":
+                return 0x008000
+            case "Lime":
+                return 0x00FF00
+            case "Olive":
+                return 0x808000
+            case "Yellow":
+                return 0xFFFF00
+            case "Navy":
+                return 0x000080
+            case "Blue":
+                return 0x0000FF
+            case "Teal":
+                return 0x008080
+            case "Aqua":
+                return 0x00FFFF
+        }
     }
 }

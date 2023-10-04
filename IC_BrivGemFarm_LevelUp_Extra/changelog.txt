@@ -1,6 +1,6 @@
 October 04, 2023 - v1.0.0
     - Definitions are now fetched from CNE servers instead of using the local cachedDefinitions.json file.
-      This fixes loading defintions for Epic Games users.
+      This fixes loading definitions for Epic Games users.
     - Language used for upgrade descriptions/hero names can be selected in GUI settings.
     - UI sections are shown/hidden depending on available screen height even when the ICScripthub window is only partially visible.
     - Non-speed champions will be leveled up to Minlevel before leaving z1 (assuming enough favor and not reaching timeout).

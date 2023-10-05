@@ -145,7 +145,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
             if (!this.BGFBFS_IsFormationEmpty(currentFormation))
             {
                 if (this.Memory.ReadTransitionOverrideSize() == 1 AND this.Memory.ReadTransitionDirection() != 2 AND this.Memory.ReadFormationTransitionDir() == 3 || currentZone == 22 && g_SharedData.BGFBFS_Preset == "7J/4J Tall Tales")
-                    return this.BGFBFS_MouseClickCancel()
+                    return this.BGFBFS_MouseClickCancel(currentZone)
             }
             else if (this.Memory.ReadTransitionOverrideSize() == 1 || currentZone == 22 && g_SharedData.BGFBFS_Preset == "7J/4J Tall Tales")
                 return
@@ -213,6 +213,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         return base.UnBenchBrivConditions(settings) || this.BGFBFS_IsFormationEmpty() && this.Memory.ReadTransitionOverrideSize() != 1
     }
 
+    ; If Briv has enough stacks to jump, don't force switch to e and wait for the boss to be killed.
+    KillCurrentBoss(params*)
+    {
+        if (!g_SharedData.BGFBFS_Enabled || this.Memory.ReadHasteStacks() < 50)
+            return base.KillCurrentBoss(params*)
+        return true
+    }
+
     ; Returns true if there are no champions in the current formation.
     BGFBFS_IsFormationEmpty(formation)
     {
@@ -224,23 +232,101 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         return true
     }
 
-    BGFBFS_MouseClickCancel()
+    ; Functions used to click clear formation, to cancel Briv's jump animation.
+
+    BGFBFS_MouseClickCancel(currentZone := 1)
     {
-        WinGetActiveTitle, savedActive
-        this.SavedActiveWindow := savedActive
-        yClick := g_SF.Memory.ReadScreenHeight() - 30
-        xClick := 30
+        static coords := ""
+
+        if (currentZone == 1 || coords == "")
+            coords := this.BGFBFS_GetClickCoords()
         WinActivate, ahk_exe IdleDragons.exe
+        xClick := coords[1]
+        yClick := coords[2]
         MouseClick, Left, xClick, yClick, 1, 0
-        this.ActivateLastWindow()
     }
 
-    ; If Briv has enough stacks to jump, don't force switch to e and wait for the boss to be killed.
-    KillCurrentBoss(params*)
+    BGFBFS_GetClickCoords()
     {
-        if (!g_SharedData.BGFBFS_Enabled || this.Memory.ReadHasteStacks() < 50)
-            return base.KillCurrentBoss(params*)
-        return true
+        xOffset := yOffset := 0
+        ; Fullscreen
+        if (this.BGFBFS_IsGameFullScreen())
+        {
+            WinActivate, ahk_exe IdleDragons.exe
+            WinGetPos, x, y, w, h, ahk_exe IdleDragons.exe
+            ; Find if the game resolution is set to tall or wide
+            midWidthPos := Round(x + w / 2)
+            midHeightPos := Round(y + h / 2)
+            PixelGetColor, colorW, midWidthPos, 0
+            PixelGetColor, colorH, 0, midHeightPos
+            color := 0
+            step := 10
+            ; Tall
+            if (colorW > 0 && colorH == 0)
+            {
+                While (color == 0 && xOffset < w)
+                {
+                    PixelGetColor, color, xOffset, 0
+                    xOffset += step
+                }
+                xOffset -= step
+            }
+            ; Wide
+            else if (colorW == 0 && colorH > 0)
+            {
+                While (color == 0 && yOffset < h)
+                {
+                    PixelGetColor, color, 0, yOffset
+                    yOffset += step
+                }
+                yOffset -= step
+                yOffset := -yOffset
+            }
+            winBottom := y + h
+        }
+        else
+            winBottom := g_SF.Memory.ReadScreenHeight()
+        xClick := xOffset + 24
+        yClick := winBottom + yOffset - 24
+        return [xClick, yClick]
+    }
+
+    BGFBFS_IsGameFullScreen()
+    {
+        ; Get monitor coords
+        WinGet, hwnd, ID, ahk_exe IdleDragons.exe
+        monitor := this.BGFBFS_GetMonitor(hwnd)
+        SysGet, monitorCoords, MonitorWorkArea, %monitor%
+        ; Get game window coords
+        WinGetPos, x, y, w, h, ahk_exe IdleDragons.exe
+        return (monitorCoordsLeft == x && monitorCoordsTop == y)
+    }
+
+    BGFBFS_GetMonitor(hwnd := 0)
+    {
+        ; If no hwnd is provided, use the Active Window
+        if (hwnd)
+            WinGetPos, winX, winY, winW, winH, ahk_id %hwnd%
+        else
+        { ; Needed
+            WinGetActiveStats, winTitle, winW, winH, winX, winY
+        }
+        SysGet, numDisplays, MonitorCount
+        SysGet, idxPrimary, MonitorPrimary
+        Loop %numDisplays%
+        {	SysGet, mon, MonitorWorkArea, %a_index%
+        ; Left may be skewed on Monitors past 1
+            if (a_index > 1)
+                monLeft -= 10
+        ; Right overlaps Left on Monitors past 1
+            else if (numDisplays > 1)
+                monRight -= 10
+        ; Tracked based on X. Cannot properly sense on Windows "between" monitors
+            if (winX >= monLeft && winX < monRight)
+                return %a_index%
+        }
+        ; Return Primary Monitor if can't sense
+        return idxPrimary
     }
 }
 

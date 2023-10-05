@@ -1,3 +1,7 @@
+October 05, 2023 - v1.5.3
+    - The position of the "clear formation" button used to cancel Briv's jump animation
+      when using the mouse click option is detected for other resolutions than 16:9.
+
 September 25, 2023 - v1.5.2
     - Fixed a bug that showed the enabled checkbox being checked even when it was disabled in settings.
 

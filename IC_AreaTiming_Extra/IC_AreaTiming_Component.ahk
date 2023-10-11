@@ -669,31 +669,30 @@ Class IC_AreaTiming_Component
         items := run.Items
         Loop, % items.Length()
         {
-            obj := items[A_Index]
-            area := obj.StartZone
-            next := obj.EndZone
-            areaTime := Round(obj.AreaTime / 1000, 2)
-            transitionTime := Round(obj.TransitionTime / 1000, 2)
-            time := Round(obj.TotalTime / 1000, 2)
-            runTime += obj.TotalTime
+            area := run.GetItemStartZone(A_Index)
+            next := run.GetItemEndZone(A_Index)
+            areaTime := Round(run.GetItemAreaTime(A_Index) / 1000, 2)
+            transitionTime := Round(run.GetItemTransitionTime(A_Index) / 1000, 2)
+            time := Round(run.GetItemTotalTime(A_Index) / 1000, 2)
+            runTime += run.GetItemTotalTime(A_Index)
             runTimeRounded := Round(runTime / 1000, 2)
             ; Average
-            avgCount := session.GetAverageCount(obj.Zones)
+            avgCount := session.GetAverageCount(run.GetItemZones(A_Index))
             count := avgCount[1]
             avgAreaTime := Round(avgCount[2] / 1000, 2)
             avgTransitionTime := Round(avgCount[3] / 1000, 2)
             avgTime := Round(avgCount[4] / 1000, 2)
             avgRunTime := Round(avgCount[5] / 1000, 2)
             ; Capped game speed = 10x
-            gameSpeed := obj.GameSpeed
+            gameSpeed := run.GetItemGameSpeed(A_Index)
             gameSpeedRounded := uncapped ? Round(gameSpeed, 3) : Round(Min(gameSpeed, 10), 3)
             avgGameSpeed := avgCount[6]
             avgGameSpeedRounded := uncapped ? Round(avgGameSpeed, 3) : Round(Min(avgGameSpeed, 10), 3)
             ; Mod50
-            mod50Key := obj.Mod50Zones
+            mod50Key := run.GetItemMod50Zones(A_Index)
             if (!mod50Vals.HasKey(mod50Key))
                 mod50Vals[mod50Key] := []
-            mod50Vals[mod50Key].Push(obj)
+            mod50Vals[mod50Key].Push(items[A_Index])
             LV_Add(, area, next, areaTime, transitionTime, time, avgAreaTime, avgTransitionTime, avgTime, runTimeRounded, avgRunTime, count, gameSpeedRounded, avgGameSpeedRounded)
         }
         ; Resize columns
@@ -728,11 +727,12 @@ Class IC_AreaTiming_Component
             avgGameSpeed := avgCount[6]
             avgGameSpeedRounded := uncapped ? Round(avgGameSpeed, 3) : Round(Min(avgGameSpeed, 10), 3)
             ; Mod50
-            simpleObj := new IC_AreaTiming_TimeObjectSimple(area)
-            simpleObj.SetAreaTransitioned(next)
-            mod50Key:= simpleObj.Mod50Zones
+            obj := new IC_AreaTiming_TimeObject
+            obj.SetAreaStarted(area)
+            obj.SetAreaTransitioned(next)
+            mod50Key:= obj.Mod50Zones
             if (!mod50Vals.HasKey(mod50Key))
-                mod50Vals[mod50Key] := simpleObj
+                mod50Vals[mod50Key] := obj
             LV_Add(, area, next, avgAreaTime, avgTransitionTime, avgTime, avgRunTime, count, avgGameSpeedRounded)
         }
         ; Resize columns
@@ -751,16 +751,16 @@ Class IC_AreaTiming_Component
         excludeOutliers := this.Settings.ExcludeMod50Outliers
         for k, v in mod50Vals
         {
-            area := v[1].Mod50StartZone
-            next := v[1].Mod50EndZone
+            area := session.GetItemMod50StartZone(v[1])
+            next := session.GetItemMod50EndZone(v[1])
             ; Run average
-            avgCount := excludeOutliers ? session.GetAverageMod50CountEx(v[1].Mod50Zones, [run]) : session.GetAverageMod50Count(v[1].Mod50Zones, [run])
+            avgCount := excludeOutliers ? session.GetAverageMod50CountEx(session.GetItemMod50Zones(v[1]), [run]) : session.GetAverageMod50Count(session.GetItemMod50Zones(v[1]), [run])
             countRun := avgCount[1]
             areaTime := Round(avgCount[2] / 1000, 2)
             transitionTime := Round(avgCount[3] / 1000, 2)
             time := Round(avgCount[4] / 1000, 2)
             ; Session average
-            avgCount := excludeOutliers ? session.GetAverageMod50CountEx(v[1].Mod50Zones) : session.GetAverageMod50Count(v[1].Mod50Zones)
+            avgCount := excludeOutliers ? session.GetAverageMod50CountEx(session.GetItemMod50Zones(v[1])) : session.GetAverageMod50Count(session.GetItemMod50Zones(v[1]))
             count := avgCount[1]
             avgAreaTime := Round(avgCount[2] / 1000, 2)
             avgTransitionTime := Round(avgCount[3] / 1000, 2)
@@ -825,15 +825,15 @@ Class IC_AreaTiming_Component
         {
             obj := isAll ? items[A_Index][1] : items[A_Index]
             ; Capped game speed = 10x
-            gameSpeed := obj.GameSpeed
+            gameSpeed := isAll ? session.GetStackItemGameSpeed(obj) : run.GetStackItemGameSpeed(A_Index)
             gameSpeedRounded := uncapped ? Round(gameSpeed, 3) : Round(Min(gameSpeed, 10), 3)
-            area := obj.StartZone
-            next := obj.EndZone
-            time := Round(obj.TotalTime / 1000, 2)
+            area := isAll ? session.GetItemStartZone(obj) : run.GetStackItemStartZone(A_Index)
+            next := isAll ? session.GetItemEndZone(obj) : run.GetStackItemEndZone(A_Index)
+            time := Round((isAll ? session.GetItemTotalTime(obj) : run.GetStackItemTotalTime(A_Index)) / 1000, 2)
             ; Average
-            averageCount := isAll ? averageData[obj.Zones] : session.GetAverageStacksCount(obj.Zones)
+            averageCount := isAll ? averageData[session.GetItemZones(obj)] : session.GetAverageStacksCount(run.GetStackItemZones(A_Index))
             averageTime := Round(averageCount[1] / 1000, 2)
-            stacks := obj.Stacks
+            stacks := isAll ? session.GetStackItemStacks(obj) : run.GetStackItemStacks(A_Index)
             averageStacks := Round(averageCount[2])
             count := averageCount[3]
             rate := Round(stacks / time)

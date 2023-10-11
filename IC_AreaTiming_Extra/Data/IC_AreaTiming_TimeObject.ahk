@@ -1,45 +1,26 @@
 ; Object that holds stats from zone progress.
-; Uses a buffer to keep track of data.
 Class IC_AreaTiming_TimeObject
 {
-    ; Struct - 28 bytes
-    ; ?? - 2 bytes
-    ; Zones:UInt - 4 bytes (Max area = 65535)
-    ; AreaStartTimeStamp:UInt+UShort - 6 bytes
-    ; AreaCompleteTimeStamp:UInt+UShort - 6 bytes
-    ; AreaTransitionedTimeStamp:UInt+UShort - 6 bytes
-    ; GameSpeed:Float - 4 bytes
-    Data := ""
+    Zones := 0
+    AreaStartTimeStamp := 0
+    AreaCompleteTimeStamp := 0
+    AreaTransitionedTimeStamp := 0
+    GameSpeed := 0
 
-    __New(ByRef simpleObj)
+    Reset()
     {
-        timeStamp := simpleObj.AreaStartTimeStamp
-        VarSetCapacity(buffer%timeStamp%, 28, 0)
-        this.ConvertSimpleObjToStruct(simpleObj, buffer%timeStamp%)
-        this.Data := &buffer%timeStamp%
-    }
-
-    ConvertSimpleObjToStruct(ByRef simpleObj, ByRef buffer)
-    {
-        NumPut(simpleObj.EndZone, buffer, 2, "UShort")
-        NumPut(simpleObj.StartZone, buffer, 4, "UShort")
-        timestamp := simpleObj.GetSplittedTimeStamp(simpleObj.AreaStartTimeStamp)
-        NumPut(timestamp[1], buffer, 6, "UInt")
-        NumPut(timestamp[2], buffer, 10, "UShort")
-        timestamp := simpleObj.GetSplittedTimeStamp(simpleObj.AreaCompleteTimeStamp)
-        NumPut(timestamp[1], buffer, 12, "UInt")
-        NumPut(timestamp[2], buffer, 16, "UShort")
-        timestamp := simpleObj.GetSplittedTimeStamp(simpleObj.AreaTransitionedTimeStamp)
-        NumPut(timestamp[1], buffer, 18, "UInt")
-        NumPut(timestamp[2], buffer, 22, "UShort")
-        NumPut(simpleObj.GameSpeed, buffer, 24, "Float")
+        this.Zones := 0
+        this.AreaStartTimeStamp := 0
+        this.AreaCompleteTimeStamp := 0
+        this.AreaTransitionedTimeStamp := 0
+        this.GameSpeed := 0
     }
 
     StartZone
     {
         get
         {
-            return NumGet(this.Data, 4, "UShort")
+            return this.Zones >> 16
         }
     }
 
@@ -47,15 +28,7 @@ Class IC_AreaTiming_TimeObject
     {
         get
         {
-            return NumGet(this.Data, 2, "UShort")
-        }
-    }
-
-    Zones
-    {
-        get
-        {
-            return NumGet(this.Data, 2, "UInt")
+            return this.Zones & 0xFFFF
         }
     }
 
@@ -87,30 +60,6 @@ Class IC_AreaTiming_TimeObject
         }
     }
 
-    AreaStartTimeStamp
-    {
-        get
-        {
-            return NumGet(this.Data, 6, "UInt") * 1000 + NumGet(this.Data, 10, "UShort")
-        }
-    }
-
-    AreaCompleteTimeStamp
-    {
-        get
-        {
-            return NumGet(this.Data, 12, "UInt") * 1000 + NumGet(this.Data, 16, "UShort")
-        }
-    }
-
-    AreaTransitionedTimeStamp
-    {
-        get
-        {
-            return NumGet(this.Data, 18, "UInt") * 1000 + NumGet(this.Data, 22, "UShort")
-        }
-    }
-
     AreaTime
     {
         get
@@ -135,12 +84,29 @@ Class IC_AreaTiming_TimeObject
         }
     }
 
-    GameSpeed
+    SetGameSpeed(gameSpeed)
     {
-        get
-        {
-            return NumGet(this.Data, 24, "Float")
-        }
+        this.GameSpeed := gameSpeed
+    }
+
+    SetAreaStarted(startZone)
+    {
+        this.AreaStartTimeStamp := this.GetCurrentMSecTime()
+        this.Zones := (startZone << 16)
+    }
+
+    SetAreaComplete(gameSpeed := "")
+    {
+        this.AreaCompleteTimeStamp := this.GetCurrentMSecTime()
+        this.SetGameSpeed(gameSpeed)
+        return this.AreaCompleteTimeStamp
+    }
+
+    SetAreaTransitioned(endZone)
+    {
+        this.AreaTransitionedTimeStamp := this.GetCurrentMSecTime()
+        this.Zones += endZone
+        return this.AreaTransitionedTimeStamp
     }
 
     GetCurrentMSecTime()
@@ -150,52 +116,35 @@ Class IC_AreaTiming_TimeObject
         time -= 1970, s
         return time * 1000 + mSec
     }
+
+    GetSplittedTimeStamp(timestamp)
+    {
+        mSec := Mod(timestamp, 1000)
+        unixTime := Round((timestamp - mSec)/ 1000)
+        return [unixTime, mSec]
+    }
 }
 
 ; Object that holds stats from zone progress during stacking.
-; Uses a buffer to keep track of data.
 Class IC_AreaTiming_StacksTimeObject extends IC_AreaTiming_TimeObject
 {
-    ; Struct - 32 bytes
-    ; ?? - 2 bytes
-    ; Zones:UInt - 4 bytes (Max area = 65535)
-    ; AreaStartTimeStamp:UInt+UShort - 6 bytes
-    ; AreaCompleteTimeStamp:UInt+UShort - 6 bytes
-    ; AreaTransitionedTimeStamp:UInt+UShort - 6 bytes
-    ; GameSpeed:Float - 4 bytes
-    ; Stacks:UInt - 4 bytes
-    ; Data := ""
+    Stacks := 0
 
-    __New(ByRef simpleObj)
+    Reset()
     {
-        timeStamp := simpleObj.AreaStartTimeStamp
-        VarSetCapacity(buffer%timeStamp%, 32, 0)
-        this.ConvertSimpleObjToStruct(simpleObj, buffer%timeStamp%)
-        this.Data := &buffer%timeStamp%
+        base.Reset()
+        this.Stacks := 0
     }
 
-    ConvertSimpleObjToStruct(ByRef simpleObj, ByRef buffer)
+    SetAreaTransitioned(endZone, stacks)
     {
-        NumPut(simpleObj.EndZone, buffer, 2, "UShort")
-        NumPut(simpleObj.StartZone, buffer, 4, "UShort")
-        timestamp := simpleObj.GetSplittedTimeStamp(simpleObj.AreaStartTimeStamp)
-        NumPut(timestamp[1], buffer, 6, "UInt")
-        NumPut(timestamp[2], buffer, 10, "UShort")
-        timestamp := simpleObj.GetSplittedTimeStamp(simpleObj.AreaCompleteTimeStamp)
-        NumPut(timestamp[1], buffer, 12, "UInt")
-        NumPut(timestamp[2], buffer, 16, "UShort")
-        timestamp := simpleObj.GetSplittedTimeStamp(simpleObj.AreaTransitionedTimeStamp)
-        NumPut(timestamp[1], buffer, 18, "UInt")
-        NumPut(timestamp[2], buffer, 22, "UShort")
-        NumPut(simpleObj.GameSpeed, buffer, 24, "Float")
-        NumPut(simpleObj.Stacks, buffer, 28, "UInt")
+        base.SetAreaTransitioned(endZone)
+        this.Stacks := stacks
+        return this.AreaCompleteTimeStamp
     }
 
-    Stacks
+    UpdateStartZone(startZone)
     {
-        get
-        {
-            return NumGet(this.Data, 28, "UInt")
-        }
+        this.Zones := (startZone << 16) + this.EndZone
     }
 }

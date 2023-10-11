@@ -75,13 +75,13 @@ Class IC_AreaTiming_TimerScript
         ; Current recorded run
         static currentRun := ""
         ; Current recorded area progress
-        static timeObj := ""
+        static timeObj := new IC_AreaTiming_TimeObject
         ; Briv stacks value before stacking
         static stacksBefore := 0
         ; True during stacking
         static stacking := false
         ; Current recorded stacking progress
-        static stacksTimeObj := ""
+        static stacksTimeObj := new IC_AreaTiming_StacksTimeObject
         ; True when first recording game speed during stacking
         static stackingGameSpeedTrigger := false
         ; True when the game is closed during stacking
@@ -112,7 +112,8 @@ Class IC_AreaTiming_TimerScript
             skipFirstValue := true
             areaClearTrigger := false
             currentRun := ""
-            timeObj := ""
+            timeObj.Reset()
+            stacksTimeObj.Reset()
             lastZone := currentZone
             lastResetCount := g_SF.Memory.ReadResetsCount()
             return
@@ -128,7 +129,7 @@ Class IC_AreaTiming_TimerScript
             if (g_SF.Memory.ReadResetsCount() > lastResetCount)
             {
                 timeObj.SetAreaTransitioned(currentZone)
-                currentRun.AddItem(new IC_AreaTiming_TimeObject(timeObj))
+                currentRun.AddItem(timeObj)
             }
             stacking := stackingGameSpeedTrigger := false
             offlineTrigger := offlineStartZoneUpdate := false
@@ -137,7 +138,8 @@ Class IC_AreaTiming_TimerScript
             ; Mark previous run as finished
             currentRun.EndRun()
             currentRun := g_AT_SharedData.CurrentSession.NewRun()
-            timeObj := new IC_AreaTiming_TimeObjectSimple(currentZone)
+            timeObj.Reset()
+            timeObj.SetAreaStarted(currentZone)
             lastResetCount := g_SF.Memory.ReadResetsCount()
             lastZone := 1
             ; Update formations
@@ -163,9 +165,10 @@ Class IC_AreaTiming_TimerScript
             if (!skipFirstValue && timeObj.StartZone != currentZone)
             {
                 timeObj.SetAreaTransitioned(currentZone)
-                currentRun.AddItem(new IC_AreaTiming_TimeObject(timeObj))
+                currentRun.AddItem(timeObj)
             }
-            timeObj := new IC_AreaTiming_TimeObjectSimple(currentZone)
+            timeObj.Reset()
+            timeObj.SetAreaStarted(currentZone)
             lastZone := currentZone
             areaClearTrigger := false
         }
@@ -185,7 +188,8 @@ Class IC_AreaTiming_TimerScript
                 stacking := true
                 stacksBefore := g_SF.Memory.ReadSBStacks()
                 currentZone := g_SF.Memory.ReadCurrentZone()
-                stacksTimeObj := new IC_AreaTiming_StacksTimeObjectsimpleObj(currentZone)
+                stacksTimeObj.Reset()
+                stacksTimeObj.SetAreaStarted(currentZone)
                 stacksTimeObj.SetAreaComplete()
             }
         }
@@ -232,8 +236,7 @@ Class IC_AreaTiming_TimerScript
                 dStacks := stacksAfter - stacksBefore
                 currentZone := g_SF.Memory.ReadCurrentZone()
                 stacksTimeObj.SetAreaTransitioned(currentZone, dStacks)
-                currentRun.AddStacksItem(new IC_AreaTiming_StacksTimeObject(stacksTimeObj))
-                stacksTimeObj := ""
+                currentRun.AddStacksItem(stacksTimeObj)
             }
         }
         Critical, Off

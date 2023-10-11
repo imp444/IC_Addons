@@ -39,16 +39,17 @@ Class IC_AreaTiming_RunCollection
         VarSetCapacity(items, 0)
     }
 
-    FindItem(items, key)
+    FindItem(run, key)
     {
+        items := run.Items
         low := 1
         high := items.Length()
-        while (low <= high && key >= items[low].Zones && key <= items[high].Zones)
+        while (low <= high && key >= run.GetItemZones(low) && key <= run.GetItemZones(high))
         {
-            pos := low + Floor(((key - items[low].Zones) * (high - low)) / (items[high].Zones - items[low].Zones))
-            if (items[pos].Zones == key)
+            pos := low + Floor(((key - run.GetItemZones(low)) * (high - low)) / (run.GetItemZones(high) - run.GetItemZones(low)))
+            if (run.GetItemZones(pos) == key)
                 return items[pos]
-            if (items[pos].Zones > key)
+            if (run.GetItemZones(pos) > key)
                 high := pos - 1
             else
                 low := pos + 1
@@ -66,10 +67,9 @@ Class IC_AreaTiming_RunCollection
         Loop, % runs.Length()
         {
             run := runs[A_Index]
-            items := run.Items
-            Loop, % items.Length()
+            Loop, % run.Items.Length()
             {
-                key := items[A_Index].Zones
+                key := run.GetItemZones(A_Index)
                 if (!keysObj.HasKey(key))
                     keysObj[key] := ""
             }
@@ -91,10 +91,9 @@ Class IC_AreaTiming_RunCollection
         Loop, % runs.Length()
         {
             run := runs[A_Index]
-            items := run.StackItems
-            Loop, % items.Length()
+            Loop, % run.StackItems.Length()
             {
-                key := items[A_Index].Zones
+                key := run.GetStackItemZones(A_Index)
                 if (!keysObj.HasKey(key))
                     keysObj[key] := ""
             }
@@ -119,18 +118,17 @@ Class IC_AreaTiming_RunCollection
         Loop, % runs.Length()
         {
             run := runs[A_Index]
-            items := run.Items
-            item := this.FindItem(items, key)
+            item := this.FindItem(run, key)
             if (item)
             {
                 ++count
-                sumAreaTime += item.AreaTime
-                sumTransitionTime += item.TransitionTime
-                sumTime += item.TotalTime
+                sumAreaTime += this.GetItemAreaTime(item)
+                sumTransitionTime += this.GetItemTransitionTime(item)
+                sumTime += this.GetItemTotalTime(item)
                 ; Prevent overflow
-                runTime := item.AreaTransitionedTimeStamp - run.StartTime
+                runTime := this.GetItemAreaTransitionedTimeStamp(item) - run.StartTime
                 sumTimeFromStart += runTime
-                sumSpeed += item.GameSpeed
+                sumSpeed += this.GetItemGameSpeed(item)
             }
         }
         ; Return value
@@ -158,11 +156,9 @@ Class IC_AreaTiming_RunCollection
             run := runs[A_Index]
             runID := run.ID
             ; Loop all items
-            items := run.Items
-            Loop, % items.Length()
+            Loop, % run.Items.Length()
             {
-                item := items[A_Index]
-                key := item.Zones
+                key := run.GetItemZones(A_Index)
                 ; New key
                 if (!keysObj.HasKey(key))
                 {
@@ -192,16 +188,14 @@ Class IC_AreaTiming_RunCollection
         {
             run := runs[A_Index]
             ; Loop all items
-            items := run.Items
-            Loop, % items.Length()
+            Loop, % run.Items.Length()
             {
-                item := items[A_Index]
-                if (item.Mod50Zones == key)
+                if (run.GetItemMod50Zones(A_Index) == key)
                 {
                     ++count
-                    sumAreaTime += item.AreaTime
-                    sumTransitionTime += item.TransitionTime
-                    sumTime += item.TotalTime
+                    sumAreaTime += run.GetItemAreaTime(A_Index)
+                    sumTransitionTime += run.GetItemTransitionTime(A_Index)
+                    sumTime += run.GetItemTotalTime(A_Index)
                 }
             }
         }
@@ -230,24 +224,22 @@ Class IC_AreaTiming_RunCollection
         {
             run := runs[A_Index]
             ; Loop all items
-            items := run.Items
-            Loop, % items.Length()
+            Loop, % run.Items.Length()
             {
-                item := items[A_Index]
-                itemStartZone := item.StartZone
-                if (itemStartZone != 1 && item.EndZone != 1 && item.Mod50Zones == key)
+                itemStartZone := run.GetItemStartZone(A_Index)
+                if (itemStartZone != 1 && run.GetItemEndZone(A_Index) != 1 && run.GetItemMod50Zones(A_Index) == key)
                 {
                     ; Exclude stack areas
                     stackItems := run.StackItems
                     Loop, % stackItems.Length()
                     {
-                        if (stackItems[A_Index].StartZone == itemStartZone)
+                        if (run.GetStackItemStartZone(A_Index) == itemStartZone)
                             continue 2
                     }
                     ++count
-                    sumAreaTime += item.AreaTime
-                    sumTransitionTime += item.TransitionTime
-                    sumTime += item.TotalTime
+                    sumAreaTime += run.GetItemAreaTime(A_Index)
+                    sumTransitionTime += run.GetItemTransitionTime(A_Index)
+                    sumTime += run.GetItemTotalTime(A_Index)
                 }
             }
         }
@@ -268,16 +260,14 @@ Class IC_AreaTiming_RunCollection
         Loop, % runs.Length()
         {
             run := runs[A_Index]
-            items := run.StackItems
             ; There can be multiple items for each start/end zones pair.
-            Loop, % items.Length()
+            Loop, % run.StackItems.Length()
             {
-                item := items[A_Index]
-                if (item.Zones == key)
+                if (run.GetStackItemZones(A_Index) == key)
                 {
                     ++count
-                    sumTime += item.TotalTime
-                    sumStacks += item.Stacks
+                    sumTime += run.GetStackItemTotalTime(A_Index)
+                    sumStacks += run.GetStackItemStacks(A_Index)
                 }
             }
         }
@@ -304,8 +294,7 @@ Class IC_AreaTiming_RunCollection
             items := run.StackItems
             Loop, % items.Length()
             {
-                item := items[A_Index]
-                key := item.Zones
+                key := run.GetStackItemZones(A_Index)
                 ; New key
                 if (!keysObj.HasKey(key))
                 {
@@ -313,10 +302,153 @@ Class IC_AreaTiming_RunCollection
                     keys.Push(key)
                     allAverageStacks.Push(this.GetAverageStacksCount(key))
                 }
-                allItems.Push([item, runID])
+                allItems.Push([items[A_Index], runID])
             }
         }
         VarSetCapacity(keysObj, 0)
         return [allItems, allAverageStacks, keys]
+    }
+
+    GetItemStartZone(ptr)
+    {
+        return NumGet(ptr+0, 4, "UShort")
+    }
+
+    GetItemEndZone(ptr)
+    {
+        return NumGet(ptr+0, 2, "UShort")
+    }
+
+    GetItemZones(ptr)
+    {
+        return NumGet(ptr+0, 2, "UInt")
+    }
+
+    GetItemMod50StartZone(ptr)
+    {
+        mod50Start := Mod(this.GetItemStartZone(ptr), 50)
+        mod50Start := mod50Start ? mod50Start : 50
+        return mod50Start
+    }
+
+    GetItemMod50EndZone(ptr)
+    {
+        mod50End := Mod(this.GetItemEndZone(ptr), 50)
+        mod50End := mod50End ? mod50End : 50
+        return mod50End
+    }
+
+    GetItemMod50Zones(ptr)
+    {
+        return (this.GetItemMod50StartZone(ptr) << 16) + this.GetItemMod50EndZone(ptr)
+    }
+
+    GetItemAreaStartTimeStamp(ptr)
+    {
+        return NumGet(ptr+0, 6, "UInt") * 1000 + NumGet(ptr+0, 10, "UShort")
+    }
+
+    GetItemAreaCompleteTimeStamp(ptr)
+    {
+        return NumGet(ptr+0, 12, "UInt") * 1000 + NumGet(ptr+0, 16, "UShort")
+    }
+
+    GetItemAreaTransitionedTimeStamp(ptr)
+    {
+        return NumGet(ptr+0, 18, "UInt") * 1000 + NumGet(ptr+0, 22, "UShort")
+    }
+
+    GetItemAreaTime(ptr)
+    {
+        return this.GetItemAreaCompleteTimeStamp(ptr) - this.GetItemAreaStartTimeStamp(ptr)
+    }
+
+    GetItemTransitionTime(ptr)
+    {
+        return this.GetItemAreaTransitionedTimeStamp(ptr) - this.GetItemAreaCompleteTimeStamp(ptr)
+    }
+
+    GetItemTotalTime(ptr)
+    {
+        return this.GetItemAreaTransitionedTimeStamp(ptr) - this.GetItemAreaStartTimeStamp(ptr)
+    }
+
+    GetItemGameSpeed(ptr)
+    {
+        return NumGet(ptr+0, 24, "Float")
+    }
+
+    GetStackItemStartZone(ptr)
+    {
+        return NumGet(ptr+0, 4, "UShort")
+    }
+
+    GetStackItemEndZone(ptr)
+    {
+        return NumGet(ptr+0, 2, "UShort")
+    }
+
+    GetStackItemZones(ptr)
+    {
+        return NumGet(ptr+0, 2, "UInt")
+    }
+
+    GetStackItemMod50StartZone(ptr)
+    {
+        mod50Start := Mod(this.GetStackItemStartZone(ptr), 50)
+        mod50Start := mod50Start ? mod50Start : 50
+        return mod50Start
+    }
+
+    GetStackItemMod50EndZone(ptr)
+    {
+        mod50End := Mod(this.GetStackItemEndZone(ptr), 50)
+        mod50End := mod50End ? mod50End : 50
+        return mod50End
+    }
+
+    GetStackItemMod50Zones(ptr)
+    {
+        return (this.GetStackItemMod50StartZone(ptr) << 16) + this.GetStackItemMod50EndZone(ptr)
+    }
+
+    GetStackItemAreaStartTimeStamp(ptr)
+    {
+        return NumGet(ptr+0, 6, "UInt") * 1000 + NumGet(ptr+0, 10, "UShort")
+    }
+
+    GetStackItemAreaCompleteTimeStamp(ptr)
+    {
+        return NumGet(ptr+0, 12, "UInt") * 1000 + NumGet(ptr+0, 16, "UShort")
+    }
+
+    GetStackItemAreaTransitionedTimeStamp(ptr)
+    {
+        return NumGet(ptr+0, 18, "UInt") * 1000 + NumGet(ptr+0, 22, "UShort")
+    }
+
+    GetStackItemAreaTime(ptr)
+    {
+        return this.GetStackItemAreaCompleteTimeStamp(ptr) - this.GetStackItemAreaStartTimeStamp(ptr)
+    }
+
+    GetStackItemTransitionTime(ptr)
+    {
+        return this.GetStackItemAreaTransitionedTimeStamp(ptr) - this.GetStackItemAreaCompleteTimeStamp(ptr)
+    }
+
+    GetStackItemTotalTime(ptr)
+    {
+        return this.GetStackItemAreaTransitionedTimeStamp(ptr) - this.GetStackItemAreaStartTimeStamp(ptr)
+    }
+
+    GetStackItemGameSpeed(ptr)
+    {
+        return NumGet(ptr+0, 24, "Float")
+    }
+
+    GetStackItemStacks(ptr)
+    {
+        return NumGet(ptr+0, 28, "UInt")
     }
 }

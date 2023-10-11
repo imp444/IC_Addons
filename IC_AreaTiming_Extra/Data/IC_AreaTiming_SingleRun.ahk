@@ -1,5 +1,4 @@
 #include %A_LineFile%\..\IC_AreaTiming_TimeObject.ahk
-#include %A_LineFile%\..\IC_AreaTiming_TimeObjectSimple.ahk
 
 Class IC_AreaTiming_SingleRun
 {
@@ -12,9 +11,8 @@ Class IC_AreaTiming_SingleRun
     Ended := false
 
     ; Create a new object that contains data for a single run.
-    ; Parameters: - obj:IC_AreaTiming_TimeObject - Time object that contains
-    ;               timestamps for area start, zone clear and transition end.
-    ;               First record.
+    ; Params: - id:int - Run identifier for the session.
+    ;         - session:IC_AreaTiming_RunCollection - Session where the run is being recoded.
     __New(id, session)
     {
         this.StartTime := IC_AreaTiming_TimeObject.GetCurrentMSecTime()
@@ -23,17 +21,197 @@ Class IC_AreaTiming_SingleRun
     }
 
     ; Add a time object to the current run.
-    ; Parameters: - obj:IC_AreaTiming_TimeObject - Time object that contains
-    ;               timestamps for area start, zone clear and transition end.
-    AddItem(obj)
+    ; Params: - obj:IC_AreaTiming_TimeObject - Time object that contains
+    ;           timestamps for area start, zone clear and transition end.
+    AddItem(ByRef obj)
     {
-        this.Items.Push(obj)
         this.CurrentZone := obj.EndZone ? obj.EndZone : obj.StartZone
+        timeStamp := obj.AreaStartTimeStamp
+        VarSetCapacity(buffer%timeStamp%, 28, 0)
+        this.ConvertObjToStruct(obj, buffer%timeStamp%)
+        this.Items.Push(&buffer%timeStamp%)
     }
 
-    AddStacksItem(obj)
+    ; Add a stacks time object to the current run.
+    ; Params: - obj:IC_AreaTiming_StacksTimeObject - Time object that contains
+    ;           timestamps for area start, zone clear and transition end.
+    AddStacksItem(ByRef obj)
     {
-        this.StackItems.Push(obj)
+        timeStamp := obj.AreaStartTimeStamp
+        VarSetCapacity(buffer%timeStamp%, 32, 0)
+        this.ConvertObjToStruct(obj, buffer%timeStamp%, true)
+        this.StackItems.Push(&buffer%timeStamp%)
+    }
+
+    ; Struct - TimeObject: 28 bytes | StacksTimeObject: 32 bytes
+    ; - TimeObject
+    ; ?? - 2 bytes
+    ; Zones:UInt - 4 bytes (Max area = 65535)
+    ; AreaStartTimeStamp:UInt+UShort - 6 bytes
+    ; AreaCompleteTimeStamp:UInt+UShort - 6 bytes
+    ; AreaTransitionedTimeStamp:UInt+UShort - 6 bytes
+    ; GameSpeed:Float - 4 bytes
+    ; - StacksTimeObject
+    ; Stacks:UInt - 4 bytes
+    ConvertObjToStruct(ByRef obj, ByRef buffer, isStackItem := false)
+    {
+        NumPut(obj.EndZone, buffer, 2, "UShort")
+        NumPut(obj.StartZone, buffer, 4, "UShort")
+        timestamp := obj.GetSplittedTimeStamp(obj.AreaStartTimeStamp)
+        NumPut(timestamp[1], buffer, 6, "UInt")
+        NumPut(timestamp[2], buffer, 10, "UShort")
+        timestamp := obj.GetSplittedTimeStamp(obj.AreaCompleteTimeStamp)
+        NumPut(timestamp[1], buffer, 12, "UInt")
+        NumPut(timestamp[2], buffer, 16, "UShort")
+        timestamp := obj.GetSplittedTimeStamp(obj.AreaTransitionedTimeStamp)
+        NumPut(timestamp[1], buffer, 18, "UInt")
+        NumPut(timestamp[2], buffer, 22, "UShort")
+        NumPut(obj.GameSpeed, buffer, 24, "Float")
+        if (isStackItem)
+            NumPut(obj.Stacks, buffer, 28, "UInt")
+    }
+
+    GetItemStartZone(index)
+    {
+        return NumGet(this.Items[index], 4, "UShort")
+    }
+
+    GetItemEndZone(index)
+    {
+        return NumGet(this.Items[index], 2, "UShort")
+    }
+
+    GetItemZones(index)
+    {
+        return NumGet(this.Items[index], 2, "UInt")
+    }
+
+    GetItemMod50StartZone(index)
+    {
+        mod50Start := Mod(this.GetItemStartZone(index), 50)
+        mod50Start := mod50Start ? mod50Start : 50
+        return mod50Start
+    }
+
+    GetItemMod50EndZone(index)
+    {
+        mod50End := Mod(this.GetItemEndZone(index), 50)
+        mod50End := mod50End ? mod50End : 50
+        return mod50End
+    }
+
+    GetItemMod50Zones(index)
+    {
+        return (this.GetItemMod50StartZone(index) << 16) + this.GetItemMod50EndZone(index)
+    }
+
+    GetItemAreaStartTimeStamp(index)
+    {
+        return NumGet(this.Items[index], 6, "UInt") * 1000 + NumGet(this.Items[index], 10, "UShort")
+    }
+
+    GetItemAreaCompleteTimeStamp(index)
+    {
+        return NumGet(this.Items[index], 12, "UInt") * 1000 + NumGet(this.Items[index], 16, "UShort")
+    }
+
+    GetItemAreaTransitionedTimeStamp(index)
+    {
+        return NumGet(this.Items[index], 18, "UInt") * 1000 + NumGet(this.Items[index], 22, "UShort")
+    }
+
+    GetItemAreaTime(index)
+    {
+        return this.GetItemAreaCompleteTimeStamp(index) - this.GetItemAreaStartTimeStamp(index)
+    }
+
+    GetItemTransitionTime(index)
+    {
+        return this.GetItemAreaTransitionedTimeStamp(index) - this.GetItemAreaCompleteTimeStamp(index)
+    }
+
+    GetItemTotalTime(index)
+    {
+        return this.GetItemAreaTransitionedTimeStamp(index) - this.GetItemAreaStartTimeStamp(index)
+    }
+
+    GetItemGameSpeed(index)
+    {
+        return NumGet(this.Items[index], 24, "Float")
+    }
+
+    GetStackItemStartZone(index)
+    {
+        return NumGet(this.StackItems[index], 4, "UShort")
+    }
+
+    GetStackItemEndZone(index)
+    {
+        return NumGet(this.StackItems[index], 2, "UShort")
+    }
+
+    GetStackItemZones(index)
+    {
+        return NumGet(this.StackItems[index], 2, "UInt")
+    }
+
+    GetStackItemMod50StartZone(index)
+    {
+        mod50Start := Mod(this.GetStackItemStartZone(index), 50)
+        mod50Start := mod50Start ? mod50Start : 50
+        return mod50Start
+    }
+
+    GetStackItemMod50EndZone(index)
+    {
+        mod50End := Mod(this.GetStackItemEndZone(index), 50)
+        mod50End := mod50End ? mod50End : 50
+        return mod50End
+    }
+
+    GetStackItemMod50Zones(index)
+    {
+        return (this.GetStackItemMod50StartZone(index) << 16) + this.GetStackItemMod50EndZone(index)
+    }
+
+    GetStackItemAreaStartTimeStamp(index)
+    {
+        return NumGet(this.StackItems[index], 6, "UInt") * 1000 + NumGet(this.StackItems[index], 10, "UShort")
+    }
+
+    GetStackItemAreaCompleteTimeStamp(index)
+    {
+        return NumGet(this.StackItems[index], 12, "UInt") * 1000 + NumGet(this.StackItems[index], 16, "UShort")
+    }
+
+    GetStackItemAreaTransitionedTimeStamp(index)
+    {
+        return NumGet(this.StackItems[index], 18, "UInt") * 1000 + NumGet(this.StackItems[index], 22, "UShort")
+    }
+
+    GetStackItemAreaTime(index)
+    {
+        return this.GetStackItemAreaCompleteTimeStamp(index) - this.GetStackItemAreaStartTimeStamp(index)
+    }
+
+    GetStackItemTransitionTime(index)
+    {
+        return this.GetStackItemAreaTransitionedTimeStamp(index) - this.GetStackItemAreaCompleteTimeStamp(index)
+    }
+
+    GetStackItemTotalTime(index)
+    {
+        return this.GetStackItemAreaTransitionedTimeStamp(index) - this.GetStackItemAreaStartTimeStamp(index)
+    }
+
+    GetStackItemGameSpeed(index)
+    {
+        return NumGet(this.StackItems[index], 24, "Float")
+    }
+
+    GetStackItemStacks(index)
+    {
+        return NumGet(this.StackItems[index], 28, "UInt")
     }
 
     ; Dispose of all timeObjects.

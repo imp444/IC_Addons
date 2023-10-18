@@ -600,6 +600,7 @@ Class IC_AreaTiming_GUI
         GuiControl, ICScriptHub:%value%, AT_SelectRunID
         GuiControl, ICScriptHub:%value%, AT_SelectRunUpDown
         GuiControl, ICScriptHub:%value%, AreaTimingUncappedSpeed
+        GuiControl, ICScriptHub:%value%, AT_ExcludeMod50Outliers
     }
 
     ; Update the text shown next to the "select session" DDL.

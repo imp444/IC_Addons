@@ -8,6 +8,10 @@ Class IC_AreaTiming_RunCollection
     CurrentRun := ""
     ; Higher that that and read/write operations become much slower.
     MaxRuns := 4000
+    ; Cached totals
+    Totals := {}
+    TotalsMod50 := {}
+    TotalsStack := {}
 
     __New(id)
     {
@@ -39,7 +43,54 @@ Class IC_AreaTiming_RunCollection
         VarSetCapacity(items, 0)
     }
 
-    FindItem(run, key)
+    ; Update cached totals for all items.
+    UpdateTotals(run, ptr)
+    {
+        totals := this.Totals
+        key := this.GetItemZones(ptr)
+        if (!totals.HasKey(key))
+            totals[key] := [0, 0, 0, 0, 0, 0]
+        arr := totals[key]
+        arr[1] += 1
+        arr[2] += this.GetItemAreaTime(ptr)
+        arr[3] += this.GetItemTransitionTime(ptr)
+        arr[4] += this.GetItemTotalTime(ptr)
+        ; Prevent overflow
+        runTime := this.GetItemAreaTransitionedTimeStamp(ptr) - run.StartTime
+        arr[5] += runTime
+        arr[6] += this.GetItemGameSpeed(ptr)
+        ; Mod50
+        mod50Totals:= this.TotalsMod50
+        key := this.GetItemMod50Zones(ptr)
+        if (!mod50Totals.HasKey(key))
+            mod50Totals[key] := [0, 0, 0, 0, 0, 0]
+        arr := mod50Totals[key]
+        arr[1] += 1
+        arr[2] += this.GetItemAreaTime(ptr)
+        arr[3] += this.GetItemTransitionTime(ptr)
+        arr[4] += this.GetItemTotalTime(ptr)
+    }
+
+    ; Update cached totals for all stack items.
+    UpdateTotalsStack(run, ptr)
+    {
+        totals := this.TotalsStack
+        key := this.GetStackItemZones(ptr)
+        if (!totals.HasKey(key))
+            totals[key] := [0, 0, 0, 0, 0, 0, 0]
+        arr := totals[key]
+        arr[1] += 1
+        arr[2] += this.GetStackItemAreaTime(ptr)
+        arr[3] += this.GetStackItemTransitionTime(ptr)
+        arr[4] += this.GetStackItemTotalTime(ptr)
+        ; Prevent overflow
+        runTime := this.GetStackItemAreaTransitionedTimeStamp(ptr) - run.StartTime
+        arr[5] += runTime
+        arr[6] += this.GetStackItemGameSpeed(ptr)
+        arr[7] += this.GetStackItemStacks(ptr)
+    }
+
+    FindItemFromZones(run, key)
     {
         items := run.Items
         low := 1
@@ -57,8 +108,26 @@ Class IC_AreaTiming_RunCollection
         return ""
     }
 
+    FindItemFromStartZone(run, key)
+    {
+        items := run.Items
+        low := 1
+        high := items.Length()
+        while (low <= high && key >= run.GetItemStartZone(low) && key <= run.GetItemStartZone(high))
+        {
+            pos := low + Floor(((key - run.GetItemStartZone(low)) * (high - low)) / (run.GetItemStartZone(high) - run.GetItemStartZone(low)))
+            if (run.GetItemStartZone(pos) == key)
+                return items[pos]
+            if (run.GetItemStartZone(pos) > key)
+                high := pos - 1
+            else
+                low := pos + 1
+        }
+        return ""
+    }
+
     ; Get all unique IC_AreaTiming_TimeObject.Zones keys from all runs.
-    ; Returns: - arary:keys - All keys (IC_AreaTiming_TimeObject.Zones).
+    ; Returns: - array - All keys (IC_AreaTiming_TimeObject.Zones).
     GetAllItemKeys()
     {
         keys := []
@@ -82,7 +151,7 @@ Class IC_AreaTiming_RunCollection
     }
 
     ; Get all unique IC_AreaTiming_StacksTimeObject.Zones keys from all runs.
-    ; Returns: - arary:keys - All keys (IC_AreaTiming_StacksTimeObject.Zones).
+    ; Returns: - array:keys - All keys (IC_AreaTiming_StacksTimeObject.Zones).
     GetAllStackItemKeys()
     {
         keys := []
@@ -105,84 +174,60 @@ Class IC_AreaTiming_RunCollection
         return keys
     }
 
-    GetAverageCount(key)
+    ; Get total stats from all runs.
+    ; Params: - key:int - IC_AreaTiming_TimeObject.Zones.
+    GetTotals(key)
     {
-        count := 0
-        sumAreaTime := 0
-        sumTransitionTime := 0
-        sumTime := 0
-        sumTimeFromStart := 0
-        sumSpeed := 0
-        runs := this.Runs
-        ; Loop all runs
-        Loop, % runs.Length()
-        {
-            run := runs[A_Index]
-            item := this.FindItem(run, key)
-            if (item)
-            {
-                ++count
-                sumAreaTime += this.GetItemAreaTime(item)
-                sumTransitionTime += this.GetItemTransitionTime(item)
-                sumTime += this.GetItemTotalTime(item)
-                ; Prevent overflow
-                runTime := this.GetItemAreaTransitionedTimeStamp(item) - run.StartTime
-                sumTimeFromStart += runTime
-                sumSpeed += this.GetItemGameSpeed(item)
-            }
-        }
-        ; Return value
-        arr := [count]
-        arr.Push(sumAreaTime / count)
-        arr.Push(sumTransitionTime / count)
-        arr.Push(sumTime / count)
-        arr.Push(sumTimeFromStart / count)
-        arr.Push(sumSpeed / count)
-        return arr
+        return this.Totals[key]
     }
 
-    ; Get average stats from all runs.
-    ; Returns: - arr: allAverage - All object data.
-    ;                 keys - All allAverage keys (IC_AreaTiming_TimeObject.Zones)
-    GetAllAverageCount()
+    ; Get total stats from all runs.
+    ; Params: - run:IC_AreaTiming_SingleRun - Get key/values in <run> only.
+    ; Returns: - array: keys - All allTotals keys (IC_AreaTiming_TimeObject.Zones)
+    ;                   allTotals - All object data.
+    GetAllTotals(run := "")
     {
-        allAverage := []
+        allTotals := []
         keys := []
-        keysObj := {}
-        ; Loop all runs
-        runs := this.Runs
-        Loop, % runs.Length()
+        if (IsObject(run))
         {
-            run := runs[A_Index]
-            runID := run.ID
-            ; Loop all items
-            Loop, % run.Items.Length()
+            totals := this.Totals
+            for k, v in run.Items
             {
-                key := run.GetItemZones(A_Index)
-                ; New key
-                if (!keysObj.HasKey(key))
+                key := this.GetItemZones(v)
+                if (totals.Haskey(key))
                 {
-                    keysObj[key] := ""
                     keys.Push(key)
-                    allAverage.Push(this.GetAverageCount(key))
+                    allTotals.Push(totals[key])
                 }
             }
         }
-        VarSetCapacity(keysObj, 0)
-        return [allAverage, keys]
+        else
+        {
+            for k, v in this.Totals
+            {
+                keys.Push(k)
+                allTotals.Push(v)
+            }
+        }
+        ; Return value
+        return [keys, allTotals]
     }
 
     ; Get average mod50 stats from all runs.
     ; Params: key:int - IC_AreaTiming_TimeObject.Mod50Zones.
     ;         runs:array - List of runs, default to all runs from this session.
     ; Returns: - arr:array - All mod50 average data.
-    GetAverageMod50Count(key, runs := "")
+    GetTotalsMod50(key, runs := "", excludeOutliers := false)
     {
+        if (excludeOutliers)
+            return this.GetTotalsMod50Ex(key, runs)
+        if (!IsObject(runs))
+            return this.TotalsMod50[key]
         count := 0
         sumAreaTime := 0
         sumTransitionTime := 0
         sumTime := 0
-        runs := runs == "" ? this.Runs : runs
         ; Loop all runs
         Loop, % runs.Length()
         {
@@ -200,11 +245,7 @@ Class IC_AreaTiming_RunCollection
             }
         }
         ; Return value
-        arr := [count]
-        arr.Push(sumAreaTime / count)
-        arr.Push(sumTransitionTime / count)
-        arr.Push(sumTime / count)
-        return arr
+        return [count, sumAreaTime, sumTransitionTime, sumTime]
     }
 
     ; Get average mod50 stats from all runs.
@@ -212,101 +253,80 @@ Class IC_AreaTiming_RunCollection
     ; Params: key:int - IC_AreaTiming_TimeObject.Mod50Zones.
     ;         runs:array - List of runs, default to all runs from this session.
     ; Returns: - arr:array - All mod50 average data.
-    GetAverageMod50CountEx(key, runs := "")
+    GetTotalsMod50Ex(key, runs := "")
     {
-        count := 0
-        sumAreaTime := 0
-        sumTransitionTime := 0
-        sumTime := 0
-        runs := runs == "" ? this.Runs : runs
+        totals := this.GetTotalsMod50(key, runs)
+        runs := IsObject(runs) ? runs : this.Runs
+        count := totals[1]
+        sumAreaTime := totals[2]
+        sumTransitionTime := totals[3]
+        sumTime := totals[4]
         ; Loop all runs
         Loop, % runs.Length()
         {
             run := runs[A_Index]
-            ; Loop all items
-            Loop, % run.Items.Length()
+            ; Exclude start area
+            if (run.GetItemStartZone(1) == 1 && run.GetItemMod50Zones(1) == key)
             {
-                itemStartZone := run.GetItemStartZone(A_Index)
-                if (itemStartZone != 1 && run.GetItemEndZone(A_Index) != 1 && run.GetItemMod50Zones(A_Index) == key)
-                {
-                    ; Exclude stack areas
-                    stackItems := run.StackItems
-                    Loop, % stackItems.Length()
-                    {
-                        if (run.GetStackItemStartZone(A_Index) == itemStartZone)
-                            continue 2
-                    }
-                    ++count
-                    sumAreaTime += run.GetItemAreaTime(A_Index)
-                    sumTransitionTime += run.GetItemTransitionTime(A_Index)
-                    sumTime += run.GetItemTotalTime(A_Index)
-                }
+                --count
+                sumAreaTime -= run.GetItemAreaTime(1)
+                sumTransitionTime -= run.GetItemTransitionTime(1)
+                sumTime -= run.GetItemTotalTime(1)
             }
-        }
-        ; Return value
-        arr := [count]
-        arr.Push(sumAreaTime / count)
-        arr.Push(sumTransitionTime / count)
-        arr.Push(sumTime / count)
-        return arr
-    }
-
-    GetAverageStacksCount(key)
-    {
-        count := 0
-        sumTime := 0
-        sumStacks := 0
-        runs := this.Runs
-        Loop, % runs.Length()
-        {
-            run := runs[A_Index]
-            ; There can be multiple items for each start/end zones pair.
+            ; Exclude reset area
+            maxIndex :=  run.Items.Length()
+            if (run.GetItemEndZone(maxIndex) == 1 && run.GetItemMod50Zones(maxIndex) == key)
+            {
+                --count
+                sumAreaTime -= run.GetItemAreaTime(maxIndex)
+                sumTransitionTime -= run.GetItemTransitionTime(maxIndex)
+                sumTime -= run.GetItemTotalTime(maxIndex)
+            }
+            ; Exclude stack areas
+            stackKeys := {}
             Loop, % run.StackItems.Length()
             {
-                if (run.GetStackItemZones(A_Index) == key)
+                itemStartZone := run.GetStackItemStartZone(A_Index)
+                if (!stackKeys.HasKey(itemStartZone))
                 {
-                    ++count
-                    sumTime += run.GetStackItemTotalTime(A_Index)
-                    sumStacks += run.GetStackItemStacks(A_Index)
+                    stackKeys[itemStartZone] := ""
+                    ptr := this.FindItemFromStartZone(run, itemStartZone)
+                    if (ptr && this.GetItemMod50Zones(ptr) == key)
+                    {
+                        --count
+                        sumAreaTime -= this.GetItemAreaTime(ptr)
+                        sumTransitionTime -= this.GetItemTransitionTime(ptr)
+                        sumTime -= this.GetItemTotalTime(ptr)
+                    }
                 }
             }
         }
-        return [sumTime / count, sumStacks / count, count]
+        VarSetCapacity(stackKeys, 0)
+        ; Return value
+        return [count, sumAreaTime, sumTransitionTime, sumTime]
     }
 
-    ; Get average stack stats from all runs.
-    ; Returns: - arr: allItems - All IC_AreaTiming_StacksTimeObject objects.
-    ;                 allAverageStacks - All stack object data.
-    ;                 keys - All allAverageStacks keys (IC_AreaTiming_StacksTimeObject.Zones)
-    GetAllAverageStacks()
+    ; Get total stack stats from all runs.
+    ; Params: key:int - IC_AreaTiming_StackTimeObject.Zones.
+    GetTotalsStack(key)
     {
-        allItems := []
-        allAverageStacks := []
+        return this.TotalsStack[key]
+    }
+
+    ; Get total stack stats from all runs.
+    ; Returns: - arr: keys - All allTotals keys (IC_AreaTiming_StackTimeObject.Zones)
+    ;                 allTotals - All object data.
+    GetAllTotalsStack()
+    {
+        allTotals := []
         keys := []
-        keysObj := {}
-        ; Loop all runs
-        runs := this.Runs
-        Loop, % runs.Length()
+        for k, v in this.TotalsStack
         {
-            run := runs[A_Index]
-            runID := run.ID
-            ; Loop all stack items
-            items := run.StackItems
-            Loop, % items.Length()
-            {
-                key := run.GetStackItemZones(A_Index)
-                ; New key
-                if (!keysObj.HasKey(key))
-                {
-                    keysObj[key] := ""
-                    keys.Push(key)
-                    allAverageStacks.Push(this.GetAverageStacksCount(key))
-                }
-                allItems.Push([items[A_Index], runID])
-            }
+            keys.Push(k)
+            allTotals.Push(v)
         }
-        VarSetCapacity(keysObj, 0)
-        return [allItems, allAverageStacks, keys]
+        ; Return value
+        return [keys, allTotals]
     }
 
     GetItemStartZone(ptr)

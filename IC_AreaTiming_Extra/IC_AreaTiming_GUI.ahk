@@ -395,6 +395,33 @@ Class IC_AreaTiming_GUI
         GuiControl, ICScriptHub:%showSetting%, AreaTimingUncappedSpeed
     }
 
+    ; Update ListView contents.
+    ; Params: - controlID:str - Name of the ListView's control variable.
+    ;         - data:arr - Array that contains data for all rows.
+    ;           Every row should contain one or multiple values in an array.
+    ;         - isAll:bool - True if showing data from all runs.
+    UpdateListView(controlID, data, isAll)
+    {
+        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", controlID)
+        LV_Delete()
+        if (controlID == "AreaTimingView")
+            this.BuildAreaTimingView(isAll)
+        else if (controlID == "ModAreaTimingView")
+            this.BuildModAreaTimingView(isAll)
+        else if (controlID == "StacksAreaTimingView")
+            this.BuildStacksAreaTimingView(isAll)
+        else
+            return
+        ; Add rows
+        Loop, % data.Length()
+            LV_Add(, data[A_Index]*)
+        ; Resize columns
+        Loop % LV_GetCount("Col")
+            LV_ModifyCol(A_Index, "AutoHdr")
+        if (controlID == "StacksAreaTimingView")
+            LV_ModifyCol(1, "Sort")
+    }
+
     ; Resize ListViews up to the maximum size of ICScriptHub's main tab.
     ; Params: - controlID:str - Name of the ListView's control variable.
     ResizeView(controlID)

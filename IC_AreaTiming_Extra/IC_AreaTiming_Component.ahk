@@ -13,6 +13,7 @@ global g_AreaTiming := new IC_AreaTiming_Component
 Class IC_AreaTiming_Component
 {
     static SettingsPath := A_LineFile . "\..\AreaTiming_Settings.json"
+    static CAPPED_GAMESPEED := 10
 
     Settings := ""
     TimerFunctions := ""
@@ -502,7 +503,7 @@ Class IC_AreaTiming_Component
     GetFormattedTimeStamp(timestamp)
     {
         mSec := Mod(timestamp, 1000)
-        unixTime := Round((timestamp - mSec)/ 1000)
+        unixTime := Round((timestamp - mSec) / 1000)
         time := this.UnixToUTC(unixTime)
         FormatTime, timeStrDate, % time, ShortDate
         FormatTime, timeStrHHmmss, % time, HH:mm:ss
@@ -606,7 +607,7 @@ Class IC_AreaTiming_Component
                 this.Run := ""
                 this.LastSelectRunText := "All"
                 g_AreaTimingGui.UpdateSelectRunText("-", runCount)
-                this.UpdateRunGUIAll(session)
+                this.UpdateRunGUI(session)
                 this.UpdateStacksGUI(session)
                 return g_AreaTimingGui.ToggleSelection(true)
             }
@@ -658,199 +659,175 @@ Class IC_AreaTiming_Component
 
     ; Function that updates the AreaTiming GUI.
     ; Area|Next|T_area|T_tran|T_time|AvgT_area|AvgT_tran|AvgT_time|T_run|AvgT_run|Count|Game speed|AvgGame speed
-    UpdateRunGUI(session, run)
+    ; Area|Next|AvgT_area|AvgT_tran|AvgT_time|AvgT_run|CountGame speed|AvgGame speed (All)
+    UpdateRunGUI(session, run := "")
     {
-        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "AreaTimingView")
-        LV_Delete()
-        g_AreaTimingGui.BuildAreaTimingView()
+        data := []
+        isAll := !IsObject(run)
         mod50Vals := {}
-        runTime := 0
-        uncapped := this.Settings.ShowUncappedGameSpeed
-        items := run.Items
-        Loop, % items.Length()
+        if (isAll)
         {
-            area := run.GetItemStartZone(A_Index)
-            next := run.GetItemEndZone(A_Index)
-            areaTime := Round(run.GetItemAreaTime(A_Index) / 1000, 2)
-            transitionTime := Round(run.GetItemTransitionTime(A_Index) / 1000, 2)
-            time := Round(run.GetItemTotalTime(A_Index) / 1000, 2)
-            runTime += run.GetItemTotalTime(A_Index)
-            runTimeRounded := Round(runTime / 1000, 2)
-            ; Average
-            avgCount := session.GetAverageCount(run.GetItemZones(A_Index))
-            count := avgCount[1]
-            avgAreaTime := Round(avgCount[2] / 1000, 2)
-            avgTransitionTime := Round(avgCount[3] / 1000, 2)
-            avgTime := Round(avgCount[4] / 1000, 2)
-            avgRunTime := Round(avgCount[5] / 1000, 2)
-            ; Capped game speed = 10x
-            gameSpeed := run.GetItemGameSpeed(A_Index)
-            gameSpeedRounded := uncapped ? Round(gameSpeed, 3) : Round(Min(gameSpeed, 10), 3)
-            avgGameSpeed := avgCount[6]
-            avgGameSpeedRounded := uncapped ? Round(avgGameSpeed, 3) : Round(Min(avgGameSpeed, 10), 3)
-            ; Mod50
-            mod50Key := run.GetItemMod50Zones(A_Index)
-            if (!mod50Vals.HasKey(mod50Key))
-                mod50Vals[mod50Key] := []
-            mod50Vals[mod50Key].Push(items[A_Index])
-            LV_Add(, area, next, areaTime, transitionTime, time, avgAreaTime, avgTransitionTime, avgTime, runTimeRounded, avgRunTime, count, gameSpeedRounded, avgGameSpeedRounded)
+            totals := session.GetAllTotals()
+            keys := totals[1]
+            items := totals[2]
+            Loop, % keys.Length()
+            {
+                key := keys[A_Index]
+                area := key >> 16
+                next := key & 0xFFFF
+                ; Average
+                total := items[A_Index]
+                count := total[1]
+                avgAreaTime := this.FormatMilliSToS(total[2] / count)
+                avgTransitionTime := this.FormatMilliSToS(total[3] / count)
+                avgTime := this.FormatMilliSToS(total[4] / count)
+                avgRunTime := this.FormatMilliSToS(total[5] / count)
+                avgGameSpeed := this.FormatGameSpeed(total[6] / count)
+                ; Mod50
+                obj := new IC_AreaTiming_TimeObject
+                obj.SetAreaStarted(area)
+                obj.SetAreaTransitioned(next)
+                mod50Key := obj.Mod50Zones
+                if (!mod50Vals.HasKey(mod50Key))
+                    mod50Vals[mod50Key] := obj
+                data.Push([ area, next, avgAreaTime, avgTransitionTime, avgTime, avgRunTime, count, avgGameSpeed])
+            }
         }
-        ; Resize columns
-        Loop % LV_GetCount("Col")
-            LV_ModifyCol(A_Index, "AutoHdr")
-        this.UpdateMod50GUI(session, run, mod50Vals)
-    }
-
-    ; Function that updates the AreaTiming GUI (all runs).
-    ; Area|Next|AvgT_area|AvgT_tran|AvgT_time|AvgT_run|CountGame speed|AvgGame speed
-    UpdateRunGUIAll(session)
-    {
-        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "AreaTimingView")
-        LV_Delete()
-        g_AreaTimingGui.BuildAreaTimingView(true)
-        mod50Vals := {}
-        uncapped := this.Settings.ShowUncappedGameSpeed
-        keys := session.GetAllItemKeys()
-        Loop, % keys.Length()
+        else
         {
-            key := keys[A_Index]
-            area := key >> 16
-            next := key & 0xFFFF
-            ; Average
-            avgCount := session.GetAverageCount(key)
-            count := avgCount[1]
-            avgAreaTime := Round(avgCount[2] / 1000, 2)
-            avgTransitionTime := Round(avgCount[3] / 1000, 2)
-            avgTime := Round(avgCount[4] / 1000, 2)
-            avgRunTime := Round(avgCount[5] / 1000, 2)
-            ; Capped game speed = 10x
-            avgGameSpeed := avgCount[6]
-            avgGameSpeedRounded := uncapped ? Round(avgGameSpeed, 3) : Round(Min(avgGameSpeed, 10), 3)
-            ; Mod50
-            obj := new IC_AreaTiming_TimeObject
-            obj.SetAreaStarted(area)
-            obj.SetAreaTransitioned(next)
-            mod50Key:= obj.Mod50Zones
-            if (!mod50Vals.HasKey(mod50Key))
-                mod50Vals[mod50Key] := obj
-            LV_Add(, area, next, avgAreaTime, avgTransitionTime, avgTime, avgRunTime, count, avgGameSpeedRounded)
+            totals := session.GetAllTotals(run)
+            keys := totals[1]
+            items := totals[2]
+            runTime := 0
+            runItems := run.Items
+            Loop, % items.Length()
+            {
+                key := keys[A_Index]
+                area := key >> 16
+                next := key & 0xFFFF
+                areaTime := this.FormatMilliSToS(run.GetItemAreaTime(A_Index))
+                transitionTime := this.FormatMilliSToS(run.GetItemTransitionTime(A_Index))
+                time := this.FormatMilliSToS(run.GetItemTotalTime(A_Index))
+                runTime += run.GetItemTotalTime(A_Index)
+                runTimeRounded := this.FormatMilliSToS(runTime)
+                gameSpeed := this.FormatGameSpeed(run.GetItemGameSpeed(A_Index))
+                ; Average
+                total := items[A_Index]
+                count := total[1]
+                avgAreaTime := this.FormatMilliSToS(total[2] / count)
+                avgTransitionTime := this.FormatMilliSToS(total[3] / count)
+                avgTime := this.FormatMilliSToS(total[4] / count)
+                avgRunTime := this.FormatMilliSToS(total[5] / count)
+                avgGameSpeed := this.FormatGameSpeed(total[6] / count)
+                ; Mod50
+                obj := new IC_AreaTiming_TimeObject
+                obj.SetAreaStarted(area)
+                obj.SetAreaTransitioned(next)
+                mod50Key := obj.Mod50Zones
+                if (!mod50Vals.HasKey(mod50Key))
+                    mod50Vals[mod50Key] := []
+                mod50Vals[mod50Key].Push(runItems[A_Index])
+                data.Push([ area, next, areaTime, transitionTime, time, avgAreaTime, avgTransitionTime, avgTime, runTimeRounded, avgRunTime, count, gameSpeed, avgGameSpeed])
+            }
         }
-        ; Resize columns
-        Loop % LV_GetCount("Col")
-            LV_ModifyCol(A_Index, "AutoHdr")
-        this.UpdateMod50GUIAll(session, mod50Vals)
+        g_AreaTimingGui.UpdateListView("AreaTimingView", data, isAll)
+        this.UpdateMod50GUI(session, isAll ? "" : run, mod50Vals)
     }
 
     ; Function that updates the AreaTiming Mod50 GUI.
     ; Area|Next|T_area|T_tran|T_time|AvgT_area|AvgT_tran|AvgT_time|Count
-    UpdateMod50GUI(session, run, mod50Vals)
+    ; Area|Next|AvgT_area|AvgT_tran|AvgT_time|Count (All)
+    UpdateMod50GUI(session, run := "", mod50Vals := "")
     {
-        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ModAreaTimingView")
-        LV_Delete()
-        g_AreaTimingGui.BuildModAreaTimingView()
+        data := []
+        isAll := !IsObject(run)
         excludeOutliers := this.Settings.ExcludeMod50Outliers
         for k, v in mod50Vals
         {
-            area := session.GetItemMod50StartZone(v[1])
-            next := session.GetItemMod50EndZone(v[1])
-            ; Run average
-            avgCount := excludeOutliers ? session.GetAverageMod50CountEx(session.GetItemMod50Zones(v[1]), [run]) : session.GetAverageMod50Count(session.GetItemMod50Zones(v[1]), [run])
-            countRun := avgCount[1]
-            areaTime := Round(avgCount[2] / 1000, 2)
-            transitionTime := Round(avgCount[3] / 1000, 2)
-            time := Round(avgCount[4] / 1000, 2)
-            ; Session average
-            avgCount := excludeOutliers ? session.GetAverageMod50CountEx(session.GetItemMod50Zones(v[1])) : session.GetAverageMod50Count(session.GetItemMod50Zones(v[1]))
-            count := avgCount[1]
-            avgAreaTime := Round(avgCount[2] / 1000, 2)
-            avgTransitionTime := Round(avgCount[3] / 1000, 2)
-            avgTime := Round(avgCount[4] / 1000, 2)
-            LV_Add(, area, next, areaTime, transitionTime, time, countRun, avgAreaTime, avgTransitionTime, avgTime, count)
+            if (isAll)
+            {
+                area := v.Mod50StartZone
+                next := v.Mod50EndZone
+                ; Average
+                totals := session.GetTotalsMod50(v.Mod50Zones,, excludeOutliers)
+                count := totals[1]
+                if (count == 0)
+                    continue
+                avgAreaTime := this.FormatMilliSToS(totals[2] / count)
+                avgTransitionTime := this.FormatMilliSToS(totals[3] / count)
+                avgTime := this.FormatMilliSToS(totals[4] / count)
+                data.Push([area, next, avgAreaTime, avgTransitionTime, avgTime, count])
+            }
+            else
+            {
+                area := session.GetItemMod50StartZone(v[1])
+                next := session.GetItemMod50EndZone(v[1])
+                ; Run average
+                totals := session.GetTotalsMod50(session.GetItemMod50Zones(v[1]), [run], excludeOutliers)
+                countRun := totals[1]
+                if (countRun == 0)
+                    continue
+                areaTime := this.FormatMilliSToS(totals[2] / countRun)
+                transitionTime := this.FormatMilliSToS(totals[3] / countRun)
+                time := this.FormatMilliSToS(totals[4] / countRun)
+                ; Session average
+                totals := session.GetTotalsMod50(session.GetItemMod50Zones(v[1]),, excludeOutliers)
+                count := totals[1]
+                avgAreaTime := this.FormatMilliSToS(totals[2] / count)
+                avgTransitionTime := this.FormatMilliSToS(totals[3] / count)
+                avgTime := this.FormatMilliSToS(totals[4] / count)
+                data.Push([area, next, areaTime, transitionTime, time, countRun, avgAreaTime, avgTransitionTime, avgTime, count])
+            }
         }
-        ; Resize columns
-        Loop % LV_GetCount("Col")
-            LV_ModifyCol(A_Index, "AutoHdr")
-        LV_ModifyCol(1, "Sort")
-    }
-
-    ; Function that updates the AreaTiming Mod50 GUI (all runs).
-    ; Area|Next|AvgT_area|AvgT_tran|AvgT_time|Count
-    UpdateMod50GUIAll(session, mod50Vals)
-    {
-        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "ModAreaTimingView")
-        LV_Delete()
-        g_AreaTimingGui.BuildModAreaTimingView(true)
-        excludeOutliers := this.Settings.ExcludeMod50Outliers
-        for k, v in mod50Vals
-        {
-            area := v.Mod50StartZone
-            next := v.Mod50EndZone
-            ; Average
-            avgCount := excludeOutliers ? session.GetAverageMod50CountEx(v.Mod50Zones) : session.GetAverageMod50Count(v.Mod50Zones)
-            avgAreaTime := Round(avgCount[2] / 1000, 2)
-            avgTransitionTime := Round(avgCount[3] / 1000, 2)
-            avgTime := Round(avgCount[4] / 1000, 2)
-            LV_Add(, area, next, avgAreaTime, avgTransitionTime, avgTime, avgCount[1])
-        }
-        ; Resize columns
-        Loop % LV_GetCount("Col")
-            LV_ModifyCol(A_Index, "AutoHdr")
-        LV_ModifyCol(1, "Sort")
+        g_AreaTimingGui.UpdateListView("ModAreaTimingView", data, isAll)
     }
 
     ; Function that updates the AreaTiming Stacks GUI.
     ; Area|Next|T_time|AvgT_Time|Stacks|AvgStacks|Count|Stacks/s|AvgStacks/s|Jumps/s|AvgJumps/s|Game speed
-    ; Run ID|Area|Next|T_time|AvgT_Time|Stacks|AvgStacks|Count|Stacks/s|AvgStacks/s|Jumps/s|AvgJumps/s|Game speed
+    ; Run ID|Area|Next|T_time|AvgT_Time|Stacks|AvgStacks|Count|Stacks/s|AvgStacks/s|Jumps/s|AvgJumps/s|Game speed (All)
     UpdateStacksGUI(session, run := "")
     {
-        restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "StacksAreaTimingView")
-        LV_Delete()
-        isAll := (run == "")
-        g_AreaTimingGui.BuildStacksAreaTimingView(isAll)
-        if (isAll)
+        data := []
+        isAll := !IsObject(run)
+        runs := isAll ? session.Runs : [run]
+        Loop, % runs.Length()
         {
-            data := session.GetAllAverageStacks()
-            allAverageStacks := data[2]
-            keys := data[3]
-            ; Build associative array
-            averageData := {}
-            Loop, % keys.Length()
-                averageData[keys[A_Index]] := allAverageStacks[A_Index]
-            items := data[1]
-        }
-        else
-            items := run.StackItems
-        uncapped := this.Settings.ShowUncappedGameSpeed
-        Loop, % items.Length()
-        {
-            obj := isAll ? items[A_Index][1] : items[A_Index]
-            ; Capped game speed = 10x
-            gameSpeed := isAll ? session.GetStackItemGameSpeed(obj) : run.GetStackItemGameSpeed(A_Index)
-            gameSpeedRounded := uncapped ? Round(gameSpeed, 3) : Round(Min(gameSpeed, 10), 3)
-            area := isAll ? session.GetItemStartZone(obj) : run.GetStackItemStartZone(A_Index)
-            next := isAll ? session.GetItemEndZone(obj) : run.GetStackItemEndZone(A_Index)
-            time := Round((isAll ? session.GetItemTotalTime(obj) : run.GetStackItemTotalTime(A_Index)) / 1000, 2)
-            ; Average
-            averageCount := isAll ? averageData[session.GetItemZones(obj)] : session.GetAverageStacksCount(run.GetStackItemZones(A_Index))
-            averageTime := Round(averageCount[1] / 1000, 2)
-            stacks := isAll ? session.GetStackItemStacks(obj) : run.GetStackItemStacks(A_Index)
-            averageStacks := Round(averageCount[2])
-            count := averageCount[3]
-            rate := Round(stacks / time)
-            averageRate := Round(averageStacks / averageTime)
-            jumpEqRate := Round((this.GetJumpsFromStacks(stacks) / time), 2)
-            averageJumpEqRate := Round((this.GetJumpsFromStacks(averageStacks) / averageTime), 2)
-            if (isAll)
+            run := runs[A_Index]
+            Loop, % run.StackItems.Length()
             {
-                runID := items[A_Index][2]
-                LV_Add(, runID, area, next, time, averageTime, stacks, averageStacks, count, rate, averageRate, jumpEqRate, averageJumpEqRate, gameSpeedRounded)
+                area := run.GetStackItemStartZone(A_Index)
+                next := run.GetStackItemEndZone(A_Index)
+                time := run.GetStackItemTotalTime(A_Index)
+                ; Average
+                totals := session.GetTotalsStack(run.GetStackItemZones(A_Index))
+                count := totals[1]
+                averageTime := totals[4] / count
+                stacks := run.GetStackItemStacks(A_Index)
+                averageStacks := Round(totals[7] / count)
+                rate := Round(1000 * stacks / time)
+                averageRate := Round(1000 * averageStacks / averageTime)
+                jumpEqRate := Round((1000 * this.GetJumpsFromStacks(stacks) / time), 2)
+                averageJumpEqRate := Round((1000 * this.GetJumpsFromStacks(averageStacks) / averageTime), 2)
+                gameSpeed := this.FormatGameSpeed(run.GetStackItemGameSpeed(A_Index))
+                if (isAll)
+                    data.Push([run.ID, area, next, this.FormatMilliSToS(time), this.FormatMilliSToS(averageTime), stacks, averageStacks, count, rate, averageRate, jumpEqRate, averageJumpEqRate, gameSpeed])
+                else
+                    data.Push([area, next, this.FormatMilliSToS(time), this.FormatMilliSToS(averageTime), stacks, averageStacks, count, rate, averageRate, jumpEqRate, averageJumpEqRate, gameSpeed])
             }
-            else
-                LV_Add(, area, next, time, averageTime, stacks, averageStacks, count, rate, averageRate, jumpEqRate, averageJumpEqRate, gameSpeedRounded)
         }
-        ; Resize columns
-        Loop % LV_GetCount("Col")
-            LV_ModifyCol(A_Index, "AutoHdr")
+        g_AreaTimingGui.UpdateListView("StacksAreaTimingView", data, isAll)
+    }
+
+    FormatMilliSToS(time, decimals := 2)
+    {
+        return Round(time / 1000, decimals)
+    }
+
+    FormatGameSpeed(speed, decimals := 3, uncapped := "")
+    {
+        if (uncapped == "")
+            uncapped := this.Settings.ShowUncappedGameSpeed
+        return Round(uncapped ? speed : Min(speed, this.CAPPED_GAMESPEED), decimals)
     }
 
     ; Compute the number of Briv jumps from a number stacks (Metalborn active).

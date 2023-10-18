@@ -30,6 +30,7 @@ Class IC_AreaTiming_SingleRun
         VarSetCapacity(buffer%timeStamp%, 28, 0)
         this.ConvertObjToStruct(obj, buffer%timeStamp%)
         this.Items.Push(&buffer%timeStamp%)
+        g_AT_SharedData.CurrentSession.UpdateTotals(this, &buffer%timeStamp%)
     }
 
     ; Add a stacks time object to the current run.
@@ -41,6 +42,7 @@ Class IC_AreaTiming_SingleRun
         VarSetCapacity(buffer%timeStamp%, 32, 0)
         this.ConvertObjToStruct(obj, buffer%timeStamp%, true)
         this.StackItems.Push(&buffer%timeStamp%)
+        g_AT_SharedData.CurrentSession.UpdateTotalsStack(this, &buffer%timeStamp%)
     }
 
     ; Struct - TimeObject: 28 bytes | StacksTimeObject: 32 bytes

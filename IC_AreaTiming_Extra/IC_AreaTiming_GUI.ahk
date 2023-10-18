@@ -134,6 +134,8 @@ AT_SelectSessionID()
     local beforeSubmit := % %A_GuiControl%
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
+    if (value == "" || value == 0)
+        return
     if value is not digit
         return AT_Undo(A_GuiControl)
     if (beforeSubmit == value)
@@ -148,6 +150,8 @@ AT_SelectRunID()
     local beforeSubmit := % %A_GuiControl%
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
+    if (value == "" || value == 0)
+        return
     if value is not digit
         return AT_Undo(A_GuiControl)
     if (beforeSubmit == value)
@@ -220,6 +224,7 @@ Class IC_AreaTiming_GUI
 {
     LastMaxTabHeight := 0
     LastMaxTabWidth := 0
+    LastEditControlID := ""
 
     __New()
     {
@@ -625,6 +630,14 @@ Class IC_AreaTiming_GUI
     ; Params: - enable:bool - If true, enable controls, else disable them.
     ToggleSelection(enable)
     {
+        if (!enable && this.LastEditControlID == "")
+        {
+            try
+            {
+                GuiControlGet, controlID, FocusV
+                this.LastEditControlID := controlID
+            }
+        }
         value := enable ? "Enable" : "Disable"
         GuiControl, ICScriptHub:%value%, AreaTimingSelectSession
         GuiControl, ICScriptHub:%value%, AT_SelectSessionID
@@ -634,6 +647,14 @@ Class IC_AreaTiming_GUI
         GuiControl, ICScriptHub:%value%, AT_SelectRunUpDown
         GuiControl, ICScriptHub:%value%, AreaTimingUncappedSpeed
         GuiControl, ICScriptHub:%value%, AT_ExcludeMod50Outliers
+        if (enable)
+        {
+            if (this.LastEditControlID == "AT_SelectSessionID")
+                GuiControl, ICScriptHub:Focus, AT_SelectSessionID
+            else if (this.LastEditControlID == "AT_SelectRunID")
+                GuiControl, ICScriptHub:Focus, AT_SelectRunID
+            this.LastEditControlID := ""
+        }
     }
 
     ; Update the text shown next to the "select session" DDL.

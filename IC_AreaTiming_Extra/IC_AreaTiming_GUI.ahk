@@ -176,8 +176,13 @@ AT_ExcludeMod50Outliers()
 AreaTimingShow()
 {
     global
+    local beforeSubmit := % %A_GuiControl%
     Gui, ICScriptHub:Submit, NoHide
+    local value := % %A_GuiControl%
+    if (beforeSubmit == value)
+        return
     g_AreaTimingGui.ShowListView(A_GuiControl)
+    g_AreaTiming.UpdateListViews()
 }
 
 AreaTimingView()
@@ -393,6 +398,24 @@ Class IC_AreaTiming_GUI
     {
         showSetting := show ? "Show" : "Hide"
         GuiControl, ICScriptHub:%showSetting%, AreaTimingUncappedSpeed
+    }
+
+    CurrentView
+    {
+        get
+        {
+            GuiControlGet, value, ICScriptHub:, AreaTimingShowAllAreas
+            if (value)
+                return "AreaTimingView"
+            GuiControlGet, value, ICScriptHub:, AreaTimingShowMod50
+            if (value)
+                return "ModAreaTimingView"
+            GuiControlGet, value, ICScriptHub:, AreaTimingShowStacks
+            if (value)
+                return "StacksAreaTimingView"
+            else
+                return ""
+        }
     }
 
     ; Update ListView contents.

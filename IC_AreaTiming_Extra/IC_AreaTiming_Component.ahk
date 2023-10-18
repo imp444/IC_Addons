@@ -607,8 +607,7 @@ Class IC_AreaTiming_Component
                 this.Run := ""
                 this.LastSelectRunText := "All"
                 g_AreaTimingGui.UpdateSelectRunText("-", runCount)
-                this.UpdateRunGUI(session)
-                this.UpdateStacksGUI(session)
+                this.UpdateListViews(session)
                 return g_AreaTimingGui.ToggleSelection(true)
             }
             else if (reload)
@@ -630,8 +629,7 @@ Class IC_AreaTiming_Component
                 this.RunEnded := run.Ended
                 if (!reload)
                     g_AreaTimingGui.UpdateSelectRunText(runID, runCount)
-                this.UpdateRunGUI(session, run)
-                this.UpdateStacksGUI(session, run)
+                this.UpdateListViews(session, run)
             }
             else
                 g_AreaTimingGui.UpdateSelectRunText(runID, runCount)
@@ -657,6 +655,20 @@ Class IC_AreaTiming_Component
         this.LoadRun(params*)
     }
 
+    ; Update the currently active ListView.
+    UpdateListViews(session := "", run := "")
+    {
+        if (session == "")
+            return this.UpdateListViews(this.Session, this.Run)
+        controlID := g_AreaTimingGui.CurrentView
+        if (controlID == "AreaTimingView")
+            this.UpdateRunGUI(session, run)
+        else if (controlID == "ModAreaTimingView")
+            this.UpdateMod50GUI(session, run)
+        else if (controlID == "StacksAreaTimingView")
+            this.UpdateStacksGUI(session, run)
+    }
+
     ; Function that updates the AreaTiming GUI.
     ; Area|Next|T_area|T_tran|T_time|AvgT_area|AvgT_tran|AvgT_time|T_run|AvgT_run|Count|Game speed|AvgGame speed
     ; Area|Next|AvgT_area|AvgT_tran|AvgT_time|AvgT_run|CountGame speed|AvgGame speed (All)
@@ -664,7 +676,6 @@ Class IC_AreaTiming_Component
     {
         data := []
         isAll := !IsObject(run)
-        mod50Vals := {}
         if (isAll)
         {
             totals := session.GetAllTotals()
@@ -683,14 +694,7 @@ Class IC_AreaTiming_Component
                 avgTime := this.FormatMilliSToS(total[4] / count)
                 avgRunTime := this.FormatMilliSToS(total[5] / count)
                 avgGameSpeed := this.FormatGameSpeed(total[6] / count)
-                ; Mod50
-                obj := new IC_AreaTiming_TimeObject
-                obj.SetAreaStarted(area)
-                obj.SetAreaTransitioned(next)
-                mod50Key := obj.Mod50Zones
-                if (!mod50Vals.HasKey(mod50Key))
-                    mod50Vals[mod50Key] := obj
-                data.Push([ area, next, avgAreaTime, avgTransitionTime, avgTime, avgRunTime, count, avgGameSpeed])
+                data.Push([area, next, avgAreaTime, avgTransitionTime, avgTime, avgRunTime, count, avgGameSpeed])
             }
         }
         else
@@ -719,37 +723,30 @@ Class IC_AreaTiming_Component
                 avgTime := this.FormatMilliSToS(total[4] / count)
                 avgRunTime := this.FormatMilliSToS(total[5] / count)
                 avgGameSpeed := this.FormatGameSpeed(total[6] / count)
-                ; Mod50
-                obj := new IC_AreaTiming_TimeObject
-                obj.SetAreaStarted(area)
-                obj.SetAreaTransitioned(next)
-                mod50Key := obj.Mod50Zones
-                if (!mod50Vals.HasKey(mod50Key))
-                    mod50Vals[mod50Key] := []
-                mod50Vals[mod50Key].Push(runItems[A_Index])
-                data.Push([ area, next, areaTime, transitionTime, time, avgAreaTime, avgTransitionTime, avgTime, runTimeRounded, avgRunTime, count, gameSpeed, avgGameSpeed])
+                data.Push([area, next, areaTime, transitionTime, time, avgAreaTime, avgTransitionTime, avgTime, runTimeRounded, avgRunTime, count, gameSpeed, avgGameSpeed])
             }
         }
         g_AreaTimingGui.UpdateListView("AreaTimingView", data, isAll)
-        this.UpdateMod50GUI(session, isAll ? "" : run, mod50Vals)
     }
 
     ; Function that updates the AreaTiming Mod50 GUI.
     ; Area|Next|T_area|T_tran|T_time|AvgT_area|AvgT_tran|AvgT_time|Count
     ; Area|Next|AvgT_area|AvgT_tran|AvgT_time|Count (All)
-    UpdateMod50GUI(session, run := "", mod50Vals := "")
+    UpdateMod50GUI(session, run := "")
     {
         data := []
         isAll := !IsObject(run)
         excludeOutliers := this.Settings.ExcludeMod50Outliers
-        for k, v in mod50Vals
+        keys := session.GetAllMod50ItemKeys()
+        Loop, % keys.Length()
         {
+            key := keys[A_Index]
+            area := key >> 16
+            next := key & 0xFFFF
             if (isAll)
             {
-                area := v.Mod50StartZone
-                next := v.Mod50EndZone
                 ; Average
-                totals := session.GetTotalsMod50(v.Mod50Zones,, excludeOutliers)
+                totals := session.GetTotalsMod50(key,, excludeOutliers)
                 count := totals[1]
                 if (count == 0)
                     continue
@@ -760,10 +757,8 @@ Class IC_AreaTiming_Component
             }
             else
             {
-                area := session.GetItemMod50StartZone(v[1])
-                next := session.GetItemMod50EndZone(v[1])
                 ; Run average
-                totals := session.GetTotalsMod50(session.GetItemMod50Zones(v[1]), [run], excludeOutliers)
+                totals := session.GetTotalsMod50(key, [run], excludeOutliers)
                 countRun := totals[1]
                 if (countRun == 0)
                     continue
@@ -771,7 +766,7 @@ Class IC_AreaTiming_Component
                 transitionTime := this.FormatMilliSToS(totals[3] / countRun)
                 time := this.FormatMilliSToS(totals[4] / countRun)
                 ; Session average
-                totals := session.GetTotalsMod50(session.GetItemMod50Zones(v[1]),, excludeOutliers)
+                totals := session.GetTotalsMod50(key,, excludeOutliers)
                 count := totals[1]
                 avgAreaTime := this.FormatMilliSToS(totals[2] / count)
                 avgTransitionTime := this.FormatMilliSToS(totals[3] / count)

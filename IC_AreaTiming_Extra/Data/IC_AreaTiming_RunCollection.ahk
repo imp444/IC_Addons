@@ -150,6 +150,34 @@ Class IC_AreaTiming_RunCollection
         return keys
     }
 
+    ; Get all unique IC_AreaTiming_TimeObject.Zones keys from all runs.
+    ; Returns: - array - All keys (IC_AreaTiming_TimeObject.Zones).
+    GetAllMod50ItemKeys(run := "")
+    {
+        keys := []
+        if (IsObject(run))
+        {
+            keysObj := {}
+            Loop, % run.Items.Length()
+            {
+                key := run.GetItemMod50Zones(A_Index)
+                if (!keysObj.HasKey(key))
+                    keysObj[key] := ""
+            }
+            ; Return sorted keys
+            for k, v in keysObj
+                keys.Push(k)
+            VarSetCapacity(keysObj, 0)
+            return keys
+        }
+        else
+        {
+            for k in this.TotalsMod50
+                keys.Push(k)
+            return keys
+        }
+    }
+
     ; Get all unique IC_AreaTiming_StacksTimeObject.Zones keys from all runs.
     ; Returns: - array:keys - All keys (IC_AreaTiming_StacksTimeObject.Zones).
     GetAllStackItemKeys()

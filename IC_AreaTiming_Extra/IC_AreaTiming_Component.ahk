@@ -314,6 +314,7 @@ Class IC_AreaTiming_Component
                 Process, Close, %PID%
         }
         this.Reset()
+        this.Stop()
     }
 
     ; Returns true if the script's current session start time matches the input session's start time.

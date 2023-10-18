@@ -33,6 +33,8 @@ class IC_AreaTiming_SharedData
         ; Delete current session if no run has been recorded.
         if (running && this.CurrentSession.CurrentRun == "")
         {
+            if (this.Sessions.Length() == 1)
+                return this.Close(true)
             this.CurrentSession.CurrentRun.Clear()
             this.Sessions.RemoveAt(this.CurrentSession.ID)
         }

@@ -232,6 +232,16 @@ Class IC_AreaTiming_GUI
         SetTimer, AT_RefreshSize, -150
     }
 
+    ; Show a message box asking whether or not to close the timer script on exit.
+    Close()
+    {
+        if (A_ExitReason == "Reload" || !g_AreaTiming.IsTimerScriptRunning())
+            return
+        MsgBox 4,, IC_AreaTiming_TimerScript_Run.ahk is running. Do you want to close it? Saved data will be lost.
+        IfMsgBox Yes
+            g_AreaTiming.CloseTimerScript()
+    }
+
     ; Show tooltips on mouseover.
     AddToolTips()
     {

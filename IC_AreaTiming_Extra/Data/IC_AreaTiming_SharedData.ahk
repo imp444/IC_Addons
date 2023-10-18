@@ -3,7 +3,6 @@ class IC_AreaTiming_SharedData
 {
     Sessions := []
     CurrentSession := ""
-    IgnoreClose := 0
 
     ; Returns true if the timer loop is active, false otherwise.
     Running
@@ -43,11 +42,9 @@ class IC_AreaTiming_SharedData
     ; Function that simply closes the script.
     ; Params: - force:bool - If true, force exit, else stop the main loop.
     ; ICScriptHub will call this function when pressing "Stop" in the main tab.
-    ; This will stop the main loop at first, only closing if the user picks "yes"
-    ; when asked to close miniscripts still running in the background.
     Close(force := false)
     {
-        if (this.IgnoreClose-- && !force)
+        if (!force)
             this.Stop()
         else
             ExitApp

@@ -4,6 +4,7 @@
 
 global g_AreaTimingGui := new IC_AreaTiming_GUI
 global g_AreaTiming := new IC_AreaTiming_Component
+OnExit(ObjBindMethod(g_AreaTimingGui, "Close"))
 
 /*  IC_AreaTiming_Component
 
@@ -268,25 +269,6 @@ Class IC_AreaTiming_Component
     ; is clicked on multiple times in a row.
     StopFromBrivGemFarmStop()
     {
-        counter := 1
-        for k, v in g_BrivFarmLastRunMiniscripts
-        {
-            if (k == this.TimerScriptGUID)
-            {
-                counter := 2
-                break
-            }
-        }
-        while (!ready && this.IsTimerScriptRunning())
-        {
-            try
-            {
-                sharedData := this.TimerScript
-                sharedData.IgnoreClose := counter
-                ready := sharedData.IgnoreClose == counter || sharedData == ""
-            }
-            Sleep, 30
-        }
         this.Stop()
     }
 

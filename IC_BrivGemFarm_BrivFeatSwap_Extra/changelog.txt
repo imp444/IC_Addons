@@ -1,3 +1,7 @@
+October 19, 2023 - v1.5.4
+    - Updated the 9J/4J path to use Q for z16/z26 instead of E (this is faster than switching to 4J twice until z36).
+    - The name of the game's executable saved in settings will be used if different from "IdleDragons.exe".
+
 October 05, 2023 - v1.5.3
     - The position of the "clear formation" button used to cancel Briv's jump animation
       when using the mouse click option is detected for other resolutions than 16:9.

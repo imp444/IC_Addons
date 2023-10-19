@@ -158,6 +158,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     */
     DoPartySetupMin(forceBrivShandie := false, timeout := "")
     {
+        if (g_SF.Memory.ReadCurrentZone() == 1)
+            g_SF.ToggleAutoProgress(0)
         g_SharedData.LoopString := "Leveling champions to the minimum level"
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
         minLevels := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].minLevels

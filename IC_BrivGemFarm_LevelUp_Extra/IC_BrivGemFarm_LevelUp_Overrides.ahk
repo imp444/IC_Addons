@@ -254,6 +254,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         while (g_SF.Memory.ReadHighestZone() < zone && elapsedTime < timeout)
         {
             this.ToggleAutoProgress(0)
+            this.SetFormation()
+            this.DoPartySetupMax()
             elapsedTime := A_TickCount - startTime
             Sleep, 30
         }

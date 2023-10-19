@@ -240,7 +240,8 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
 
         if (currentZone == 1 || coords == "")
             coords := this.BGFBFS_GetClickCoords()
-        WinActivate, ahk_exe IdleDragons.exe
+        exeName := this.BGFBFS_GetExeName()
+        WinActivate, ahk_exe %exeName%
         xClick := coords[1]
         yClick := coords[2]
         MouseClick, Left, xClick, yClick, 1, 0
@@ -252,8 +253,9 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         ; Fullscreen
         if (this.BGFBFS_IsGameFullScreen())
         {
-            WinActivate, ahk_exe IdleDragons.exe
-            WinGetPos, x, y, w, h, ahk_exe IdleDragons.exe
+            exeName := this.BGFBFS_GetExeName()
+            WinActivate, ahk_exe %exeName%
+            WinGetPos, x, y, w, h, ahk_exe %exeName%
             ; Find if the game resolution is set to tall or wide
             midWidthPos := Round(x + w / 2)
             midHeightPos := Round(y + h / 2)
@@ -293,12 +295,13 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
 
     BGFBFS_IsGameFullScreen()
     {
+        exeName := this.BGFBFS_GetExeName()
         ; Get monitor coords
-        WinGet, hwnd, ID, ahk_exe IdleDragons.exe
+        WinGet, hwnd, ID, ahk_exe %exeName%
         monitor := this.BGFBFS_GetMonitor(hwnd)
         SysGet, monitorCoords, MonitorWorkArea, %monitor%
         ; Get game window coords
-        WinGetPos, x, y, w, h, ahk_exe IdleDragons.exe
+        WinGetPos, x, y, w, h, ahk_exe %exeName%
         return (monitorCoordsLeft == x && monitorCoordsTop == y)
     }
 
@@ -327,6 +330,13 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         }
         ; Return Primary Monitor if can't sense
         return idxPrimary
+    }
+
+    BGFBFS_GetExeName()
+    {
+        default := "IdleDragons.exe"
+        exeName := g_UserSettings[ "ExeName" ]
+        return (exeName != default && exeName != "") ? exeName : default
     }
 }
 

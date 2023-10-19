@@ -168,7 +168,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (forceBrivShandie)
             champIDs := [58, 47]
         else
-            champIDs := [58, 47, 91, 128, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56] ; speed champs
+            champIDs := [58, 47, 91, 128, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139] ; speed champs
         if (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ]) ; Need to walk while Briv is in all formations
             champIDs.RemoveAt(1)
         keyspam := []
@@ -243,6 +243,12 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (!g_BrivUserSettingsFromAddons[ "SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
+        g_SF.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
+        g_SF.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
+        g_SF.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
+        g_SF.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
+        g_SF.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
+        g_SF.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
         minHighestZone := g_BrivUserSettingsFromAddons[ "ThelloraRushWait" ]
         if (minHighestZone != "")
             this.DoThelloraRushWait(minHighestZone, StartTime, ElapsedTime, timeout)
@@ -267,7 +273,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     */
     DoPartySetupMax(formation := 1)
     {
-        static champIDs := [47, 91, 128, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56] ; speed champs without Briv
+        static champIDs := [47, 91, 128, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139] ; speed champs without Briv
 
         levelBriv := true ; Return value
         formationFavorite := g_SF.Memory.GetFormationByFavorite( formation )

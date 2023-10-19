@@ -293,6 +293,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[95] := 100, maxLevels[95] := 250 ; Vi 100 250
         minLevels[70] := 90, maxLevels[70] := 90 ; Ezmeralda 90 315
         minLevels[12] := 65, maxLevels[12] := 65 ; Arkhan
+        minLevels[139] := 1, maxLevels[139] := 1 ; Thellora
         ; Gold find % champions
         minLevels[4] := 1, maxLevels[4] := 2050 ; Jarlaxle
         minLevels[39] := 1, maxLevels[39] := 2930 ; Paultin

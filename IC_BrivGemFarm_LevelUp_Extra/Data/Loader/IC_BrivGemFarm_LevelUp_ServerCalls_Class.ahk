@@ -13,7 +13,7 @@ class IC_BrivGemFarm_LevelUp_ServerCalls_Class
         if (response != "" && (playServer := this.ParsePlayServer(response)) != "")
             return this.WebRoot := playServer
         else
-            return ""
+            return "http://ps21.idlechampions.com/~idledragons/"
     }
 
     ParsePlayServer(response)

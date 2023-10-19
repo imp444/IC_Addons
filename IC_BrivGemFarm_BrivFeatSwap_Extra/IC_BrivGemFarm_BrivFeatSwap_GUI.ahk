@@ -113,9 +113,7 @@ BGFBFS_Mod50CheckBoxes()
 BGFBFS_BrivMinLevelArea()
 {
     global
-    if (g_BrivFeatSwap.GetPresetName() != "")
-        BGFBFS_ValidateInput(%A_GuiControl%, %A_GuiControl%)
-    else if ((value := BGFBFS_ValidateInput(1, 99999)) != "RETURN")
+    if ((value := BGFBFS_ValidateInput(1, 99999)) != "RETURN")
     {
         if (IsObject(g_BrivGemFarm_LevelUp))
             GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % value

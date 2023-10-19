@@ -293,11 +293,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             case "8J/4J Tall Tales":
                 this.ApplyPresets(1125897724754935, 8, 4)
             case "8J/4J Tall Tales + walk 1/2/3/4":
-                this.ApplyPresets(1125897724754928, 8, 4,, true)
+                this.ApplyPresets(1125897724754928, 8, 4)
             case "9J/4J Tall Tales":
                 this.ApplyPresets(580042362519055, 9, 4)
             case default:
-                this.ApplyPresets(this.SavedPreferredAdvancedSettings, this.Settings.targetQ, this.Settings.targetE, true)
+                this.ApplyPresets(this.SavedPreferredAdvancedSettings, this.Settings.targetQ, this.Settings.targetE)
         }
     }
 
@@ -306,15 +306,14 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ;             - targetQ:int - Value to apply to the targetQ edit field.
     ;             - targetE:int - Value to apply to the targetE edit field.
     ;             - default:bool - Used to toggle mod50 checkboxes. If true, hide mod50 checkboxes.
-    ;             - showBrivMinLevelArea:bool - Used to toggle BrivMinLevelArea setting . If true, hide BrivMinLevelArea.
-    ApplyPresets(mod50Value, targetQ, targetE, default := false, showBrivMinLevelArea := false)
+    ApplyPresets(mod50Value, targetQ, targetE, default := false)
     {
         GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ, % targetQ
         GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % targetE
         this.UpdatePresetWarning(targetQ)
         this.LoadMod50(mod50Value)
         this.ToggleMod50(true)
-        this.ToggleBrivMinLevelArea(showBrivMinLevelArea || default)
+        this.ToggleBrivMinLevelArea()
         this.UpdatePath()
     }
 

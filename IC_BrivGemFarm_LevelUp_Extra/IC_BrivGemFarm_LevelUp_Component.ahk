@@ -47,6 +47,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
+        GuiControl, ICScriptHub:, BGFLU_ThelloraRushWait, % this.Settings.ThelloraRushWait
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         GuiControl, ICScriptHub:Choose, BGFLU_SelectLanguage, % this.Settings.DefinitionsLanguage
@@ -239,6 +240,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % defaultSettings.MinLevelTimeout
             GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
             GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % defaultSettings.BrivMinLevelArea
+            GuiControl, ICScriptHub:, BGFLU_ThelloraRushWait, % defaultSettings.ThelloraRushWait
             GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
             GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % defaultSettings.LevelToSoftCapFailedConversionBriv
             this.LoadFormation(this.GetFormationFromGUI())
@@ -263,6 +265,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.MinLevelTimeout := 5000
         settings.BrivMinLevelStacking := 1300
         settings.BrivMinLevelArea := 1
+        settings.ThelloraRushWait := 1
         settings.DefaultMinLevel := 0
         settings.DefaultMaxLevel := 1
         settings.LevelToSoftCapFailedConversion := true
@@ -344,6 +347,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
+        GuiControl, ICScriptHub:, BGFLU_ThelloraRushWait, % this.Settings.ThelloraRushWait
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         this.TempSettings.Reset()

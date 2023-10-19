@@ -243,7 +243,20 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (!g_BrivUserSettingsFromAddons[ "SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
+        minHighestZone := g_BrivUserSettingsFromAddons[ "ThelloraRushWait" ]
+        if (minHighestZone != "")
+            this.DoThelloraRushWait(minHighestZone, StartTime, ElapsedTime, timeout)
         g_SF.ToggleAutoProgress( 1, false, true )
+    }
+
+    DoThelloraRushWait(zone := 1, startTime := 0, elapsedTime := 0, timeout := 5000)
+    {
+        while (g_SF.Memory.ReadHighestZone() < zone && elapsedTime < timeout)
+        {
+            this.ToggleAutoProgress(0)
+            elapsedTime := A_TickCount - startTime
+            Sleep, 30
+        }
     }
 
     /*  DoPartySetupMax - Level up all champs to the specified max level
@@ -415,6 +428,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] := settings.MinLevelTimeout
         g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
         g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ] := settings.BrivMinLevelArea
+        g_BrivUserSettingsFromAddons[ "ThelloraRushWait" ] := settings.ThelloraRushWait
         g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion
         g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversionBriv" ] := settings.LevelToSoftCapFailedConversionBriv
         if (updateMaxLevels)

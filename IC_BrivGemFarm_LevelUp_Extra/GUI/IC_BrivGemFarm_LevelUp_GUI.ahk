@@ -152,6 +152,11 @@ Class IC_BrivGemFarm_LevelUp_GUI
         ; BrivMinLevelArea
         group.AddEdit("BGFLU_BrivMinLevelArea",, "w50 Limit4",, true)
         group.AddControl("BGFLU_BrivMinLevelAreaText", "Text", "x+5 yp+4", "Minimum area to reach before leveling Briv")
+        local ThelloraGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_ThelloraGroup", "Thellora", "BGFLU_MinSettingsGroup", false,, "BGFLU_BrivMinLevelArea")
+        ThelloraGroup.AddEdit("BGFLU_ThelloraRushWait",, "x+0 w50 Limit4")
+        ThelloraGroup.AddControl("BGFLU_ThelloraRushWaitText", "Text", "x+5 yp+4", "Thellora Rush target zone")
+        ThelloraGroup.AutoResize(true, true)
+        group.AddExistingControl(ThelloraGroup)
         this.AddGroup(group)
     }
 

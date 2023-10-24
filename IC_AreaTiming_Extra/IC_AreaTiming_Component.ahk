@@ -4,7 +4,7 @@
 
 global g_AreaTimingGui := new IC_AreaTiming_GUI
 global g_AreaTiming := new IC_AreaTiming_Component
-OnExit(ObjBindMethod(g_AreaTimingGui, "Close"))
+OnExit(ObjBindMethod(g_AreaTimingGui, "Close"), -1)
 
 /*  IC_AreaTiming_Component
 

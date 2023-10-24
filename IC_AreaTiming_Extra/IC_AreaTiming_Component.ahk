@@ -324,6 +324,7 @@ Class IC_AreaTiming_Component
             if (PID)
                 Process, Close, %PID%
         }
+        g_AreaTimingGui.UpdateButtons(3)
         this.Reset()
         this.Stop()
     }
@@ -406,10 +407,18 @@ Class IC_AreaTiming_Component
                     SetTimer, %k%, Off
                     SetTimer, %k%, Delete
                 }
+                g_AreaTimingGui.UpdateButtons(2)
             }
+            else
+                g_AreaTimingGui.UpdateButtons(1)
         }
         catch
         {
+            if (!this.IsTimerScriptRunning())
+            {
+                this.Reset()
+                g_AreaTimingGui.UpdateButtons(3)
+            }
             this.UpdateLastGUID()
         }
     }

@@ -720,4 +720,19 @@ Class IC_AreaTiming_GUI
         if (Errorlevel)
             return "AreaTimingSelectRun"
     }
+
+    ; Enable or disable the Start/Stop/Close buttons.
+    ; Timerscript: IC_AreaTiming_TimerScript_Run.ahk
+    ; 1: Script started = Stop/Close enabled.
+    ; 2: Script stopped = Start/Close enabled.
+    ; 3: Script closed = Start enabled.
+    UpdateButtons(state := 1)
+    {
+        valueStart := state == 1 ? "Disable" : "Enable"
+        valueStop := state == 2 || state == 3 ? "Disable" : "Enable"
+        valueClose := state == 3 ? "Disable" : "Enable"
+        GuiControl, ICScriptHub:%valueStart%, AreaTimingStart
+        GuiControl, ICScriptHub:%valueStop%, AreaTimingStop
+        GuiControl, ICScriptHub:%valueClose%, AreaTimingClose
+    }
 }

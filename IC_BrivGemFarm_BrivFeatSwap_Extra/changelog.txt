@@ -1,3 +1,7 @@
+October 25, 2023 - v1.5.6
+    - Updated preferred Briv jump zones for 5J/4J, 6J/4J, 7J/4J and 8J/4J presets so that they work better with Thellora.
+    - Updated mouseclick instructions.
+
 October 19, 2023 - v1.5.5
     - Updated the 9J/4J path to use Q for z16/z26 instead of E (this is faster than switching to 4J twice until z36).
     - (MouseClick option) The name of the game's executable saved in settings will be used if different from "IdleDragons.exe".

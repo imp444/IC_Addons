@@ -144,10 +144,10 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         {
             if (!this.BGFBFS_IsFormationEmpty(currentFormation))
             {
-                if (this.Memory.ReadTransitionOverrideSize() == 1 AND this.Memory.ReadTransitionDirection() != 2 AND this.Memory.ReadFormationTransitionDir() == 3 || currentZone == 22 && g_SharedData.BGFBFS_Preset == "7J/4J Tall Tales")
+                if (this.Memory.ReadTransitionOverrideSize() == 1 AND this.Memory.ReadTransitionDirection() != 2 AND this.Memory.ReadFormationTransitionDir() == 3)
                     return this.BGFBFS_MouseClickCancel(currentZone)
             }
-            else if (this.Memory.ReadTransitionOverrideSize() == 1 || currentZone == 22 && g_SharedData.BGFBFS_Preset == "7J/4J Tall Tales")
+            else if (this.Memory.ReadTransitionOverrideSize() == 1)
                 return
         }
         ;check to bench briv

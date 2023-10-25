@@ -283,15 +283,15 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         Switch name
         {
             case "5J/4J Tall Tales":
-                this.ApplyPresets(1125891005438934, 5, 4)
+                this.ApplyPresets(500953867244502, 5, 4)
             case "6J/4J Resolve Amongst Chaos":
-                this.ApplyPresets(984745802461018, 6, 4)
+                this.ApplyPresets(948417617686362, 6, 4)
             case "6J/4J Tall Tales":
-                this.ApplyPresets(835626480921599, 6, 4)
+                this.ApplyPresets(800167230925023, 6, 4)
             case "7J/4J Tall Tales":
-                this.ApplyPresets(560671369426559, 7, 4)
+                this.ApplyPresets(380222613450972, 7, 4)
             case "8J/4J Tall Tales":
-                this.ApplyPresets(1125897724754935, 8, 4)
+                this.ApplyPresets(57952963557919, 8, 4)
             case "8J/4J Tall Tales + walk 1/2/3/4":
                 this.ApplyPresets(1125897724754928, 8, 4)
             case "9J/4J Tall Tales":
@@ -559,13 +559,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         ; Jump
         while (currentArea < resetArea)
         {
-            ; 7J/4J special walk
-            if (currentArea == 22 && preset == "7J/4J Tall Tales")
-            {
-                path.Push(++currentArea)
-                ++walks
-                continue
-            }
             ; Area progress
             mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
             mod50Value := mod50values[mod50Index]
@@ -606,12 +599,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         ; Jump
         while (stacks >= 50)
         {
-            ; 7J/4J special walk
-            if (currentArea == 22 && preset == "7J/4J Tall Tales")
-            {
-                ++currentArea
-                continue
-            }
             ; Area progress
             mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
             move := mod50values[mod50Index] ? qVal : eVal

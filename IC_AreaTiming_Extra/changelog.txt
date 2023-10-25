@@ -1,3 +1,8 @@
+October 25, 2023 - v1.0.3
+    - The start/stop/close buttons are grayed out depending on the state of the timer script.
+    - Prevented a potential issue when using a portable version of AHK.
+    - Fixed an issue with the window asking to close TimerScript_Run.ahk on ScriptHub exit not being shown.
+
 October 18, 2023 - v1.0.2
     - Reduced the memory size of data records by a factor of 6.
     - Improved data displaying speed.

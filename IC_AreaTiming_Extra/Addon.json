@@ -1,6 +1,6 @@
 {
 	"Name":"Area Timing",
-	"Version": "v1.0.2",
+	"Version": "v1.0.3",
     "Includes" : "IC_AreaTiming_Component.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/imp444/Idle-Champions/tree/main/AddOns/IC_AreaTiming",

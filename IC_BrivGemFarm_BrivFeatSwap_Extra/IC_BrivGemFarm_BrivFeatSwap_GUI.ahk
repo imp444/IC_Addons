@@ -286,12 +286,14 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
     {
         global
         Gui, ICScriptHub:Add, CheckBox, xs yp+5 vBGFBFS_MouseClick, Enable mouse clicks to cancel Briv's jump animation (Ctrl+Alt+X to toggle on/off)
-        Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickText, (Recommended for 5J/4J TT and 8J/4J TT, required for 6J/4J TT/RAC, 7J/4J TT)
+        Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickText, (Recommended for 5J/4J TT, highly recommended for 6J/4J TT/RAC and 7J/4J TT)
         GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
         Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickTextWarning, This option should NOT be used if actively using the computer.
         GUIFunctions.UseThemeTextColor()
-        text := "Since clearing formation will reset the effect of both Sentry and BBEG quest reduction abilities,`n"
-        text .= "it is advised to switch to using Virgil + 2 Rivals of Waterdeep instead."
+        text := "Clicks on the ""Clear formation"" button under formations to remove all champions.`n"
+        text .= "- Clearing formation will reset Shandie's Dash timer.`n"
+        text .= "- The effect of both Sentry and BBEG quest reduction abilities will be nullified.`n"
+        text .= "  Better performance could be achieved by switching to Virgil + 2 Rivals of Waterdeep."
         Gui, ICScriptHub:Add, Text, xs y+5 R2 vBGFBFS_MouseClickTextChamps, % text
     }
 

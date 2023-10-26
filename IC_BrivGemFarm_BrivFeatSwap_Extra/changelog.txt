@@ -1,3 +1,7 @@
+October 26, 2023 - v1.5.7
+    - Fixed an issue with the mouse click setting always switching to the E formation before Q after click cancelling when the formation is empty.
+    - Updated README with instructions for Thellora.
+
 October 25, 2023 - v1.5.6
     - Updated preferred Briv jump zones for 5J/4J, 6J/4J, 7J/4J and 8J/4J presets so that they work better with Thellora.
     - Updated mouseclick instructions.

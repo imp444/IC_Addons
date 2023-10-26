@@ -140,7 +140,8 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         ;bench briv if jump animation override is added to list and it isn't a quick transition (reading ReadFormationTransitionDir makes sure QT isn't read too early)
         ; Using click on "Cancel" to clear champions out the formation
         currentFormation := this.Memory.GetCurrentFormation()
-        if (g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ])
+        mouseClickEnabled := g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ]
+        if (mouseClickEnabled)
         {
             if (!this.BGFBFS_IsFormationEmpty(currentFormation))
             {
@@ -151,14 +152,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
                 return
         }
         ;check to bench briv
-        if ((g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetE" ] AND this.BenchBrivConditions(this.Settings)) || this.BGFBFS_IsFormationEmpty(currentFormation))
+        if ((g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetE" ] || mouseClickEnabled && this.BGFBFS_IsFormationEmpty(currentFormation)) && this.BenchBrivConditions(this.Settings))
         {
             this.DirectedInput(,,["{e}"]*)
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(3)
             return
         }
         ;check to unbench briv
-        if ((g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetQ" ] AND this.UnBenchBrivConditions(this.Settings)) || this.BGFBFS_IsFormationEmpty(currentFormation))
+        if ((g_SharedData.BrivFeatSwap_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetQ" ] || mouseClickEnabled && this.BGFBFS_IsFormationEmpty(currentFormation)) && this.UnBenchBrivConditions(this.Settings))
         {
             this.DirectedInput(,,["{q}"]*)
             g_SharedData.BrivFeatSwap_UpdateSkipAmount(1)
@@ -204,13 +205,6 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         if (this.Memory.ReadCurrentZone() >= maxSwapArea)
             return true
         return false
-    }
-
-    UnBenchBrivConditions(settings)
-    {
-        if (!g_SharedData.BGFBFS_Enabled)
-            return base.UnBenchBrivConditions(settings)
-        return base.UnBenchBrivConditions(settings) || this.BGFBFS_IsFormationEmpty() && this.Memory.ReadTransitionOverrideSize() != 1
     }
 
     ; If Briv has enough stacks to jump, don't force switch to e and wait for the boss to be killed.

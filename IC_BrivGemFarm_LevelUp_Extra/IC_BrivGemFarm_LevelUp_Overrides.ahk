@@ -159,7 +159,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     */
     DoPartySetupMin(forceBrivShandie := false, timeout := "")
     {
-        if (g_SF.Memory.ReadCurrentZone() == 1)
+        if (forceBrivShandie || g_SF.Memory.ReadCurrentZone() == 1)
             g_SF.ToggleAutoProgress(0)
         g_SharedData.LoopString := "Leveling champions to the minimum level"
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
@@ -281,7 +281,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (this.ChampUnderTargetLevel(58, levelSettings.minLevels[58]))
         {
             if (g_SF.Memory.ReadHighestZone() >= g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ]) ; Level Briv to be able to skip areas
-                this.DoPartySetupMin()
+                this.DoPartySetupMin(true)
             else
                 levelBriv := false
         }

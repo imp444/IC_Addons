@@ -149,8 +149,9 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 
     /*  DoPartySetupMin - When gem farm is started or an adventure is reloaded, this is called to set up the primary party.
                           This will only level champs to the minium target specified in BrivGemFarm_LevelUp_Settings.json.
+                          This will not level champs whose minimum level is set to 0.
                           It will wait for Shandie dash if necessary.
-                          It will only level up at a time the number of champions specified in the MaxSimultaneousInputs setting
+                          It will only level up at a time the number of champions specified in the MaxSimultaneousInputs setting.
         Parameters:       forceBrivShandie: bool - If true, force Briv/Shandie to minLevel before leveling other champions
                           timeout: integer - Time in ms before abandoning the initial leveling
 
@@ -188,7 +189,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite1))
             {
-                if (g_SF.Memory.ReadChampLvlByID(champID) < minLevels[champID])
+                if (this.ChampUnderTargetLevel(champID, minLevels[champID]))
                     keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
                 if (!forceBrivShandie)
                     nonSpeedIDs.Delete(champID)
@@ -199,8 +200,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             for k, champID in nonSpeedIDs
             {
-                if (g_SF.Memory.ReadChampLvlByID(champID) < minLevels[champID])
-                        keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
+                if (this.ChampUnderTargetLevel(champID, minLevels[champID]))
+                    keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
             }
         }
         StartTime := A_TickCount, ElapsedTime := 0
@@ -218,9 +219,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             {
                 if (g_SF.IsChampInFormation(champID, formationFavorite1))
                 {
-                    level := g_SF.Memory.ReadChampLvlByID(champID)
                     Fkey := "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}"
-                    if (level >= targetLevel)
+                    if (!this.ChampUnderTargetLevel(champID, targetLevel))
                     {
                         for k, v in keyspam
                         {
@@ -268,7 +268,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     }
 
     /*  DoPartySetupMax - Level up all champs to the specified max level
-
+                          This will not level champs whose maximum level is set to 0.
         Returns: bool - True if all champions in Q formation are at or past their target level, false otherwise
     */
     DoPartySetupMax(formation := 1)
@@ -278,7 +278,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         levelBriv := true ; Return value
         formationFavorite := g_SF.Memory.GetFormationByFavorite( formation )
         levelSettings := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ]
-        if (g_SF.Memory.ReadChampLvlByID(58) < levelSettings.minLevels[58])
+        if (this.ChampUnderTargetLevel(58, levelSettings.minLevels[58]))
         {
             if (g_SF.Memory.ReadHighestZone() >= g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ]) ; Level Briv to be able to skip areas
                 this.DoPartySetupMin()
@@ -289,9 +289,10 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite))
             {
-                if (g_SF.Memory.ReadChampLvlByID(champID) < levelSettings.maxLevels[champID])
+                maxLevel := levelSettings.maxLevels[champID]
+                if (this.ChampUnderTargetLevel(champID, maxLevel))
                 {
-                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . levelSettings.maxLevels[champID] . ")"
+                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . maxLevel . ")"
                     g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; Level up single champ once
                     return false
                 }
@@ -309,7 +310,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                     if g_SF.Memory.ReadSBStacks() < targetStacks
                         targetLevel := g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] ; Level up Briv to BrivMinLevelStacking before stacking
                 }
-                if (g_SF.Memory.ReadChampLvlByID(champID) < targetLevel)
+                if (this.ChampUnderTargetLevel(champID, targetLevel))
                 {
                     g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
                     g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; Level up single champ once
@@ -332,7 +333,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             if (g_SF.IsChampInFormation(champID, formation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversionBriv" ]))
             {
-                if (g_SF.Memory.ReadChampLvlByID(champID) < g_SF.LastUpgradeLevelByID[champID])
+                if (this.ChampUnderTargetLevel(champID, g_SF.LastUpgradeLevelByID[champID]))
                 {
                     g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to soft cap (" . g_SF.LastUpgradeLevelByID[champID] . ")"
                     g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; level up single champ once
@@ -341,6 +342,14 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             }
         }
         return true
+    }
+
+    ; Returns true if the champion needs to be levelled.
+    ChampUnderTargetLevel(champID := 0, target := 0)
+    {
+        if target is not integer
+            return false
+        return target != 0 && g_SF.Memory.ReadChampLvlByID(champID) < target
     }
 }
 

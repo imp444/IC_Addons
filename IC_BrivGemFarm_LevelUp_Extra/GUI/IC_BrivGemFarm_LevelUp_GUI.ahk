@@ -147,11 +147,15 @@ Class IC_BrivGemFarm_LevelUp_GUI
         ; Timeout during DoPartySetupMin()
         group.AddEdit("BGFLU_MinLevelTimeout",, "w50 Limit5",, true)
         group.AddControl("BGFLU_MinLevelTimeoutText", "Text", "x+5 yp+4", "MinLevel timeout (ms)")
-        group.AddControl("BGFLU_Combo_BrivMinLevelStacking", "ComboBox", "w50 Limit5 hwndHBGFLU_BrivMinLevelStacking gBGFLU_MinMax_Clamp",, true)
-        group.AddControl("BGFLU_BrivMinLevelStackingText", "Text", "x+5 yp+4", "Briv MinLevel before stacking")
-        ; BrivMinLevelArea
-        group.AddEdit("BGFLU_BrivMinLevelArea",, "w50 Limit4",, true)
-        group.AddControl("BGFLU_BrivMinLevelAreaText", "Text", "x+5 yp+4", "Minimum area to reach before leveling Briv")
+        ; Briv settings
+        local BrivGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_BrivGroup", "Briv", "BGFLU_MinSettingsGroup", false,, "BGFLU_MinLevelTimeout")
+        BrivGroup.AddControl("BGFLU_Combo_BrivMinLevelStacking", "ComboBox", "x+0 w50 Limit5 hwndHBGFLU_BrivMinLevelStacking gBGFLU_MinMax_Clamp",, true)
+        BrivGroup.AddControl("BGFLU_BrivMinLevelStackingText", "Text", "x+5 yp+4", "Briv MinLevel before stacking")
+        BrivGroup.AddEdit("BGFLU_BrivMinLevelArea",, "xs+0 w50 Limit4",, true)
+        BrivGroup.AddControl("BGFLU_BrivMinLevelAreaText", "Text", "x+5 yp+4", "Minimum area to reach before leveling Briv")
+        BrivGroup.AutoResize(true, true)
+        group.AddExistingControl(BrivGroup)
+        ; Thellora settings
         local ThelloraGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_ThelloraGroup", "Thellora", "BGFLU_MinSettingsGroup", false,, "BGFLU_BrivMinLevelArea")
         ThelloraGroup.AddEdit("BGFLU_ThelloraRushWait",, "x+0 w50 Limit4")
         ThelloraGroup.AddControl("BGFLU_ThelloraRushWaitText", "Text", "x+5 yp+4", "Thellora Rush target zone")

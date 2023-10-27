@@ -150,7 +150,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     /*  DoPartySetupMin - When gem farm is started or an adventure is reloaded, this is called to set up the primary party.
                           This will only level champs to the minium target specified in BrivGemFarm_LevelUp_Settings.json.
                           This will not level champs whose minimum level is set to 0.
-                          It will wait for Shandie dash if necessary.
+                          It will wait for Shandie dash / Thellora Rush if necessary.
                           It will only level up at a time the number of champions specified in the MaxSimultaneousInputs setting.
         Parameters:       forceBrivShandie: bool - If true, force Briv/Shandie to minLevel before leveling other champions
                           timeout: integer - Time in ms before abandoning the initial leveling
@@ -250,7 +250,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_SF.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
         g_SF.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
         minHighestZone := g_BrivUserSettingsFromAddons[ "ThelloraRushWait" ]
-        if (minHighestZone != "")
+        if (minHighestZone != "" && g_SF.IsChampInFormation(139, formationFavorite1))
             this.DoThelloraRushWait(minHighestZone, StartTime, ElapsedTime, timeout)
         g_SF.ToggleAutoProgress( 1, false, true )
     }

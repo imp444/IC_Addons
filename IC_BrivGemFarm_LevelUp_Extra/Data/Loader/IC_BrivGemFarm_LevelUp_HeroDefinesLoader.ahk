@@ -33,7 +33,7 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         state := this.CurrentState
         if (state > this.STOPPED && state < this.HERO_DATA_FINISHED)
             return
-        ; Start worker
+        ; Check if worker script exists
         scriptLocation := this.WorkerPath
         if (!FileExist(this.WorkerPath))
         {
@@ -44,8 +44,11 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         this.GUID := guid := ComObjCreate("Scriptlet.TypeLib").Guid
         ObjRegisterActive(this, guid)
         OnExit(ObjBindMethod(this, "ComObjectRevoke"))
-        g_SF.WriteObjectToJSON(this.LastGUIDPath, guid)
         languageID := g_BrivGemFarm_LevelUp.GetSetting("DefinitionsLanguage")
+        ; Save args passed to the script to a file
+        args := {GUID:guid, LanguageID:languageID}
+        g_SF.WriteObjectToJSON(this.LastGUIDPath, args)
+        ; Start worker
         Run, %scriptLocation% %languageID% %guid%
         ; Update loop
         fncToCallOnTimer := this.TimerFunction

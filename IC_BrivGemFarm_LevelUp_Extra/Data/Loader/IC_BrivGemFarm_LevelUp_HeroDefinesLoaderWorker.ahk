@@ -191,6 +191,16 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
         return data
     }
 
+    ; Update args from the file written by ICScriptHub.
+    ; g_LanguageID could be incorecctly passed by ICScriptHub.
+    ; g_GUID is updated if ICScriptHub has been closed before the final callback.
+    UpdateArgsFromFile()
+    {
+        args := this.LoadObjectFromJSON(this.LastGUIDPath)
+        g_LanguageID := args.LanguageID
+        g_GUID := args.GUID
+    }
+
     ; Write contents to a text file.
     FileWrite(path, contents)
     {
@@ -405,7 +415,7 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
         {
             if (retry)
             {
-                g_GUID := this.LoadObjectFromJSON(this.LastGUIDPath)
+                this.UpdateArgsFromFile()
                 params := [--retry]
                 func := ObjBindMethod(this, "RetryCallBack", params*)
                 SetTimer, %func%, -1000

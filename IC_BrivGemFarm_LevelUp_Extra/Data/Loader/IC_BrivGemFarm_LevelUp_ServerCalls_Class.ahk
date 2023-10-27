@@ -80,6 +80,8 @@ class IC_BrivGemFarm_LevelUp_ServerCalls_Class
     ;         - table_checksums:str - List of key/value pairs separated by commas.
     CallCheckTableChecksums(languageID := 1, table_checksums := "")
     {
+        if languageID is not integer
+            languageID := 1
         params := "&language_id=" . languageID
         params .= "&supports_chunked_defs=1"
         params .= "&table_checksums=" . table_checksums . "&"
@@ -92,6 +94,8 @@ class IC_BrivGemFarm_LevelUp_ServerCalls_Class
     ;         - filter:str - List of keys separated by commas.
     CallGetHeroDefs(languageID := 1, filter := "")
     {
+        if languageID is not integer
+            languageID := 1
         params := "&language_id=" . languageID
         params .= "&supports_chunked_defs=0"
         if (filter != "")

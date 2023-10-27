@@ -1,3 +1,12 @@
+October 27, 2023 - v1.1.0
+    - Added default min/max level settings for Thellora.
+    - Added Thellora Rush Wait setting (stops auto progress and waits for Thellora to activate her Rush ability).
+    - Added settings for leveling click damage.
+    Fixes:
+        - Added ps21 as fallback server if master fails to return a playserver for definitions.
+        - Fixed an issue with the definitions updater script not getting the correct parameters on some versions of AHK.
+        - Champions whose maxLevel is set to 0 won't be leveled up even if they are saved in a formation.
+
 October 04, 2023 - v1.0.0
     - Definitions are now fetched from CNE servers instead of using the local cachedDefinitions.json file.
       This fixes loading definitions for Epic Games users.

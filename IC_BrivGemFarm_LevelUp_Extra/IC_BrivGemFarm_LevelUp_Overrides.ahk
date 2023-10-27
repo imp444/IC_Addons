@@ -159,7 +159,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     */
     DoPartySetupMin(forceBrivShandie := false, timeout := "")
     {
-        if (forceBrivShandie || g_SF.Memory.ReadCurrentZone() == 1)
+        currentZone := g_SF.Memory.ReadCurrentZone()
+        if (forceBrivShandie || currentZone == 1)
             g_SF.ToggleAutoProgress(0)
         g_SharedData.LoopString := "Leveling champions to the minimum level"
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
@@ -241,14 +242,11 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (forceBrivShandie AND ElapsedTime < timeout) ; remaining time > 0
             return this.DoPartySetupMin(false, g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] - ElapsedTime)
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
+        ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
+        if (currentZone == 1 || g_SharedData.TriggerStart)
+            g_SF.DoClickDamageSetup(g_BrivUserSettingsFromAddons[ "MinClickDamage" ])
         if (!g_BrivUserSettingsFromAddons[ "SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
-        g_SF.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
-        g_SF.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
-        g_SF.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
-        g_SF.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
-        g_SF.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
-        g_SF.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
         minHighestZone := g_BrivUserSettingsFromAddons[ "ThelloraRushWait" ]
         if (minHighestZone != "" && g_SF.IsChampInFormation(139, formationFavorite1))
             this.DoThelloraRushWait(minHighestZone, StartTime, ElapsedTime, timeout)
@@ -354,6 +352,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 }
 
 ; Overrides IC_BrivSharedFunctions_Class.DoDashWait()
+; Overrides IC_BrivSharedFunctions_Class.InitZone()
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
     LastUpgradeLevelByID := "" ; Filled before entering GemFarm() loop
@@ -397,6 +396,44 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         }
         g_PreviousZoneStartTime := A_TickCount
         return
+    }
+
+    ; Does once per zone tasks like pressing leveling keys
+    InitZone( spam )
+    {
+        Critical, On
+        this.DoClickDamageSetup(g_BrivUserSettingsFromAddons[ "ClickDamagePerArea" ])
+        if (g_BrivUserSettingsFromAddons[ "ClickDamageSpam" ])
+        {
+            ; turn Fkeys off/on again
+            this.DirectedInput(hold := 0,, spam*) ;keysup
+            this.DirectedInput(,release := 0, spam*) ;keysdown
+        }
+        ; try to progress
+        this.DirectedInput(,,"{Right}")
+        this.ToggleAutoProgress(1)
+        this.ModronResetZone := this.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
+        g_PreviousZoneStartTime := A_TickCount
+        Critical, Off
+    }
+
+    ; LevelUp click damage.
+    ; Depending on the <NoCtrlKeypress> setting, uses either in-game settings or x100.
+    DoClickDamageSetup(numClicks := 1)
+    {
+        Loop, % numClicks
+        {
+            if(g_UserSettings[ "NoCtrlKeypress" ])
+            {
+                this.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
+                this.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
+            }
+            else
+            {
+                this.DirectedInput(,release := 0, ["{RCtrl}","{ClickDmg}"]*) ;keysdown
+                this.DirectedInput(hold := 0,, ["{ClickDmg}","{RCtrl}"]*) ;keysup
+            }
+        }
     }
 
     ; Retrieves the required level of the last upgrade of every champion
@@ -443,6 +480,9 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "SkipMinDashWait" ] := settings.SkipMinDashWait
         g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
         g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] := settings.MinLevelTimeout
+        g_BrivUserSettingsFromAddons[ "MinClickDamage" ] := settings.MinClickDamage
+        g_BrivUserSettingsFromAddons[ "ClickDamagePerArea" ] := settings.ClickDamagePerArea
+        g_BrivUserSettingsFromAddons[ "ClickDamageSpam" ] := settings.ClickDamageSpam
         g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
         g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ] := settings.BrivMinLevelArea
         g_BrivUserSettingsFromAddons[ "ThelloraRushWait" ] := settings.ThelloraRushWait

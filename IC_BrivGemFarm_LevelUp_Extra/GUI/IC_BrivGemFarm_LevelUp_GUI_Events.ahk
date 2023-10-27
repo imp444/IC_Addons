@@ -110,7 +110,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
             GuiControl, ICScriptHub:Text, %A_GuiControl%, % beforeSubmit
             return
         }
-        else if (value < 1 AND setting != "MinLevelTimeout")
+        else if (value < 1 && setting != "MinLevelTimeout" && setting != "MinClickDamage" && setting != "ClickDamagePerArea")
         {
             value := 1
             GuiControl, ICScriptHub:Text, %A_GuiControl%, % value

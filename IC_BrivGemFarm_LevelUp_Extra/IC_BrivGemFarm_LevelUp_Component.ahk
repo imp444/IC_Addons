@@ -45,6 +45,9 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:, BGFLU_MinClickDamage, % this.Settings.MinClickDamage
+        GuiControl, ICScriptHub:, BGFLU_ClickDamagePerArea, % this.Settings.ClickDamagePerArea
+        GuiControl, ICScriptHub:, BGFLU_ClickDamageSpam, % this.Settings.ClickDamageSpam
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
         GuiControl, ICScriptHub:, BGFLU_ThelloraRushWait, % this.Settings.ThelloraRushWait
@@ -238,6 +241,9 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % defaultSettings.SkipMinDashWait
             GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
             GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % defaultSettings.MinLevelTimeout
+            GuiControl, ICScriptHub:, BGFLU_MinClickDamage, % defaultSettings.MinClickDamage
+            GuiControl, ICScriptHub:, BGFLU_ClickDamagePerArea, % defaultSettings.ClickDamagePerArea
+            GuiControl, ICScriptHub:, BGFLU_ClickDamageSpam, % defaultSettings.ClickDamageSpam
             GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
             GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % defaultSettings.BrivMinLevelArea
             GuiControl, ICScriptHub:, BGFLU_ThelloraRushWait, % defaultSettings.ThelloraRushWait
@@ -263,6 +269,9 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.SkipMinDashWait := false
         settings.MaxSimultaneousInputs := 4
         settings.MinLevelTimeout := 5000
+        settings.MinClickDamage := 3
+        settings.ClickDamagePerArea := 1
+        settings.ClickDamageSpam := true
         settings.BrivMinLevelStacking := 1300
         settings.BrivMinLevelArea := 1
         settings.ThelloraRushWait := 1
@@ -346,6 +355,9 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:, BGFLU_MinClickDamage, % this.Settings.MinClickDamage
+        GuiControl, ICScriptHub:, BGFLU_ClickDamagePerArea, % this.Settings.ClickDamagePerArea
+        GuiControl, ICScriptHub:, BGFLU_ClickDamageSpam, % this.Settings.ClickDamageSpam
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
         GuiControl, ICScriptHub:, BGFLU_ThelloraRushWait, % this.Settings.ThelloraRushWait

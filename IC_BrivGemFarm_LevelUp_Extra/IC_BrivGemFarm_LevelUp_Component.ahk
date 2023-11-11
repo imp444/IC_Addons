@@ -122,7 +122,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            if (!SharedRunData.BrivGemFarmLevelUpRunning) ; Addon running check
+            if (!SharedRunData.BGFLU_Running) ; Addon running check
             {
                 if (!loadWarning)
                 {
@@ -416,7 +416,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            SharedRunData.UpdateSettingsFromFile(applyTempSettings)
+            SharedRunData.BGFLU_UpdateSettingsFromFile(applyTempSettings)
         }
     }
 
@@ -491,7 +491,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            SharedRunData.SaveFormations()
+            SharedRunData.BGFLU_SaveFormations()
         }
         catch
         {

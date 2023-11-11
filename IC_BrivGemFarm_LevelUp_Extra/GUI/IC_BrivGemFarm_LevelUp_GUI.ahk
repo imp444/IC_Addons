@@ -141,10 +141,10 @@ Class IC_BrivGemFarm_LevelUp_GUI
         group.AddCheckBox("BGFLU_ForceBrivShandie",,, "Level up Briv/Shandie to MinLevel first", true)
         ; Skip early Dashwait
         group.AddCheckBox("BGFLU_SkipMinDashWait",,, "Skip DashWait after Min Leveling")
-        ; Maximum number of simultaneous F keys inputs during DoPartySetupMin()
+        ; Maximum number of simultaneous F keys inputs during BGFLU_DoPartySetupMin()
         group.AddEdit("BGFLU_MaxSimultaneousInputs",, "w50 Limit2",, true)
         group.AddControl("BGFLU_MaxSimultaneousInputsText", "Text", "x+5 yp+4", "Maximum simultaneous F keys inputs during MinLevel")
-        ; Timeout during DoPartySetupMin()
+        ; Timeout during BGFLU_DoPartySetupMin()
         group.AddEdit("BGFLU_MinLevelTimeout",, "w50 Limit5",, true)
         group.AddControl("BGFLU_MinLevelTimeoutText", "Text", "x+5 yp+4", "MinLevel timeout (ms)")
         ; Click damage settings

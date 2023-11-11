@@ -73,7 +73,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SF.ToggleAutoProgress( 1, true ) ; Toggle autoprogress to skip boss bag
             if (g_SF.Memory.ReadResetting())
                 this.ModronResetCheck()
-            needToStack := g_SF.Memory.ReadSBStacks() < (g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ])
+            needToStack := this.NeedToStack()
             ; Level up Briv to MaxLevel after stacking
             if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
                 setupMaxDone := false
@@ -305,9 +305,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 {
                     if (!levelBriv)
                         continue
-                    targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
                     ; Level up Briv to BrivMinLevelStacking before stacking
-                    if (g_SF.Memory.ReadSBStacks() < targetStacks)
+                    if (this.NeedToStack())
                         targetLevel := g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" . (this.ShouldOfflineStack() ? "" : "Online") ]
                 }
                 ; Level up a single champion once
@@ -351,6 +350,14 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if target is not integer
             return false
         return target != 0 && g_SF.Memory.ReadChampLvlByID(champID) < target
+    }
+
+    ; Returns true if stacking Briv is necessary during this run.
+    NeedToStack()
+    {
+        stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed()
+        targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
+        return stacks < targetStacks
     }
 }
 

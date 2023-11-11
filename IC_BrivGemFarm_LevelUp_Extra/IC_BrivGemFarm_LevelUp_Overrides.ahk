@@ -50,7 +50,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SF.WaitForFirstGold()
                 setupMaxDone := false
                 setupFailedConversionDone := true
-                this.DoPartySetupMin(g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ])
+                this.DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ])
                 lastResetCount := g_SF.Memory.ReadResetsCount()
                 g_SF.Memory.ActiveEffectKeyHandler.Refresh()
                 worstCase := g_BrivUserSettings[ "AutoCalculateWorstCase" ]
@@ -75,10 +75,10 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 this.ModronResetCheck()
             needToStack := this.NeedToStack()
             ; Level up Briv to MaxLevel after stacking
-            if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
+            if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
                 setupMaxDone := false
             ; Check for failed stack conversion
-            if (g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
+            if (g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
                 setupFailedConversionDone := false
             if (!setupMaxDone)
                 setupMaxDone := this.DoPartySetupMax() ; Level up all champs to the specified max level
@@ -164,14 +164,14 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             g_SF.ToggleAutoProgress(0)
         g_SharedData.LoopString := "Leveling champions to the minimum level"
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
-        minLevels := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ].minLevels
+        minLevels := g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].minLevels
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         g_SF.DirectedInput(,, "{q}") ; switch to Briv in slot 5
         if (forceBrivShandie)
             champIDs := [58, 47]
         else
             champIDs := [58, 47, 91, 128, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139] ; speed champs
-        if (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ]) ; Need to walk while Briv is in all formations
+        if (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]) ; Need to walk while Briv is in all formations
             champIDs.RemoveAt(1)
         keyspam := []
         if (!forceBrivShandie)
@@ -179,7 +179,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             nonSpeedIDs := {}
             for k, champID in formationFavorite1
             {
-                if (champID == 58 && (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ])) ; Need to walk while Briv is in all formations
+                if (champID == 58 && (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ])) ; Need to walk while Briv is in all formations
                     continue
                 if (champID != -1 && champID != "")
                     nonSpeedIDs[champID] := champID
@@ -207,13 +207,13 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
         StartTime := A_TickCount, ElapsedTime := 0
         if (timeout == "")
-            timeout := g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ]
+            timeout := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ]
         timeout := timeout == "" ? 5000 : timeout
         index := 0
         while(keyspam.Length() != 0 AND ElapsedTime < timeout)
         {
             maxKeyspam := [] ; Maximum number of champions leveled up every loop
-            Loop % Min(g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ], keyspam.Length())
+            Loop % Min(g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ], keyspam.Length())
                 maxKeyspam.Push(keyspam[A_Index])
             g_SF.DirectedInput(,, maxKeyspam*) ; Level up speed champions once
             for champID, targetLevel in minLevels
@@ -240,14 +240,14 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
         this.DirectedInput(hold := 0,, keyspam*) ; keysup
         if (forceBrivShandie AND ElapsedTime < timeout) ; remaining time > 0
-            return this.DoPartySetupMin(false, g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] - ElapsedTime)
+            return this.DoPartySetupMin(false, g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ] - ElapsedTime)
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
         if (currentZone == 1 || g_SharedData.TriggerStart)
-            g_SF.DoClickDamageSetup(g_BrivUserSettingsFromAddons[ "MinClickDamage" ])
-        if (!g_BrivUserSettingsFromAddons[ "SkipMinDashWait" ] AND g_SF.ShouldDashWait())
+            g_SF.DoClickDamageSetup(g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
+        if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
-        minHighestZone := g_BrivUserSettingsFromAddons[ "ThelloraRushWait" ]
+        minHighestZone := g_BrivUserSettingsFromAddons[ "BGFLU_ThelloraRushWait" ]
         if (minHighestZone != "" && g_SF.IsChampInFormation(139, formationFavorite1))
             this.DoThelloraRushWait(minHighestZone, StartTime, ElapsedTime, timeout)
         g_SF.ToggleAutoProgress( 1, false, true )
@@ -275,10 +275,10 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 
         levelBriv := true ; Return value
         formationFavorite := g_SF.Memory.GetFormationByFavorite( formation )
-        levelSettings := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ]
+        levelSettings := g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ]
         if (this.ChampUnderTargetLevel(58, levelSettings.minLevels[58]))
         {
-            if (g_SF.Memory.ReadHighestZone() >= g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ]) ; Level Briv to be able to skip areas
+            if (g_SF.Memory.ReadHighestZone() >= g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]) ; Level Briv to be able to skip areas
                 this.DoPartySetupMin(true)
             else
                 levelBriv := false
@@ -307,7 +307,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                         continue
                     ; Level up Briv to BrivMinLevelStacking before stacking
                     if (this.NeedToStack())
-                        targetLevel := g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" . (this.ShouldOfflineStack() ? "" : "Online") ]
+                        targetLevel := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" . (this.ShouldOfflineStack() ? "" : "Online") ]
                 }
                 ; Level up a single champion once
                 if (this.ChampUnderTargetLevel(champID, targetLevel))
@@ -331,7 +331,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         formation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formationIndex), true) ; without empty slots
         for k, champID in formation
         {
-            if (g_SF.IsChampInFormation(champID, formation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversionBriv" ]))
+            if (g_SF.IsChampInFormation(champID, formation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ]))
             {
                 if (this.ChampUnderTargetLevel(champID, g_SF.LastUpgradeLevelByID[champID]))
                 {
@@ -412,8 +412,8 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     InitZone( spam )
     {
         Critical, On
-        this.DoClickDamageSetup(g_BrivUserSettingsFromAddons[ "ClickDamagePerArea" ])
-        if (g_BrivUserSettingsFromAddons[ "ClickDamageSpam" ])
+        this.DoClickDamageSetup(g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamagePerArea" ])
+        if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
         {
             ; turn Fkeys off/on again
             this.DirectedInput(hold := 0,, spam*) ;keysup
@@ -484,21 +484,21 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         settings := g_SF.LoadObjectFromJSON(fileName)
         if (!IsObject(settings))
             return false
-        g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
+        g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
         this.FillMissingDefaultSettings(settings.DefaultMinLevel, settings.DefaultMaxLevel)
-        g_BrivUserSettingsFromAddons[ "ForceBrivShandie" ] := settings.ForceBrivShandie
-        g_BrivUserSettingsFromAddons[ "SkipMinDashWait" ] := settings.SkipMinDashWait
-        g_BrivUserSettingsFromAddons[ "MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
-        g_BrivUserSettingsFromAddons[ "MinLevelTimeout" ] := settings.MinLevelTimeout
-        g_BrivUserSettingsFromAddons[ "MinClickDamage" ] := settings.MinClickDamage
-        g_BrivUserSettingsFromAddons[ "ClickDamagePerArea" ] := settings.ClickDamagePerArea
-        g_BrivUserSettingsFromAddons[ "ClickDamageSpam" ] := settings.ClickDamageSpam
-        g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
-        g_BrivUserSettingsFromAddons[ "BrivMinLevelStackingOnline" ] := settings.BrivMinLevelStackingOnline
-        g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ] := settings.BrivMinLevelArea
-        g_BrivUserSettingsFromAddons[ "ThelloraRushWait" ] := settings.ThelloraRushWait
-        g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion
-        g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversionBriv" ] := settings.LevelToSoftCapFailedConversionBriv
+        g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ] := settings.ForceBrivShandie
+        g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] := settings.SkipMinDashWait
+        g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
+        g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ] := settings.MinLevelTimeout
+        g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ] := settings.MinClickDamage
+        g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamagePerArea" ] := settings.ClickDamagePerArea
+        g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ] := settings.ClickDamageSpam
+        g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
+        g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStackingOnline" ] := settings.BrivMinLevelStackingOnline
+        g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ] := settings.BrivMinLevelArea
+        g_BrivUserSettingsFromAddons[ "BGFLU_ThelloraRushWait" ] := settings.ThelloraRushWait
+        g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion
+        g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ] := settings.LevelToSoftCapFailedConversionBriv
         if (updateMaxLevels)
             this.UpdateMaxLevels := true
     }
@@ -506,7 +506,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
     ; Update min/max values for champions added after default settings have been initialized
     FillMissingDefaultSettings(minLevel := 0, maxLevel := "Last")
     {
-        levelSettings := g_BrivUserSettingsFromAddons[ "BrivGemFarm_LevelUp_Settings" ]
+        levelSettings := g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ]
         numChamps := g_SF.Memory.ReadChampListSize()
         if ((numChamps := g_SF.Memory.ReadChampListSize()) == "")
         {

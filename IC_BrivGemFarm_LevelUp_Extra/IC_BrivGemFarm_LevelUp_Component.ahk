@@ -319,9 +319,10 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[94] := 1, maxLevels[94] := 2520 ; Rust
         minLevels[30] := 1, maxLevels[30] := 2020 ; Azaka
         ; Other
-        minLevels[118] := 0, maxLevels[118] := 60 ; Fen
         minLevels[40] := 0, maxLevels[40] := 215 ; Black Viper
         minLevels[97] := 0, maxLevels[97] := 80 ; Tatyana
+        minLevels[100] := 0, maxLevels[100] := 90 ; Nordom
+        minLevels[118] := 0, maxLevels[118] := 60 ; Fen
         settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
         return settings
     }

@@ -757,7 +757,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             {
                 if (IsObject(v))
                     continue
-                if k in ShowSpoilers,ForceBrivShandie,SkipMinDashWait,LevelToSoftCapFailedConversion,LevelToSoftCapFailedConversionBriv
+                if k in ShowSpoilers,ForceBrivShandie,SkipMinDashWait,ClickDamageSpam,LevelToSoftCapFailedConversion,LevelToSoftCapFailedConversionBriv
                 {
                     saved := g_BrivGemFarm_LevelUp.Settings[k] ? "Yes" : "No"
                     v := v ? "Yes" : "No"
@@ -775,7 +775,7 @@ Class IC_BrivGemFarm_LevelUp_Component
                     for k2, v2 in v1
                     {
                         heroData := g_HeroDefines.HeroDataByID[k2]
-                        showSpoilers := this.TempSettings.HasKey("ShowSpoilers") ? this.TempSettings.ShowSpoilers : g_BrivGemFarm_LevelUp.Settings.ShowSpoilers
+                        showSpoilers := this.GetSetting("ShowSpoilers")
                         if (!showSpoilers AND IC_BrivGemFarm_LevelUp_Seat.IsSpoiler(heroData.allow_time_gate))
                             continue
                         heroName := heroData.name

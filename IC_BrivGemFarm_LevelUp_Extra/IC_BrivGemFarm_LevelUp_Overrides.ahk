@@ -300,18 +300,21 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite))
             {
-                if (champID == 58) ; Briv
+                ; Briv
+                if (champID == 58)
                 {
                     if (!levelBriv)
                         continue
                     targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
-                    if g_SF.Memory.ReadSBStacks() < targetStacks
-                        targetLevel := g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] ; Level up Briv to BrivMinLevelStacking before stacking
+                    ; Level up Briv to BrivMinLevelStacking before stacking
+                    if (g_SF.Memory.ReadSBStacks() < targetStacks)
+                        targetLevel := g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" . (this.ShouldOfflineStack() ? "" : "Online") ]
                 }
+                ; Level up a single champion once
                 if (this.ChampUnderTargetLevel(champID, targetLevel))
                 {
                     g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
-                    g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; Level up single champ once
+                    g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
                     return false
                 }
             }
@@ -484,6 +487,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "ClickDamagePerArea" ] := settings.ClickDamagePerArea
         g_BrivUserSettingsFromAddons[ "ClickDamageSpam" ] := settings.ClickDamageSpam
         g_BrivUserSettingsFromAddons[ "BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
+        g_BrivUserSettingsFromAddons[ "BrivMinLevelStackingOnline" ] := settings.BrivMinLevelStackingOnline
         g_BrivUserSettingsFromAddons[ "BrivMinLevelArea" ] := settings.BrivMinLevelArea
         g_BrivUserSettingsFromAddons[ "ThelloraRushWait" ] := settings.ThelloraRushWait
         g_BrivUserSettingsFromAddons[ "LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion

@@ -49,6 +49,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_ClickDamagePerArea, % this.Settings.ClickDamagePerArea
         GuiControl, ICScriptHub:, BGFLU_ClickDamageSpam, % this.Settings.ClickDamageSpam
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
+        GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStackingOnline, % this.Settings.BrivMinLevelStackingOnline
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
         GuiControl, ICScriptHub:, BGFLU_ThelloraRushWait, % this.Settings.ThelloraRushWait
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
@@ -152,9 +153,8 @@ Class IC_BrivGemFarm_LevelUp_Component
     ; Performs additional functions after definitions have been fully loaded
     OnHeroDefinesFinished()
     {
-        this.UpdateBrivMinLevelStackingList()
+        this.UpdateBrivMinLevelStackingLists()
         this.UndoTempSettings()
-
         levelSettings := this.Settings.BrivGemFarm_LevelUp_Settings
         for heroID in g_HeroDefines.HeroDataByID
         {
@@ -202,8 +202,12 @@ Class IC_BrivGemFarm_LevelUp_Component
         {
             if (!this.Settings.HasKey(k))
             {
-                if (k == "BrivMinLevelStacking") ; Comes after settings.BrivGemFarm_LevelUp_Settings values have been initialized
-                    this.Settings[k] := (settings.BrivGemFarm_LevelUp_Settings.maxLevels[58] < 170) ? settings.BrivGemFarm_LevelUp_Settings.minLevels[58] : settings.BrivGemFarm_LevelUp_Settings.maxLevels[58]
+                levelSettings := this.GetLevelSettings()
+                ; Comes after levelSettings values have been initialized
+                if (k == "BrivMinLevelStacking")
+                    this.Settings[k] := (levelSettings.maxLevels[58] < 170) ? levelSettings.minLevels[58] : levelSettings.maxLevels[58]
+                else if (k == "BrivMinLevelStackingOnline")
+                    this.Settings[k] := this.Settings["BrivMinLevelStacking"]
                 else
                     this.Settings[k] := v
                 save := true
@@ -245,6 +249,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:, BGFLU_ClickDamagePerArea, % defaultSettings.ClickDamagePerArea
             GuiControl, ICScriptHub:, BGFLU_ClickDamageSpam, % defaultSettings.ClickDamageSpam
             GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
+            GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStackingOnline, % defaultSettings.BrivMinLevelStackingOnline
             GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % defaultSettings.BrivMinLevelArea
             GuiControl, ICScriptHub:, BGFLU_ThelloraRushWait, % defaultSettings.ThelloraRushWait
             GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
@@ -273,6 +278,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.ClickDamagePerArea := 1
         settings.ClickDamageSpam := true
         settings.BrivMinLevelStacking := 1300
+        settings.BrivMinLevelStackingOnline := 1300
         settings.BrivMinLevelArea := 1
         settings.ThelloraRushWait := 1
         settings.DefaultMinLevel := 0
@@ -359,6 +365,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_ClickDamagePerArea, % this.Settings.ClickDamagePerArea
         GuiControl, ICScriptHub:, BGFLU_ClickDamageSpam, % this.Settings.ClickDamageSpam
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
+        GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStackingOnline, % this.Settings.BrivMinLevelStackingOnline
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
         GuiControl, ICScriptHub:, BGFLU_ThelloraRushWait, % this.Settings.ThelloraRushWait
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
@@ -545,22 +552,34 @@ Class IC_BrivGemFarm_LevelUp_Component
         this.SaveSettings()
     }
 
-    UpdateBrivMinLevelStackingList()
+    ; Update the list of upgrades for Briv min level before stacking comboBoxes.
+    UpdateBrivMinLevelStackingLists()
     {
-        global
-        local heroData := g_HeroDefines.HeroDataByID[58]
-        local upgrades := heroData.upgradesList
-        GuiControl, -Redraw, BGFLU_Combo_BrivMinLevelStacking
-        GuiControl, ICScriptHub:, BGFLU_Combo_BrivMinLevelStacking, % "|" . upgrades
+        heroData := g_HeroDefines.HeroDataByID[58]
+        upgrades := heroData.upgradesList
+        this.UpdateBrivMinLevelStackingList("BrivMinLevelStacking", heroData, upgrades)
+        this.UpdateBrivMinLevelStackingList("BrivMinLevelStackingOnline", heroData, upgrades)
+    }
+
+    ; Update the list of upgrades for one of the Briv min level before stacking comboBoxes.
+    ; Resizes up to the length of the longest upgrade short description.
+    ; Params: - setting:str - Name of setting.
+    ;         - heroData:obj - Briv data.
+    ;         - upgrades:str - List of upgrades short descriptions separated by <|>.
+    UpdateBrivMinLevelStackingList(setting, heroData, upgrades)
+    {
+        controlID := "BGFLU_Combo_" . setting
+        GuiControl, -Redraw, %controlID%
+        GuiControl, ICScriptHub:, %controlID%, % "|" . upgrades
         if(heroData.cachedSize == "")
             heroData.cachedSize := IC_BrivGemFarm_LevelUp_Functions.DropDownSize(upgrades)
-        SendMessage, CB_SETDROPPEDWIDTH, heroData.cachedSize, 0, , ahk_id %HBGFLU_BrivMinLevelStacking%
+        GuiControlGet, hwnd, ICScriptHub:Hwnd, %controlID%
+        SendMessage, CB_SETDROPPEDWIDTH, heroData.cachedSize, 0, , ahk_id %hwnd%
         if (Errorlevel < 0)
-            MsgBox, 16,, Failed to resize BGFLU_BrivMinLevelStacking.
+            MsgBox, 16,, % "Failed to resize " . controlID . "."
         Sleep, 1
-        local k := "BrivMinLevelStacking"
-        GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % g_BrivGemFarm_LevelUp.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
-        GuiControl, +Redraw, BGFLU_Combo_BrivMinLevelStacking
+        GuiControl, ICScriptHub:Text, %controlID%, % this.GetSetting(setting)
+        GuiControl, +Redraw, %controlID%
     }
 
     /*  _IC_BrivGemFarm_LevelUp_TempSettings

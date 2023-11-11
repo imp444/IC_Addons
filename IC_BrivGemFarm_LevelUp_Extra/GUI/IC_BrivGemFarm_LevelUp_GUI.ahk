@@ -160,7 +160,9 @@ Class IC_BrivGemFarm_LevelUp_GUI
         ; Briv settings
         local BrivGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_BrivGroup", "Briv", "BGFLU_MinSettingsGroup", false,, "BGFLU_ClickDamageSpam")
         BrivGroup.AddControl("BGFLU_Combo_BrivMinLevelStacking", "ComboBox", "x+0 w50 Limit5 hwndHBGFLU_BrivMinLevelStacking gBGFLU_MinMax_Clamp",, true)
-        BrivGroup.AddControl("BGFLU_BrivMinLevelStackingText", "Text", "x+5 yp+4", "Briv MinLevel before stacking")
+        BrivGroup.AddControl("BGFLU_BrivMinLevelStackingText", "Text", "x+5 yp+4", "Briv MinLevel before stacking (offline)")
+        BrivGroup.AddControl("BGFLU_Combo_BrivMinLevelStackingOnline", "ComboBox", "xs+0 w50 Limit5 hwndHBGFLU_BrivMinLevelStackingOnline gBGFLU_MinMax_Clamp",, true)
+        BrivGroup.AddControl("BGFLU_BrivMinLevelStackingOnlineText", "Text", "x+5 yp+4", "Briv MinLevel before stacking (online)")
         BrivGroup.AddEdit("BGFLU_BrivMinLevelArea",, "xs+0 w50 Limit4",, true)
         BrivGroup.AddControl("BGFLU_BrivMinLevelAreaText", "Text", "x+5 yp+4", "Minimum area to reach before leveling Briv")
         BrivGroup.AutoResize(true, true)

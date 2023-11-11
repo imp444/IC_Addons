@@ -168,6 +168,8 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
                 g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "maxLevels", heroId], clamped)
             Case "BrivMinLevelStacking":
                 g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelStacking", clamped)
+            Case "BrivMinLevelStackingOnline":
+                g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelStackingOnline", clamped)
             Default:
                 return
         }
@@ -306,33 +308,28 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
             if ((W >> 16) & 0xFFFF == CBN_SELENDCANCEL) ; Refresh min/max values after a ComboBox sends a selection cancel event to the parent tab
             {
                 ToolTip
-                if (seat_ID == 58)
+                if (seat_ID == "58Off" || seat_ID == "58On")
                 {
-                    local ctrlH := arr[2], k := "BrivMinLevelStacking"
-                    local brivMinLevelStacking := g_BrivGemFarm_LevelUp.TempSettings.TempSettings.HasKey(k) ? g_BrivGemFarm_LevelUp.TempSettings.TempSettings[k] : g_BrivGemFarm_LevelUp.Settings[k]
-                    SendMessage, CB_GETCOUNT, 0, 0,, ahk_id %ctrlH%
-                    local count := Errorlevel
-                    GuiControl, ICScriptHub:, BGFLU_Combo_BrivMinLevelStacking, % brivMinLevelStacking ; Add item
-                    GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % brivMinLevelStacking ; so only the level is kept in edit
-                    SendMessage, CB_DELETESTRING, count, 0,, ahk_id %ctrlH% ; Remove item
+                    local setting := "BrivMinLevelStacking" . (seat_ID == "58On" ? "Online" : "")
+                    local controlID := "BGFLU_Combo_" . setting
+                    local value := g_BrivGemFarm_LevelUp.GetSetting(setting)
                 }
                 else
                 {
-                    local choice := % BGFLU_DDL_Name_%seat_ID%
-                    if (choice == g_HeroDefines.HeroDataByID[58].name) ; After %choice%, ErrorLevel is set to 1 for an unknown reason
-                        GuiControl, ICScriptHub:ChooseString, BGFLU_DDL_Name_5, % "|" . choice
-                    else
-                        GuiControl, ICScriptHub:ChooseString, %choice%, % "|" . choice
+                    local controlID := "BGFLU_DDL_Name_" . seat_ID
+                    GuiControlGet, value,, %controlID%
                 }
+                GuiControl, ICScriptHub:ChooseString, %controlID%, % "|" . value
             }
             else if (this.MouseOverComboBoxList(ctrlH := arr[2])) ; Show current selection as tooltip
             {
                 OnMessage(0x200, "CheckControlForToolTip",0)
-                func := ObjBindMethod(this, "RemoveToolTip")
+                local func := ObjBindMethod(this, "RemoveToolTip")
                 SetTimer, %func%, -500
                 SendMessage, CB_GETCURSEL, 0, 0,, ahk_id %ctrlH%
                 local currentSel := ErrorLevel ; 0 based
-                heroData := IC_BrivGemFarm_LevelUp_Seat.Seats[(seat_ID == 58 ? 5 : seat_ID)].GetCurrentHeroData()
+                local trueSeatID := (seat_ID == "58Off" || seat_ID == "58On") ? 5 : seat_ID
+                local heroData := IC_BrivGemFarm_LevelUp_Seat.Seats[trueSeatID].GetCurrentHeroData()
                 ToolTip, % IC_BrivGemFarm_LevelUp_Functions.WrapText(heroData.UpgradeDescriptionFromIndex(currentSel + 1))
                 SetTimer, HideToolTip, Delete
                 OnMessage(0x200, "CheckControlForToolTip")
@@ -370,7 +367,11 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         ctrlHwnd := HBGFLU_BrivMinLevelStacking
         SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlHwnd%
         if (Errorlevel)
-            return [58, ctrlHwnd]
+            return ["58Off", ctrlHwnd]
+        ctrlHwnd := HBGFLU_BrivMinLevelStackingOnline
+        SendMessage, CB_GETDROPPEDSTATE, 0, 0,, ahk_id %ctrlHwnd%
+        if (Errorlevel)
+            return ["58On", ctrlHwnd]
     }
 
     ; Returns true if the mouse is within the rectangle of a combobox's item list

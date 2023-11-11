@@ -248,22 +248,39 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             g_SF.BGFLU_DoClickDamageSetup(g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
-        minHighestZone := g_BrivUserSettingsFromAddons[ "BGFLU_ThelloraRushWait" ]
-        if (minHighestZone != "" && g_SF.IsChampInFormation(139, formationFavorite1))
-            this.BGFLU_DoThelloraRushWait(minHighestZone, StartTime, ElapsedTime, timeout)
+        if (g_SF.IsChampInFormation(139, formationFavorite1))
+            this.BGFLU_DoThelloraRushWait()
         g_SF.ToggleAutoProgress( 1, false, true )
     }
 
-    BGFLU_DoThelloraRushWait(zone := 1, startTime := 0, elapsedTime := 0, timeout := 5000)
+    ; Wait for Thellora to activate her Rush ability.
+    BGFLU_DoThelloraRushWait()
     {
-        while (g_SF.Memory.ReadHighestZone() < zone && elapsedTime < timeout)
+        this.ToggleAutoProgress( 0, false, true )
+        ; Make sure the ability handler has the correct base address.
+        ; It can change on game restarts or modron resets.
+        this.Memory.ActiveEffectKeyHandler.Refresh()
+        StartTime := A_TickCount
+        ElapsedTime := 0
+        timeScale := this.Memory.ReadTimeScaleMultiplier()
+        timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
+        timeout := 8000 ; 8s seconds
+        estimate := (timeout / timeScale)
+        ; Loop escape conditions:
+        ;   does full timeout duration
+        ;   past highest accepted rushwait triggering area
+        ;   rush is active
+        while (ElapsedTime < timeout && this.ShouldRushWait())
         {
             this.ToggleAutoProgress(0)
             this.SetFormation()
-            this.BGFLU_DoPartySetupMax()
-            elapsedTime := A_TickCount - startTime
+            g_BrivGemFarm.BGFLU_DoPartySetupMax()
+            ElapsedTime := A_TickCount - StartTime
+            g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
             Sleep, 30
         }
+        g_PreviousZoneStartTime := A_TickCount
+        return
     }
 
     /*  BGFLU_DoPartySetupMax - Level up all champs to the specified max level
@@ -503,7 +520,6 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStackingOnline" ] := settings.BrivMinLevelStackingOnline
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ] := settings.BrivMinLevelArea
-        g_BrivUserSettingsFromAddons[ "BGFLU_ThelloraRushWait" ] := settings.ThelloraRushWait
         g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion
         g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ] := settings.LevelToSoftCapFailedConversionBriv
         if (updateMaxLevels)

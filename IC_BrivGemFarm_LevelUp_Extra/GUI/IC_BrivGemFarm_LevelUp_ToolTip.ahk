@@ -28,8 +28,6 @@ Class IC_BrivGemFarm_LevelUp_ToolTip
         GUIFunctions.AddToolTip("BGFLU_BrivMinLevelStackingOnlineText", "Minimum Briv level to reach before online stacking. After stacking, leveling will resume up to MaxLevel.")
         GUIFunctions.AddToolTip("BGFLU_BrivMinLevelArea", "Minimum area before starting to level up Briv (used to walk at the beginning if using Briv in E formation).")
         GUIFunctions.AddToolTip("BGFLU_BrivMinLevelAreaText", "Minimum area before starting to level up Briv (used to walk at the beginning if using Briv in E formation).")
-        GUIFunctions.AddToolTip("BGFLU_ThelloraRushWait", "Minimum area reached (highest, not current) before skipping waiting for Thellora's Rush to activate.")
-        GUIFunctions.AddToolTip("BGFLU_ThelloraRushWaitText", "Minimum area reached (highest, not current) before skipping waiting for Thellora's Rush to activate.")
         GUIFunctions.AddToolTip("BGFLU_LevelToSoftCapFailedConversion", "Level up champions to soft cap after failed conversion if Briv has lower than 50 Sprint stacks.")
         GUIFunctions.AddToolTip("BGFLU_LevelToSoftCapFailedConversionBriv", "Level up Briv to soft cap after failed conversion if Briv has lower than 50 Sprint stacks.")
         GUIFunctions.AddToolTip("BGFLU_MinLevelText", "Minimum level for every champion in the formation before progressing/waiting for Shandie's Dash.")

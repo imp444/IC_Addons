@@ -49,7 +49,8 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
         ; Check if new table_checksums (always true when loading a new language)
         this.UpdateLoaderState(this.CHECK_TABLECHECKSUMS)
         this.LastTableChecksums := this.GetLastTableChecksums()
-        if(this.CheckForNewdefs(languageID, this.LastTableChecksums))
+        isNewDefs := this.CheckForNewdefs(languageID, this.LastTableChecksums)
+        if (isNewDefs || !FileExist(this.HeroDefsPath))
         {
             ; Get filtered defs
             defs := g_ServerCall.CallGetHeroDefs(languageID, this.Filter)
@@ -65,7 +66,7 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
             this.WriteObjectToJSON(this.HeroDefsPath, this.HeroDefines)
             ; Save new checksums
             this.FileWrite(this.LoaderTempPath, this.LastTableChecksums)
-            this.CurrentState := this.HERO_DATA_FINISHED
+            this.CurrentState := isNewDefs ? this.HERO_DATA_FINISHED : this.HERO_DATA_FINISHED_NOUPDATE
         }
         else
             this.CurrentState := this.HERO_DATA_FINISHED_NOUPDATE

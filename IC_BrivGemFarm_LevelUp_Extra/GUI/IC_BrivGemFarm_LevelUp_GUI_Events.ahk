@@ -219,7 +219,23 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     {
         global
         g_BrivGemFarm_LevelUp.TempSettings.ReloadTempSettingsDisplay()
-        Gui, IC_BrivGemFarm_LevelUp_TempSettings:Show
+        ; Show the window under the "View changes" button
+        WinGetPos, x, y, w, h, IC Script Hub
+        GuiControlGet, hwnd, ICScriptHub:Hwnd, BGFLU_Changes
+        ControlGetPos, posX, posY, posW, posH,, ahk_id %hwnd%
+        local xLoc := x + posX
+        local yLoc := y + posY + posH
+        Gui, IC_BrivGemFarm_LevelUp_TempSettings:Show, x%xLoc% y%yLoc%
+        ; Move window if out of monitor bounds
+        local winTitle := "BrivGemFarm LevelUp Settings"
+        WinGetPos, x, y, w, h, %winTitle%
+        local monitor := IC_BrivGemFarm_LevelUp_Functions.GetMonitor("IC_BrivGemFarm_LevelUp_TempSettings")
+        SysGet, monitorCoords, Monitor, %monitor%
+        if ((xLoc + w) > monitorCoordsRight)
+            xLoc := monitorCoordsRight - w
+        if ((yLoc + h) > monitorCoordsBottom)
+            yLoc := monitorCoordsBottom - h
+        WinMove, %winTitle%,, xLoc, yLoc
     }
 
     ; Undo temp settings button

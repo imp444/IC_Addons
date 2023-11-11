@@ -20,12 +20,12 @@ GUIFunctions.UseThemeTextColor() ; WARNING: Addon was loaded too late. Stop/star
 IC_BrivGemFarm_LevelUp_GUI.SetupGroups()
 
 ; Temp settings ListView
-Gui, IC_BrivGemFarm_LevelUp_TempSettings:New, -MaximizeBox -Resize
+Gui, IC_BrivGemFarm_LevelUp_TempSettings:New, -MaximizeBox -Resize, BrivGemFarm LevelUp Settings
 GUIFunctions.LoadTheme("IC_BrivGemFarm_LevelUp_TempSettings")
 GUIFunctions.UseThemeBackgroundColor()
 GUIFunctions.UseThemeTextColor()
-Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, GroupBox, w330 h310, BrivGemFarm LevelUp Settings
-Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, ListView, xp+15 yp+24 w300 h270 NoSortHdr vBGFLU_TempSettings , Setting|Current|New
+;Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, GroupBox, w330 h310, BrivGemFarm LevelUp Settings
+Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, ListView, w330 h310 NoSortHdr vBGFLU_TempSettings , Setting|Current|New
 GUIFunctions.UseThemeListViewBackgroundColor("BGFLU_TempSettings")
 GUIFunctions.LoadTheme()
 

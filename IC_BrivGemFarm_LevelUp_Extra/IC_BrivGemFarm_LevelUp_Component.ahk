@@ -222,11 +222,15 @@ Class IC_BrivGemFarm_LevelUp_Component
                 }
                 else if (IsObject(v1))
                 {
+                    ; levelSettings
                     for k2, v2 in v1
-                    if (!this.Settings[k][k1].HasKey(k2))
                     {
-                        this.Settings[k][k1][k2] := v2
-                        save := true
+                        setting := this.Settings[k][k1]
+                        if (!setting.HasKey(k2) || (k1 == "minLevels" || k1 == "maxLevels") && setting[k2] == "")
+                        {
+                            this.Settings[k][k1][k2] := v2
+                            save := true
+                        }
                     }
                 }
             }

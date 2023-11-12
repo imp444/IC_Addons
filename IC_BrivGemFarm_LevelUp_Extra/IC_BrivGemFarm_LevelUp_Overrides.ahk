@@ -249,38 +249,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
         if (g_SF.IsChampInFormation(139, formationFavorite1))
-            this.BGFLU_DoThelloraRushWait()
+            g_SF.DoRushWait()
         g_SF.ToggleAutoProgress( 1, false, true )
-    }
-
-    ; Wait for Thellora to activate her Rush ability.
-    BGFLU_DoThelloraRushWait()
-    {
-        this.ToggleAutoProgress( 0, false, true )
-        ; Make sure the ability handler has the correct base address.
-        ; It can change on game restarts or modron resets.
-        this.Memory.ActiveEffectKeyHandler.Refresh()
-        StartTime := A_TickCount
-        ElapsedTime := 0
-        timeScale := this.Memory.ReadTimeScaleMultiplier()
-        timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
-        timeout := 8000 ; 8s seconds
-        estimate := (timeout / timeScale)
-        ; Loop escape conditions:
-        ;   does full timeout duration
-        ;   past highest accepted rushwait triggering area
-        ;   rush is active
-        while (ElapsedTime < timeout && this.ShouldRushWait())
-        {
-            this.ToggleAutoProgress(0)
-            this.SetFormation()
-            g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            ElapsedTime := A_TickCount - StartTime
-            g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
-            Sleep, 30
-        }
-        g_PreviousZoneStartTime := A_TickCount
-        return
     }
 
     /*  BGFLU_DoPartySetupMax - Level up all champs to the specified max level
@@ -380,6 +350,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 }
 
 ; Overrides IC_BrivSharedFunctions_Class.DoDashWait()
+; Overrides IC_BrivSharedFunctions_Class.DoRushWait()
 ; Overrides IC_BrivSharedFunctions_Class.InitZone()
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
@@ -420,6 +391,36 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             g_BrivGemFarm.BGFLU_DoPartySetupMax()
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
+            Sleep, 30
+        }
+        g_PreviousZoneStartTime := A_TickCount
+        return
+    }
+
+    ; Wait for Thellora to activate her Rush ability.
+    DoRushWait()
+    {
+        this.ToggleAutoProgress( 0, false, true )
+        ; Make sure the ability handler has the correct base address.
+        ; It can change on game restarts or modron resets.
+        this.Memory.ActiveEffectKeyHandler.Refresh()
+        StartTime := A_TickCount
+        ElapsedTime := 0
+        timeScale := this.Memory.ReadTimeScaleMultiplier()
+        timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
+        timeout := 8000 ; 8s seconds
+        estimate := (timeout / timeScale)
+        ; Loop escape conditions:
+        ;   does full timeout duration
+        ;   past highest accepted rushwait triggering area
+        ;   rush is active
+        while (ElapsedTime < timeout && this.ShouldRushWait())
+        {
+            this.ToggleAutoProgress(0)
+            this.SetFormation()
+            g_BrivGemFarm.BGFLU_DoPartySetupMax()
+            ElapsedTime := A_TickCount - StartTime
+            g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
             Sleep, 30
         }
         g_PreviousZoneStartTime := A_TickCount

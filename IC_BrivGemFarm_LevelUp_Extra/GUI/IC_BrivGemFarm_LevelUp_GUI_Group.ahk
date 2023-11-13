@@ -237,14 +237,16 @@ Class IC_BrivGemFarm_LevelUp_GUI_Group extends IC_BrivGemFarm_LevelUp_GUI_Contro
     ; Calculates the size of this GroupBox's outline that contours all of its controls.
     ; Parameters: - init:bool - If true, resizes the GroupBox outline.
     ; Parameters: - line:bool - If true, displays a thin line instead of a box around controls.
-    AutoResize(init := false, line := false)
+    AutoResize(init := false, border := "")
     {
         if (!init)
             return
         controlID := this.ControlID
         GuiControlGet, posS, ICScriptHub:Pos, %controlID%
-        if (line)
+        if (border == "Line")
             newHeight := 10
+        else if (border == "Borderless")
+            newHeight := 0
         else
         {
             lowest := this.GetLowestControl()
@@ -319,7 +321,53 @@ Class IC_BrivGemFarm_LevelUp_GUI_BorderLessGroup extends IC_BrivGemFarm_LevelUp_
         this.XSection := this.YSection := 0
         this.YTitleSpacing := 0
         base.__New(name, title, group, tabS, newLine, previous)
-        this.Hide()
+        Gui, ICScriptHub:Font, w700
+        this.AddControl(name . "Title", "Text", "x+0", title)
+        Gui, ICScriptHub:Font, w400
+    }
+}
+
+; Class that creates 50 checkboxes into a single group.
+Class IC_BrivGemFarm_LevelUp_GUI_Mod50Group extends IC_BrivGemFarm_LevelUp_GUI_BorderLessGroup
+{
+    ; Creates a new GroupBox.
+    ; Parameters: - name:str - The name/reference of the group.
+    ;             - title:str - The title of the control that will appear on the outline.
+    ;             - group:str - The group that contanis this group.
+    ;             - tabS:bool - If true, adds an x offset to this group from the previous control equal to XSection.
+    ;             - newLine:bool - If true, position the group under the previous control.
+    ;             - previous:str - The reference control that is used to position the new group.
+    __New(name, title := "", group := "BGFLU_DefaultSettingsGroup", tabS := true, newLine := true, previous := "")
+    {
+        base.__New(name, title, group, tabS, newLine, previous)
+        GuiControlGet, pos, ICScriptHub:Pos, %name%
+        this.BuildModTable(posX, posY, name)
+    }
+
+    ; Builds mod50 checkboxes.
+    BuildModTable(xLoc, yLoc, name)
+    {
+        leftAlign := xLoc
+        Loop, 50
+        {
+            if(Mod(A_Index, 10) != 1)
+                xLoc += 35
+            else
+            {
+                xLoc := leftAlign
+                yLoc += 20
+            }
+            this.AddCheckBox(name . "_Mod50_" . A_Index, true, "Checked x" . xLoc . " y" . yLoc, A_Index)
+        }
+    }
+
+    ; Creates and adds a CheckBox control to the GroupBox.
+    ; The function BGFLU_Mod50CheckBoxEvent handles Mod50Checkbox events.
+    AddCheckBox(controlID, saveSetting := true, options := "", text := "", newLine := false)
+    {
+        if (saveSetting)
+            options .= " gBGFLU_Mod50CheckBoxEvent"
+        return this.AddControl(controlID, "CheckBox", options, text, newLine)
     }
 }
 

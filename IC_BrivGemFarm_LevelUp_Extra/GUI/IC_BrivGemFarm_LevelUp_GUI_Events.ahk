@@ -18,6 +18,11 @@ BGFLU_CheckBoxEvent()
     IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_CheckBoxEvent()
 }
 
+BGFLU_Mod50CheckBoxEvent()
+{
+    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_Mod50CheckBoxEvent()
+}
+
 BGFLU_EditEvent()
 {
     IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_EditEvent()
@@ -95,6 +100,23 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         g_BrivGemFarm_LevelUp.TempSettings.AddSetting(setting, value)
         if (setting == "ShowSpoilers")
             g_BrivGemFarm_LevelUp.ToggleSpoilers(value) ; Effect is immediate
+    }
+
+    ; Checked/ unchecked (mod50)
+    BGFLU_Mod50CheckBoxEvent()
+    {
+        global
+        Gui, ICScriptHub:Submit, NoHide
+        RegExMatch(A_GuiControl, "BGFLU_([^_]+)_Mod50_\d+", setting)
+        rootControlID := "BGFLU_" . setting1 . "_Mod50_"
+        value := 0
+        Loop, 50
+        {
+            GuiControlGet, isChecked, ICScriptHub:, %rootControlID%%A_Index%
+            if (isChecked)
+                value += 2 ** (A_Index - 1)
+        }
+        g_BrivGemFarm_LevelUp.TempSettings.AddSetting(setting1, value)
     }
 
     ; Keyboard or c/p input

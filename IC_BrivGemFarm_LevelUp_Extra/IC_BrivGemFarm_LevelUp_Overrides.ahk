@@ -172,7 +172,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             champIDs := [58, 47]
         else
             champIDs := [58, 47, 91, 128, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139] ; speed champs
-        if (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]) ; Need to walk while Briv is in all formations
+        if (!this.BGFLU_AllowBrivLeveling()) ; Need to walk while Briv is in all formations
             champIDs.RemoveAt(1)
         keyspam := []
         if (!forceBrivShandie)
@@ -180,7 +180,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             nonSpeedIDs := {}
             for k, champID in formationFavorite1
             {
-                if (champID == 58 && (g_SF.Memory.ReadHighestZone() < g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ])) ; Need to walk while Briv is in all formations
+                if (champID == 58 && !this.BGFLU_AllowBrivLeveling()) ; Need to walk while Briv is in all formations
                     continue
                 if (champID != -1 && champID != "")
                     nonSpeedIDs[champID] := champID
@@ -266,7 +266,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         levelSettings := g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ]
         if (this.BGFLU_ChampUnderTargetLevel(58, levelSettings.minLevels[58]))
         {
-            if (g_SF.Memory.ReadHighestZone() >= g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]) ; Level Briv to be able to skip areas
+            if (this.BGFLU_AllowBrivLeveling()) ; Level Briv to be able to skip areas
                 this.BGFLU_DoPartySetupMin(true)
             else
                 levelBriv := false
@@ -346,6 +346,20 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed()
         targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
         return stacks < targetStacks
+    }
+
+    BGFLU_AllowBrivLeveling()
+    {
+        if (g_SF.Memory.ReadHasteStacks() < 50)
+            return true
+        highestZone := g_SF.Memory.ReadHighestZone()
+        if (highestZone < g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ])
+            return false
+        mod50Index := Mod(highestZone, 50) == 0 ? 50 : Mod(highestZone, 50)
+        mod50Zones := g_BrivUserSettingsFromAddons[ "BGFLU_BrivLevelingZones" ]
+        if (mod50Zones[mod50Index] == 0 && this.BGFLU_ChampUnderTargetLevel(58, 80))
+            return false
+        return true
     }
 }
 
@@ -521,6 +535,8 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStackingOnline" ] := settings.BrivMinLevelStackingOnline
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ] := settings.BrivMinLevelArea
+        mod50Zones := IC_BrivGemFarm_LevelUp_Functions.ConvertBitfieldToArray(settings.BrivLevelingZones)
+        g_BrivUserSettingsFromAddons[ "BGFLU_BrivLevelingZones" ] := mod50Zones
         g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion
         g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ] := settings.LevelToSoftCapFailedConversionBriv
         if (updateMaxLevels)

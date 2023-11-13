@@ -187,4 +187,21 @@ class IC_BrivGemFarm_LevelUp_Functions
         time += unixTime, s
         return time
     }
+
+    ; Converts a integer to an boolean array.
+    ; Params: value:int - Integer (64-bit limit).
+    ;         associative:array - If true, returns an associative array {}.
+    ;                             If false, returns a linear array [].
+    ConvertBitfieldToArray(value, associative := false)
+    {
+        array := associative ? {} : []
+        Loop, 50
+        {
+            if (associative)
+                array[A_Index] := (value & (2 ** (A_Index - 1))) != 0
+            else
+                array.Push((value & (2 ** (A_Index - 1))) != 0)
+        }
+        return array
+    }
 }

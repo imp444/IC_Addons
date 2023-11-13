@@ -51,6 +51,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStackingOnline, % this.Settings.BrivMinLevelStackingOnline
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
+        g_BrivGemFarm_LevelUpGui.LoadMod50("BrivLevelingZones", this.Settings.BrivLevelingZones)
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         GuiControl, ICScriptHub:Choose, BGFLU_SelectLanguage, % this.Settings.DefinitionsLanguage
@@ -254,6 +255,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
             GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStackingOnline, % defaultSettings.BrivMinLevelStackingOnline
             GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % defaultSettings.BrivMinLevelArea
+            g_BrivGemFarm_LevelUpGui.LoadMod50("BrivLevelingZones", defaultSettings.BrivLevelingZones)
             GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
             GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % defaultSettings.LevelToSoftCapFailedConversionBriv
             this.LoadFormation(this.GetFormationFromGUI())
@@ -282,6 +284,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.BrivMinLevelStacking := 1300
         settings.BrivMinLevelStackingOnline := 1300
         settings.BrivMinLevelArea := 1
+        settings.BrivLevelingZones := 1125899906842623
         settings.DefaultMinLevel := 0
         settings.DefaultMaxLevel := 1
         settings.LevelToSoftCapFailedConversion := true
@@ -369,6 +372,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStackingOnline, % this.Settings.BrivMinLevelStackingOnline
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
+        g_BrivGemFarm_LevelUpGui.LoadMod50("BrivLevelingZones", this.Settings.BrivLevelingZones)
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
         this.TempSettings.Reset()
@@ -757,6 +761,15 @@ Class IC_BrivGemFarm_LevelUp_Component
                 {
                     saved := g_BrivGemFarm_LevelUp.Settings[k] ? "Yes" : "No"
                     v := v ? "Yes" : "No"
+                }
+                else if (k == "BrivLevelingZones")
+                {
+                    mod50Zones := IC_BrivGemFarm_LevelUp_Functions.ConvertBitfieldToArray(g_BrivGemFarm_LevelUp.Settings[k], true)
+                    mod50Zones2 := IC_BrivGemFarm_LevelUp_Functions.ConvertBitfieldToArray(v, true)
+                    diff := IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqualDiff(mod50Zones, mod50Zones2)
+                    for k1, v1 in diff
+                        LV_Add(, k . " [z" . k1 . "]", v1[1] ? "Yes" : "No", v1[2] ? "Yes" : "No")
+                    continue
                 }
                 else
                     saved := g_BrivGemFarm_LevelUp.Settings[k]

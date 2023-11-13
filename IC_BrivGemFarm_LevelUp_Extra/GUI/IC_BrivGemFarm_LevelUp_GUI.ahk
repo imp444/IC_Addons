@@ -38,7 +38,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
 {
     static MainGroup := ""
     static Groups := []
-    static SectionNames := ["Min/Max Settings", "Min Settings", "Fail Run Recovery Settings", "GUI Settings"]
+    static SectionNames := ["Min/Max Settings", "General Settings", "Fail Run Recovery Settings", "GUI Settings"]
 
     ; Creates all of the groups of settings.
     ; All of the other groups are children of BGFLU_SettingsGroup.
@@ -47,7 +47,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
         global
         this.SetupBGFLUSettingsGroup()
         this.SetupBGFLU_MinMaxSettingsGroup()
-        this.SetupBGFLU_MinSettingsGroup()
+        this.SetupBGFLU_GeneralSettingsGroup()
         this.SetupBGFLU_FailRunRecoverySettingsGroup()
         this.SetupBGFLU_GUISettingsGroup()
         this.MainGroup.AutoResize()
@@ -74,7 +74,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
         this.MainGroup := group
         this.SetupBGFLU_DefaultSettingsGroup()
         GuiControlGet, pos, ICScriptHub:Pos, BGFLU_DefaultSettingsGroup
-        sections := "Min/Max Settings||Min Settings|Fail Run Recovery Settings|GUI Settings"
+        sections := "Min/Max Settings||General Settings|Fail Run Recovery Settings|GUI Settings"
         Gui, ICScriptHub:Font, s11
         group.AddControl("BGFLU_LB_Section", "ListBox", "AltSubmit R4 w175 gBGFLU_LB_Section x" . (PosX + PosW + 10) . " y" . (posY + 6), sections, false)
         Gui, ICScriptHub:Font, s9
@@ -133,10 +133,10 @@ Class IC_BrivGemFarm_LevelUp_GUI
         group.AddControl("BGFLU_Combo_MaxLevel_" . seat, "ComboBox", "Limit6 hwndHBGFLU_MaxLevel_" . seat . " gBGFLU_MinMax_Clamp w60")
     }
 
-    SetupBGFLU_MinSettingsGroup()
+    SetupBGFLU_GeneralSettingsGroup()
     {
         global
-        local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_MinSettingsGroup", "Min Settings",, false)
+        local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_GeneralSettingsGroup", "General Settings",, false)
         ; Force Briv/Shandie MinLevel
         group.AddCheckBox("BGFLU_ForceBrivShandie",,, "Level up Briv/Shandie to MinLevel first", true)
         ; Skip early Dashwait
@@ -148,7 +148,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
         group.AddEdit("BGFLU_MinLevelTimeout",, "w50 Limit5",, true)
         group.AddControl("BGFLU_MinLevelTimeoutText", "Text", "x+5 yp+4", "MinLevel timeout (ms)")
         ; Click damage settings
-        local ClickGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_ClickGroup", "Click damage", "BGFLU_MinSettingsGroup", false,, "BGFLU_MinLevelTimeout")
+        local ClickGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_ClickGroup", "Click damage", "BGFLU_GeneralSettingsGroup", false,, "BGFLU_MinLevelTimeout")
         ClickGroup.AddControl("BGFLU_ClickDamageText", "Text", "x+0", "Level click damage")
         ClickGroup.AddEdit("BGFLU_MinClickDamage",, "x+5 yp-3 w50 Limit4")
         ClickGroup.AddControl("BGFLU_MinClickDamageText", "Text", "x+5 yp+4", "times on area 1,")
@@ -158,7 +158,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
         ClickGroup.AutoResize(true, "Line")
         group.AddExistingControl(ClickGroup)
         ; Briv settings
-        local BrivGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_BrivGroup", "Briv", "BGFLU_MinSettingsGroup", false,, "BGFLU_ClickDamageSpam")
+        local BrivGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_BrivGroup", "Briv", "BGFLU_GeneralSettingsGroup", false,, "BGFLU_ClickDamageSpam")
         BrivGroup.AddControl("BGFLU_Combo_BrivMinLevelStacking", "ComboBox", "x+0 w50 Limit5 hwndHBGFLU_BrivMinLevelStacking gBGFLU_MinMax_Clamp",, true)
         BrivGroup.AddControl("BGFLU_BrivMinLevelStackingText", "Text", "x+5 yp+4", "Briv MinLevel before stacking (offline)")
         BrivGroup.AddControl("BGFLU_Combo_BrivMinLevelStackingOnline", "ComboBox", "yp-4 w50 Limit5 hwndHBGFLU_BrivMinLevelStackingOnline gBGFLU_MinMax_Clamp")

@@ -6,16 +6,16 @@ It performs the best using **x100** upgrade settings, although in some cases **x
 ####
 If you have set upgrade settings to next upgrade mode, Briv may not achieve level 170 in time.  
 It is recommended to set his min level to 80 instead at the expense of a small increase in stacks consumption during the first few jumps,
-or to check **Level up Briv/Shandie to MinLevel first** under the **Min Settings** section.
+or to check **Level up Briv/Shandie to MinLevel first** under the **General Settings** section.
 ___
 ## Briv stacking:
 ####
 During offline stacking, Briv gets more stacks as he is able to survive longer.
 Sometimes it is undesirable to get many stacks because the simulation takes longer to complete.
-Select a maximum level in the **Briv MinLevel before stacking** dropdown list under **Min Settings**, so he won't receive as many health upgrades.
+Select a maximum level in the **Briv MinLevel before stacking** dropdown list under **General Settings**, so he won't receive as many health upgrades.
 ####
 If you're setting Briv's min level to less than level 110 so that he gets Unnatural Haste but not Healing Phlo,  
-set up **Briv MinLevel before stacking** under **Min Settings** to a value under 110.  
+set up **Briv MinLevel before stacking** under **General Settings** to a value under 110.  
 Select 170 or more in MaxLevel so that after stacking, Briv will be leveled back to level 170 and gain his MetalBorn upgrade to reduce the amount of stacks lost after every jump.
 ___
 ## Settings:
@@ -44,7 +44,7 @@ Default max level for champions with no default values.
 1 - Put the champion on the field and don't level them |
 Last upgrade - Level up the champion until soft cap
 ___
-#### Min Settings:
+#### General Settings:
 ![settings](Images/min_settings.png)
 ####
 * **Level up Briv/Shandie to MinLevel first** (default: unchecked)   

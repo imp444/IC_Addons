@@ -74,9 +74,13 @@ Class IC_BrivGemFarm_LevelUp_GUI
         this.MainGroup := group
         this.SetupBGFLU_DefaultSettingsGroup()
         GuiControlGet, pos, ICScriptHub:Pos, BGFLU_DefaultSettingsGroup
+        Gui, ICScriptHub:Font, w700
+        group.AddControl("BGFLU_MenuTitle", "Text", "x" . (posX + posW + 5) . " y" . posY, "Menu")
+        Gui, ICScriptHub:Font, w400
+        GuiControlGet, pos, ICScriptHub:Pos, BGFLU_MenuTitle
         sections := "Min/Max Settings||General Settings|Fail Run Recovery Settings|GUI Settings"
         Gui, ICScriptHub:Font, s11
-        group.AddControl("BGFLU_LB_Section", "ListBox", "AltSubmit R4 w175 gBGFLU_LB_Section x" . (PosX + PosW + 10) . " y" . (posY + 6), sections, false)
+        group.AddControl("BGFLU_LB_Section", "ListBox", "AltSubmit R4 w180 gBGFLU_LB_Section x" . posX . " y" . (posY + 20), sections, false)
         Gui, ICScriptHub:Font, s9
     }
 

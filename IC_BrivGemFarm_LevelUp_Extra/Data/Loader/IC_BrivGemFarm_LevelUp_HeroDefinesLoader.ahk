@@ -96,6 +96,8 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
             else
                 IC_BrivGemFarm_LevelUp_Seat.OnHeroDefinesFinished()
             IC_BrivGemFarm_LevelUp_ToolTip.UpdateDefsCNETime(this.HeroDefines.current_time)
+            ; Clear memory bloat
+            IC_BrivGemFarm_LevelUp_Functions.EmptyMem()
         }
     }
 

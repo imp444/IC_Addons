@@ -153,12 +153,11 @@ Class IC_BrivGemFarm_LevelUp_GUI
         group.AddControl("BGFLU_MinLevelTimeoutText", "Text", "x+5 yp+4", "MinLevel timeout (ms)")
         ; Click damage settings
         local ClickGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_ClickGroup", "Click damage", "BGFLU_GeneralSettingsGroup", false,, "BGFLU_MinLevelTimeout")
-        ClickGroup.AddControl("BGFLU_ClickDamageText", "Text", "x+0", "Level click damage")
+        ClickGroup.AddControl("BGFLU_ClickDamageText", "Text", "x+0", "Level click damage to level")
         ClickGroup.AddEdit("BGFLU_MinClickDamage",, "x+5 yp-3 w50 Limit4")
-        ClickGroup.AddControl("BGFLU_MinClickDamageText", "Text", "x+5 yp+4", "times on area 1,")
-        ClickGroup.AddEdit("BGFLU_ClickDamagePerArea",, "x+5 yp-4 w50 Limit4")
-        ClickGroup.AddControl("BGFLU_ClickDamagePerAreaText", "Text", "x+5 yp+4", "times on every area after")
+        ClickGroup.AddControl("BGFLU_MinClickDamageText", "Text", "x+5 yp+3", "on area 1")
         ClickGroup.AddCheckBox("BGFLU_ClickDamageSpam",, "xs+0", "Spam click damage", true)
+        ClickGroup.AddCheckBox("BGFLU_ClickDamageMatchArea",,, "Match highest area")
         ClickGroup.AutoResize(true, "Line")
         group.AddExistingControl(ClickGroup)
         ; Briv settings

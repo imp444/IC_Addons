@@ -560,6 +560,8 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             repl := (value := this.ValueIfKeyExists(kvps, "amount")) != "NOREPL" ? 100 - value : value
         else if (param1 == "upgrade_stacks_num")
             repl := IC_BrivGemFarm_LevelUp_TextData.GetData("unknown", "Unknown")
+        else if (param1 == "jangsao_stellar_nursery_target_count")
+            repl := this.ValueIfKeyExists(kvps, "amount___2")
         else if (kvps.HasKey(param1)) ; amount
             repl := kvps[param1]
         return repl

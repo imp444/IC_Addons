@@ -165,7 +165,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             g_SF.ToggleAutoProgress(0)
         g_SharedData.LoopString := "Leveling champions to the minimum level"
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
-        minLevels := g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].minLevels
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         g_SF.DirectedInput(,, "{q}") ; switch to Briv in slot 5
         if (forceBrivShandie)
@@ -191,7 +190,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite1))
             {
-                if (this.BGFLU_ChampUnderTargetLevel(champID, minLevels[champID]))
+                if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")))
                     keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
                 if (!forceBrivShandie)
                     nonSpeedIDs.Delete(champID)
@@ -202,7 +201,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             for k, champID in nonSpeedIDs
             {
-                if (this.BGFLU_ChampUnderTargetLevel(champID, minLevels[champID]))
+                if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")))
                     keyspam.Push("{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
             }
         }
@@ -217,20 +216,21 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             Loop % Min(g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ], keyspam.Length())
                 maxKeyspam.Push(keyspam[A_Index])
             g_SF.DirectedInput(,, maxKeyspam*) ; Level up speed champions once
-            for champID, targetLevel in minLevels
+            ; Remove keyspam
+            for k, champID in formationFavorite1
             {
-                if (g_SF.IsChampInFormation(champID, formationFavorite1))
+                if (champID < 1)
+                    continue
+                targetLevel := this.BGFLU_GetTargetLevel(champID, "Min")
+                Fkey := "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}"
+                if (!this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
                 {
-                    Fkey := "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}"
-                    if (!this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
+                    for k1, v in keyspam
                     {
-                        for k, v in keyspam
+                        if (v == Fkey)
                         {
-                            if (v == Fkey)
-                            {
-                                keyspam.RemoveAt(k)
-                                break
-                            }
+                            keyspam.RemoveAt(k1)
+                            break
                         }
                     }
                 }
@@ -263,9 +263,9 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         static champIDs := [47, 91, 128, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139] ; speed champs without Briv
 
         levelBriv := true ; Return value
-        formationFavorite := g_SF.Memory.GetFormationByFavorite( formation )
+        formationFavorite := g_SF.Memory.GetFormationByFavorite(formation)
         levelSettings := g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ]
-        if (this.BGFLU_ChampUnderTargetLevel(58, levelSettings.minLevels[58]))
+        if (this.BGFLU_ChampUnderTargetLevel(58, this.BGFLU_GetTargetLevel(58, "Min")))
         {
             if (this.BGFLU_AllowBrivLeveling()) ; Level Briv to be able to skip areas
                 this.BGFLU_DoPartySetupMin(true)
@@ -276,35 +276,35 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             if (g_SF.IsChampInFormation(champID, formationFavorite))
             {
-                maxLevel := levelSettings.maxLevels[champID]
-                if (this.BGFLU_ChampUnderTargetLevel(champID, maxLevel))
+                targetLevel := this.BGFLU_GetTargetLevel(champID)
+                if (this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
                 {
-                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . maxLevel . ")"
+                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
                     g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; Level up single champ once
                     return false
                 }
             }
         }
-        for champID, targetLevel in levelSettings.maxLevels
+        for k, champID in formationFavorite
         {
-            if (g_SF.IsChampInFormation(champID, formationFavorite))
+            if (champID < 1)
+                continue
+            targetLevel := this.BGFLU_GetTargetLevel(champID)
+            ; Briv
+            if (champID == 58)
             {
-                ; Briv
-                if (champID == 58)
-                {
-                    if (!levelBriv)
-                        continue
-                    ; Level up Briv to BrivMinLevelStacking before stacking
-                    if (this.BGFLU_NeedToStack())
-                        targetLevel := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" . (this.ShouldOfflineStack() ? "" : "Online") ]
-                }
-                ; Level up a single champion once
-                if (this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
-                {
-                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
-                    g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
-                    return false
-                }
+                if (!levelBriv)
+                    continue
+                ; Level up Briv to BrivMinLevelStacking before stacking
+                if (this.BGFLU_NeedToStack())
+                    targetLevel := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" . (this.ShouldOfflineStack() ? "" : "Online") ]
+            }
+            ; Level up a single champion once
+            if (this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
+            {
+                g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
+                g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
+                return false
             }
         }
         return levelBriv
@@ -320,11 +320,14 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         formation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formationIndex), true) ; without empty slots
         for k, champID in formation
         {
+            if (champID < 1)
+                continue
             if (g_SF.IsChampInFormation(champID, formation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ]))
             {
-                if (this.BGFLU_ChampUnderTargetLevel(champID, g_SF.LastUpgradeLevelByID[champID]))
+                lastUpgrade := g_SF.BGFLU_GetLastUpgradeLevel(champID)
+                if (this.BGFLU_ChampUnderTargetLevel(champID, lastUpgrade))
                 {
-                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to soft cap (" . g_SF.LastUpgradeLevelByID[champID] . ")"
+                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to soft cap (" . lastUpgrade . ")"
                     g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; level up single champ once
                     return false
                 }
@@ -333,9 +336,43 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         return true
     }
 
+    ; Returns the minimum / maximum level a champion should be leveled to.
+    ; Params: champID:int - ID of the champion.
+    ;         minOrMax:str - If equal to "Min", level up the champion to minLevel,
+    ;                        or to 0 or 1 depending on default settings.
+    ;                        If equal to "Max", level up the champion to maxLevel,
+    ;                        or to 1 or last upgrade depending on default settings.
+    BGFLU_GetTargetLevel(champID := 0, minOrMax := "Max")
+    {
+        if (champID < 1)
+            return 0
+        levelSettings := g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ]
+        if (minOrMax == "Min")
+        {
+            if (levelSettings.minLevels[champID] != "")
+                return levelSettings.minLevels[champID]
+            minLevel := g_BrivUserSettingsFromAddons[ "BGFLU_DefaultMinLevel" ]
+            return (minLevel == "") ? 0 : minLevel
+        }
+        else if (minOrMax == "Max")
+        {
+            if (levelSettings.maxLevels[champID] != "")
+                return levelSettings.maxLevels[champID]
+            maxLevel := g_BrivUserSettingsFromAddons[ "BGFLU_DefaultMaxLevel" ]
+            if (maxLevel == "Last")
+                return g_SF.BGFLU_GetLastUpgradeLevel(champID)
+            else
+                return (maxLevel == "") ? 1 : maxLevel
+        }
+        else
+            return 0
+    }
+
     ; Returns true if the champion needs to be levelled.
     BGFLU_ChampUnderTargetLevel(champID := 0, target := 0)
     {
+        if (champID < 1)
+            return false
         if target is not integer
             return false
         return target != 0 && g_SF.Memory.ReadChampLvlByID(champID) < target
@@ -369,7 +406,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 ; Overrides IC_BrivSharedFunctions_Class.InitZone()
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
-;    LastUpgradeLevelByID := "" ; Filled before entering GemFarm() loop
+;    BGFLU_LastUpgradeLevelByID := ""
 
     ;================================
     ;Functions mostly for gem farming
@@ -519,22 +556,24 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         return this.Memory.GameManager.game.gameInstances[this.Memory.GameInstance].ClickLevel.Read()
     }
 
-    ; Retrieves the required level of the last upgrade of every champion
-    BGFLU_CalcLastUpgradeLevels()
+    ; Retrieves the required level of the last upgrade of a champion.
+    BGFLU_GetLastUpgradeLevel(champID)
     {
-        obj := {}
-        Loop, % this.Memory.ReadChampListSize()
+        if (champID == "" || champID < 1)
+            return 0
+        cachedLevels := this.BGFLU_LastUpgradeLevelByID
+        if !IsObject(cachedLevels)
+            this.BGFLU_LastUpgradeLevelByID := cachedLevels := {}
+        if (cachedLevels.HasKey(champID) && cachedLevels[champID] != "")
+            return cachedLevels[champID]
+        maxUpgradeLevel := 0
+        Loop, % this.Memory.ReadHeroUpgradesSize(champID)
         {
-            champID := A_Index, maxUpgradeLevel := 0
-            Loop, % this.Memory.ReadHeroUpgradesSize(champID)
-            {
-                requiredLevel := this.Memory.ReadHeroUpgradeRequiredLevel(champID, A_Index - 1)
-                if (requiredLevel != 9999)
-                    maxUpgradeLevel := Max(requiredLevel, maxUpgradeLevel)
-            }
-            obj[champID] := maxUpgradeLevel
+            requiredLevel := this.Memory.ReadHeroUpgradeRequiredLevel(champID, A_Index - 1)
+            if (requiredLevel != 9999)
+                maxUpgradeLevel := Max(requiredLevel, maxUpgradeLevel)
         }
-        this.LastUpgradeLevelByID := obj
+        cachedLevels[champID] := maxUpgradeLevel
     }
 }
 
@@ -564,7 +603,8 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         if (!IsObject(settings))
             return false
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ] := settings.BrivGemFarm_LevelUp_Settings
-        this.BGFLU_FillMissingDefaultSettings(settings.DefaultMinLevel, settings.DefaultMaxLevel)
+        g_BrivUserSettingsFromAddons[ "BGFLU_DefaultMinLevel" ] := settings.DefaultMinLevel
+        g_BrivUserSettingsFromAddons[ "BGFLU_DefaultMaxLevel" ] := settings.DefaultMaxLevel
         g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ] := settings.ForceBrivShandie
         g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] := settings.SkipMinDashWait
         g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
@@ -581,39 +621,6 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ] := settings.LevelToSoftCapFailedConversionBriv
         if (updateMaxLevels)
             this.BGFLU_UpdateMaxLevels := true
-    }
-
-    ; Update min/max values for champions added after default settings have been initialized
-    BGFLU_FillMissingDefaultSettings(minLevel := 0, maxLevel := "Last")
-    {
-        levelSettings := g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ]
-        numChamps := g_SF.Memory.ReadChampListSize()
-        if ((numChamps := g_SF.Memory.ReadChampListSize()) == "")
-        {
-            func := ObjBindMethod(this, "BGFLU_RetryCalc")
-            SetTimer, %func%, -1000
-            return
-        }
-        Loop, % numChamps
-        {
-            champID := A_Index
-            if levelSettings.minLevels[champID] == ""
-                levelSettings.minLevels[champID] := (minLevel == "") ? 0 : minLevel
-            if levelSettings.maxLevels[champID] == ""
-            {
-                if (maxLevel == "Last")
-                    levelSettings.maxLevels[champID] := g_SF.LastUpgradeLevelByID[champID]
-                else
-                    levelSettings.maxLevels[champID] := (maxLevel == "") ? 1 : maxLevel
-            }
-        }
-    }
-
-    BGFLU_RetryCalc()
-    {
-        g_SF.Memory.OpenProcessReader()
-        g_SF.BGFLU_CalcLastUpgradeLevels()
-        this.BGFLU_UpdateSettingsFromFile(true)
     }
 
     ; Save full Q,W,E formations to BrivGemFarm_LevelUp_Settings.json

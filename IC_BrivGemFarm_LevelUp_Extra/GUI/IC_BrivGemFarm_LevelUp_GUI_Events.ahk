@@ -140,6 +140,55 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         g_BrivGemFarm_LevelUp.TempSettings.AddSetting(setting, value)
     }
 
+    ; Moves a MsgBox window after a short delay to create a new thread.
+    ; Should be called right before showing a MsgBox window.
+    ; Params: controlID:str - Name of the control where the MsgBox should be moved near.
+    SetupMoveMsgBox(controlID)
+    {
+        params := [controlID]
+        func := ObjBindMethod(this, "MoveMsgBox", params*)
+        SetTimer, %func%, -1
+    }
+
+    ; Moves the currently active window after it has appeared on screen.
+    ; Params: controlID:str - Name of the control where the MsgBox should be moved near.
+    MoveMsgBox(controlID)
+    {
+        targetPos := this.GetPopupPos(controlID)
+        newX := targetPos[1]
+        newY := targetPos[2]
+        WinGetActiveTitle, title
+        if (title == "" || title == "IC Script Hub")
+            return this.SetupMoveMsgBox(controlID)
+        WinMove, %title%,, %newX%, %newY%
+        this.MoveIfOutOfBounds(title, newX, newY)
+    }
+
+    ; Moves the target window inside the bounds of the current monitor.
+    MoveIfOutOfBounds(winTitle, xLoc, yLoc)
+    {
+        WinGetPos, x, y, w, h, %winTitle%
+        monitor := IC_BrivGemFarm_LevelUp_Functions.GetMonitor(winTitle)
+        SysGet, monitorCoords, MonitorWorkArea, %monitor%
+        if ((xLoc + w) > monitorCoordsRight)
+            xLoc := monitorCoordsRight - w
+        if ((yLoc + h) > monitorCoordsBottom)
+            yLoc := monitorCoordsBottom - h
+        WinMove, %winTitle%,, xLoc, yLoc
+    }
+
+    ; Returns the position where the MsgBox / new window should appear.
+    ; Params: controlID:str - Name of the control where the MsgBox should be moved near.
+    GetPopupPos(controlID)
+    {
+        WinGetPos, x, y, w, h, IC Script Hub
+        GuiControlGet, hwnd, ICScriptHub:Hwnd, %controlID%
+        ControlGetPos, posX, posY, posW, posH,, ahk_id %hwnd%
+        xLoc := x + posX
+        yLoc := y + posY + posH
+        return [xLoc, yLoc]
+    }
+
     ; Jump to section
     BGFLU_LB_Section()
     {
@@ -212,7 +261,8 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     BGFLU_Default()
     {
         global
-        MsgBox, 4, , Restore Default settings?, 10
+        this.SetupMoveMsgBox("BGFLU_Default")
+        MsgBox, 4, BrivGemFarm LevelUp, Restore Default settings?, 10
         IfMsgBox, No
             Return
         IfMsgBox, Timeout
@@ -226,7 +276,8 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     BGFLU_Save()
     {
         global
-        MsgBox, 4, , Save and apply changes?, 10
+        this.SetupMoveMsgBox("BGFLU_Save")
+        MsgBox, 4, BrivGemFarm LevelUp, Save and apply changes?, 10
         IfMsgBox, No
             Return
         IfMsgBox, Timeout
@@ -242,29 +293,20 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         global
         g_BrivGemFarm_LevelUp.TempSettings.ReloadTempSettingsDisplay()
         ; Show the window under the "View changes" button
-        WinGetPos, x, y, w, h, IC Script Hub
-        GuiControlGet, hwnd, ICScriptHub:Hwnd, BGFLU_Changes
-        ControlGetPos, posX, posY, posW, posH,, ahk_id %hwnd%
-        local xLoc := x + posX
-        local yLoc := y + posY + posH
+        targetPos := this.GetPopupPos("BGFLU_Changes")
+        xLoc := targetPos[1]
+        yLoc := targetPos[2]
         Gui, IC_BrivGemFarm_LevelUp_TempSettings:Show, x%xLoc% y%yLoc%
         ; Move window if out of monitor bounds
-        local winTitle := "BrivGemFarm LevelUp Settings"
-        WinGetPos, x, y, w, h, %winTitle%
-        local monitor := IC_BrivGemFarm_LevelUp_Functions.GetMonitor("IC_BrivGemFarm_LevelUp_TempSettings")
-        SysGet, monitorCoords, Monitor, %monitor%
-        if ((xLoc + w) > monitorCoordsRight)
-            xLoc := monitorCoordsRight - w
-        if ((yLoc + h) > monitorCoordsBottom)
-            yLoc := monitorCoordsBottom - h
-        WinMove, %winTitle%,, xLoc, yLoc
+        this.MoveIfOutOfBounds("BrivGemFarm LevelUp Settings", xLoc, yLoc)
     }
 
     ; Undo temp settings button
     BGFLU_Undo()
     {
         global
-        MsgBox, 4, , Undo all changes?, 10
+        this.SetupMoveMsgBox("BGFLU_Undo")
+        MsgBox, 4, BrivGemFarm LevelUp, Undo all changes?, 10
         IfMsgBox, No
             Return
         IfMsgBox, Timeout

@@ -220,6 +220,9 @@ Class IC_BrivGemFarm_LevelUp_GUI
                     else
                         v.Move(, minY)
                     v.Show()
+                    ; Show tooltip when BGFLU_DefinitionsStatus is visible
+                    if (k == 5)
+                        IC_BrivGemFarm_LevelUp_ToolTip.UpdateDefsCNETime(, true)
                 }
                 else
                 {

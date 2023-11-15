@@ -1,5 +1,8 @@
 Class IC_BrivGemFarm_LevelUp_ToolTip
 {
+    static DefinitionsTime := 0
+    static NeedUpdate := true
+
     ; Show tooltips on mouseover
     AddToolTips()
     {
@@ -35,13 +38,25 @@ Class IC_BrivGemFarm_LevelUp_ToolTip
         GUIFunctions.AddToolTip("BGFLU_MaxLevelText", "Maximum level for every champion in the formation before leveling stops.")
     }
 
-    UpdateDefsCNETime(unixTime)
+    UpdateDefsCNETime(unixTime := 0, delayed := false)
     {
+        if !(this.NeedUpdate || unixTime != this.DefinitionsTime && (unixTime != 0 || delayed))
+            return
+        if (unixTime != this.DefinitionsTime && unixTime != 0)
+            this.DefinitionsTime := unixTime
+        GuiControlGet, value, ICScriptHub:Visible, BGFLU_DefinitionsStatus
+        ; Update when BGFLU_DefinitionsStatus is visible
+        if (value == 0 || this.DefinitionsTime == 0)
+            return this.NeedUpdate := true
+        else
+            unixTime := this.DefinitionsTime
+        ; Convert to local time
         now := A_Now
         EnvSub, now, A_NowUTC, s
         EnvAdd, unixTime, now
         localTime := IC_BrivGemFarm_LevelUp_Functions.UnixToUTC(unixTime)
         FormatTime, timeStr, % localTime
         GUIFunctions.AddToolTip("BGFLU_DefinitionsStatus", "Last server update: " . timeStr)
+        this.NeedUpdate := false
     }
 }

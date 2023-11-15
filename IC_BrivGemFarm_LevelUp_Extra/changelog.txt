@@ -1,6 +1,6 @@
 November 15, 2023 - v1.2.0
     - Settings updates:
-        - Added mod50 zones for Briv Min Leveling (Briv will only be leveled on one of these zones before his jump ability is unlocked).
+        - Added mod50 zones for Briv Min Leveling (Briv will only be leveled in one of these zones before his jump ability is unlocked).
         - Added setting for Briv minLevel before online stacking.
         - AutoCalculateBrivStacks setting will be used for Briv leveling before stacking.
         - Click damage setup now uses memory reads. MinClickDamage is now the target for Click Damage level during Min leveling on z1.
@@ -8,12 +8,12 @@ November 15, 2023 - v1.2.0
         - Removed Thellora Rush Wait setting. Thellora Rush Wait will use memory reads instead.
         - Added default min/max level settings for Nordom.
     - GUI updates:
-        - The temp settings window and popus displayed after clicking on Default, Save, and Undo buttons
+        - The temp settings window and popups displayed after clicking on Default, Save, and Undo buttons
           will appear close the button that triggered the window instead of the middle of the screen.
         - Added "Menu" text over the top-right menu.
         - Updated "Min Settings" to "General Settings" in menu choices.
     - Fixes:
-        - Reduced memory bloat after loading definitons.
+        - Reduced memory bloat after loading definitions.
         - Reduced memory usage and waiting time after starting BrivGemFarm caused by last upgrade level calculations.
         - Fixed Jang Sao's Stellar Nursery ability description.
         - HeroDefines.json is created if the file is missing even when there are no updates.

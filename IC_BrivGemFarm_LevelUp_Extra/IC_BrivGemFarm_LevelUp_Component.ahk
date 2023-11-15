@@ -155,17 +155,6 @@ Class IC_BrivGemFarm_LevelUp_Component
     {
         this.UpdateBrivMinLevelStackingLists()
         this.UndoTempSettings()
-        levelSettings := this.Settings.BrivGemFarm_LevelUp_Settings
-        for heroID in g_HeroDefines.HeroDataByID
-        {
-            if (!levelSettings.minLevels.HasKey(heroID))
-                levelSettings.minLevels[heroID] := this.Settings.DefaultMinLevel
-            if (!levelSettings.maxLevels.HasKey(heroID))
-            {
-                heroData := g_HeroDefines.HeroDataByID[heroID]
-                levelSettings.maxLevels[heroID] := this.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1
-            }
-        }
         GuiControl, ICScriptHub:Enable, BGFLU_LoadFormation
         GuiControl, ICScriptHub:Enable, BGFLU_Default
         GuiControl, ICScriptHub:Enable, BGFLU_SelectLanguage
@@ -242,7 +231,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             defaultMaxLevel := this.TempSettings.TempSettings.HasKey("DefaultMaxLevel") ? this.TempSettings.TempSettings.DefaultMaxLevel : this.Settings.DefaultMaxLevel
             GuiControl, ICScriptHub:, BGFLU_MinRadio%defaultMinLevel%, 1
             GuiControl, ICScriptHub:, BGFLU_MaxRadio%defaultMaxLevel%, 1
-            this.FillMissingDefaultSettings()
+            this.ResetNonSpeedSettings(true)
             GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % defaultSettings.ShowSpoilers
             this.ToggleSpoilers(defaultSettings.ShowSpoilers)
             GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % defaultSettings.ForceBrivShandie
@@ -332,18 +321,22 @@ Class IC_BrivGemFarm_LevelUp_Component
     }
 
     ; Reset min/max values for other champions
-    FillMissingDefaultSettings()
+    ResetNonSpeedSettings(default := false)
     {
         defaultLevelSettings := this.LoadDefaultSettings().BrivGemFarm_LevelUp_Settings
+        levelSettings := this.GetLevelSettings()
+        tempSettings := g_BrivGemFarm_LevelUp.TempSettings.GetLevelTempSettings()
         settings := {}, minLevels := {}, maxLevels := {}
         for heroID in g_HeroDefines.HeroDataByID
         {
-            if (!defaultLevelSettings.minLevels.HasKey(heroID))
-                minLevels[heroID] := this.TempSettings.TempSettings.HasKey("DefaultMinLevel") ? this.TempSettings.TempSettings.DefaultMinLevel : this.Settings.DefaultMinLevel
-            if (!defaultLevelSettings.maxLevels.HasKey(heroID))
+            hasSaved := levelSettings.minLevels.HasKey(heroID) || levelSettings.maxLevels.HasKey(heroID)
+            hasTemp := tempSettings.minLevels.HasKey(heroID) || tempSettings.maxLevels.HasKey(heroID)
+            if (hasSaved && !defaultLevelSettings.minLevels.HasKey(heroID) && (default || hasTemp))
+                minLevels[heroID] := this.GetSetting("DefaultMinLevel")
+            if (hasSaved && !defaultLevelSettings.maxLevels.HasKey(heroID) && (default || hasTemp))
             {
                 heroData := g_HeroDefines.HeroDataByID[heroID]
-                maxLevels[heroID] := (this.TempSettings.TempSettings.HasKey("DefaultMaxLevel") ? this.TempSettings.TempSettings.DefaultMaxLevel : this.Settings.DefaultMaxLevel) == "Last" ? heroData.lastUpgradeLevel : 1
+                maxLevels[heroID] := this.GetSetting("DefaultMaxLevel") == "Last" ? heroData.lastUpgradeLevel : 1
             }
         }
         settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
@@ -408,9 +401,10 @@ Class IC_BrivGemFarm_LevelUp_Component
         levelSettings := settings.BrivGemFarm_LevelUp_Settings
         for heroID in g_HeroDefines.HeroDataByID
         {
-            if (!defaultLevelSettings.minLevels.HasKey(heroID) AND levelSettings.minLevels[heroID] == this.Settings.DefaultMinLevel)
+            hasSaved := levelSettings.minLevels.HasKey(heroID) || levelSettings.maxLevels.HasKey(heroID)
+            if (!defaultLevelSettings.minLevels.HasKey(heroID) && !hasSaved)
                 settings.BrivGemFarm_LevelUp_Settings.minLevels.Delete(heroID)
-            if (!defaultLevelSettings.maxLevels.HasKey(heroID))
+            if (!defaultLevelSettings.maxLevels.HasKey(heroID) && !hasSaved)
             {
                 heroData := g_HeroDefines.HeroDataByID[heroID]
                 if (levelSettings.maxLevels[heroID] == (this.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1))
@@ -861,10 +855,23 @@ Class IC_BrivGemFarm_LevelUp_Seat
         Sleep, 1
         local levelSettings := g_BrivGemFarm_LevelUp.GetLevelSettings()
         local levelTempSettings := g_BrivGemFarm_LevelUp.TempSettings.GetLevelTempSettings()
-        local minLevel := levelTempSettings.minLevels.HasKey(heroID) ? levelTempSettings.minLevels[heroID] : levelSettings.minLevels[heroID]
-        minLevel := minLevel != "" ? minlevel : g_BrivGemFarm_LevelUp.Settings.DefaultMinLevel
-        local maxLevel := levelTempSettings.maxLevels.HasKey(heroID) ? levelTempSettings.maxLevels[heroID] : levelSettings.maxLevels[heroID]
-        maxLevel := maxLevel != "" ? maxlevel : g_BrivGemFarm_LevelUp.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1
+        hasSaved := levelSettings.minLevels.HasKey(heroID) || levelSettings.maxLevels.HasKey(heroID)
+        if (levelTempSettings.minLevels.HasKey(heroID))
+            minLevel := levelTempSettings.minLevels[heroID]
+        else
+        {
+            defaultMinLevel := g_BrivGemFarm_LevelUp.GetSetting("DefaultMinLevel")
+            minLevel := hasSaved ? levelSettings.minLevels[heroID] : defaultMinLevel
+            minLevel := minLevel != "" ? minLevel : defaultMinLevel
+        }
+        if (levelTempSettings.maxLevels.HasKey(heroID))
+            maxLevel := levelTempSettings.maxLevels[heroID]
+        else
+        {
+            defaultMaxLevel := g_BrivGemFarm_LevelUp.GetSetting("DefaultMaxLevel") == "Last" ? heroData.lastUpgradeLevel : 1
+            maxLevel := hasSaved ? levelSettings.maxLevels[heroID] : defaultMaxLevel
+            maxLevel := maxLevel != "" ? maxLevel : defaultMaxLevel
+        }
         GuiControl, ICScriptHub:Text, BGFLU_Combo_MinLevel_%seat%, % minLevel
         GuiControl, ICScriptHub:Text, BGFLU_Combo_MaxLevel_%seat%, % maxLevel
         GuiControl, +Redraw, BGFLU_Combo_MinLevel_%seat%

@@ -234,9 +234,17 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         Switch split[3]
         {
             Case "MinLevel":
+            {
                 g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "minLevels", heroId], clamped)
+                if (g_BrivGemFarm_LevelUp.GetLevelSettings().maxLevels[heroId] == "")
+                    g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "maxLevels", heroId], g_BrivGemFarm_LevelUp.GetSetting("DefaultMaxLevel"))
+            }
             Case "MaxLevel":
+            {
                 g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "maxLevels", heroId], clamped)
+                if (g_BrivGemFarm_LevelUp.GetLevelSettings().minLevels[heroId] == "")
+                    g_BrivGemFarm_LevelUp.TempSettings.AddSetting(["BrivGemFarm_LevelUp_Settings", "minLevels", heroId], g_BrivGemFarm_LevelUp.GetSetting("DefaultMinLevel"))
+            }
             Case "BrivMinLevelStacking":
                 g_BrivGemFarm_LevelUp.TempSettings.AddSetting("BrivMinLevelStacking", clamped)
             Case "BrivMinLevelStackingOnline":
@@ -321,7 +329,8 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         global
         Gui, ICScriptHub:Submit, NoHide
         g_BrivGemFarm_LevelUp.TempSettings.AddSetting("DefaultMinLevel", BGFLU_MinRadio0 ? 0 : 1)
-        g_BrivGemFarm_LevelUp.FillMissingDefaultSettings()
+        g_BrivGemFarm_LevelUp.ResetNonSpeedSettings()
+        g_BrivGemFarm_LevelUp.LoadFormation(g_BrivGemFarm_LevelUp.GetFormationFromGUI())
     }
 
     ; Default max values for champions without default parameters.
@@ -330,7 +339,8 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         global
         Gui, ICScriptHub:Submit, NoHide
         g_BrivGemFarm_LevelUp.TempSettings.AddSetting("DefaultMaxLevel", BGFLU_MaxRadio1 ? 1 : "Last")
-        g_BrivGemFarm_LevelUp.FillMissingDefaultSettings()
+        g_BrivGemFarm_LevelUp.ResetNonSpeedSettings()
+        g_BrivGemFarm_LevelUp.LoadFormation(g_BrivGemFarm_LevelUp.GetFormationFromGUI())
     }
 
     ; Select language used for defintions.

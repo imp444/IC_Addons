@@ -88,7 +88,13 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             {
                 setupMaxDone := false
                 g_SharedData.BGFLU_UpdateMaxLevels := false
+                ; Stop click spam
+                if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
+                    g_SF.BGFLU_LevelClickDamage(1)
             }
+            ; Click damage
+            if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
+                g_SF.BGFLU_DoClickDamageSetup(, g_SF.Memory.ReadHighestZone() + 20)
             if (CurrentZone > PreviousZone ) ; needs to be greater than because offline could stacking getting stuck in descending zones.
             {
                 PreviousZone := CurrentZone
@@ -441,7 +447,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             this.ToggleAutoProgress(0)
             this.SetFormation()
             g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            g_SF.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
+            this.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
             Sleep, 30
@@ -472,7 +478,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             this.ToggleAutoProgress(0)
             this.SetFormation()
             g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            g_SF.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
+            this.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
             Sleep, 30
@@ -485,10 +491,10 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     InitZone( spam )
     {
         Critical, On
-        if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-            this.BGFLU_DoClickDamageSetup(, this.Memory.ReadHighestZone() + 20)
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
         {
+            ; Level up click damage once
+            this.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
             ; turn Fkeys off/on again
             this.DirectedInput(hold := 0,, spam*) ;keysup
             this.DirectedInput(,release := 0, spam*) ;keysdown
@@ -508,7 +514,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     ;         clickLevel:int - If set to higher than 1, click damage is leveled up to this value.
     ;                          If numClicks is set to 1, will exit after 1 click.
     ;         timeout:int - Maximum waiting time.
-    BGFLU_DoClickDamageSetup(numClicks := 0, clickLevel := 1, timeout := 1000)
+    BGFLU_DoClickDamageSetup(numClicks := 0, clickLevel := 1, timeout := 100)
     {
         if (clickLevel > 1)
         {

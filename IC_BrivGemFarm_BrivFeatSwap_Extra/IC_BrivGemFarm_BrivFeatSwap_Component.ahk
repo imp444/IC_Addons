@@ -560,7 +560,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         while (currentArea < resetArea)
         {
             ; Area progress
-            mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
+            mod50Index := Mod(currentArea, 50) == 0 ? 50 : Mod(currentArea, 50)
             mod50Value := mod50values[mod50Index]
             move := mod50Value ? qVal : eVal
             ; Update walk and metalborn jump counters
@@ -600,7 +600,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         while (stacks >= 50)
         {
             ; Area progress
-            mod50Index := Mod(currentArea, 50) == 0 ? currentArea : Mod(currentArea, 50)
+            mod50Index := Mod(currentArea, 50) == 0 ? 50 : Mod(currentArea, 50)
             move := mod50values[mod50Index] ? qVal : eVal
             currentArea += move
             ; Update stacks

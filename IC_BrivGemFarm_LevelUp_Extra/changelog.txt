@@ -2,7 +2,7 @@ November 17, 2023 - v1.2.1
     - Click settings fixes:
         - Fixed "Match highest area" setting temporarily halting the script's execution when there was not enough gold to reach the target level.
         - "Spam click damage" does an extra click at x1/100 before starting to spam (vanilla settings).
-        - Toggling off "Spam click damage" will stop the spam immediately after settings sare saved.
+        - Toggling off "Spam click damage" will stop the spam immediately after settings are saved.
 
 November 15, 2023 - v1.2.0
     - Settings updates:

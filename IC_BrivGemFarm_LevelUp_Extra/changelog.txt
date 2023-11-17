@@ -1,10 +1,16 @@
+November 17, 2023 - v1.2.1
+    - Click settings fixes:
+        - Fixed "Match highest area" setting temporarily halting the script's execution when there was not enough gold to reach the target level.
+        - "Spam click damage" does an extra click at x1/100 before starting to spam (vanilla settings).
+        - Toggling off "Spam click damage" will stop the spam immediately after settings sare saved.
+
 November 15, 2023 - v1.2.0
     - Settings updates:
         - Added mod50 zones for Briv Min Leveling (Briv will only be leveled in one of these zones before his jump ability is unlocked).
         - Added setting for Briv minLevel before online stacking.
         - AutoCalculateBrivStacks setting will be used for Briv leveling before stacking.
         - Click damage setup now uses memory reads. MinClickDamage is now the target for Click Damage level during Min leveling on z1.
-          Added en extra setting that will match Click damage level to the highest area reached +20 so enemies are always one-hit.
+          Added an extra setting that will match Click damage level to the highest area reached +20 so enemies are always one-hit.
         - Removed Thellora Rush Wait setting. Thellora Rush Wait will use memory reads instead.
         - Added default min/max level settings for Nordom.
     - GUI updates:

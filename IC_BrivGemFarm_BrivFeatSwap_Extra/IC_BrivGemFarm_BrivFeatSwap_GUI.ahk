@@ -273,7 +273,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         local newHeight := posY + posH - posGY + this.YSection
         GuiControl, ICScriptHub:Move, BGFBFS_BGFLU, h%newHeight% w%posG2W%
         ; Link to LevelUp addon
-        Gui, ICScriptHub:Add, Text, Hidden xs+%xSpacing% y+%yTitleSpacing% vBGFBFS_GetLevelUpAddonText, % "Use "
+        Gui, ICScriptHub:Add, Text, Hidden xs+%xSpacing% y+%yTitleSpacing% vBGFBFS_GetLevelUpAddonText, % "Use the "
         GUIFunctions.UseThemeTextColor("SpecialTextColor1")
         local link := "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_LevelUp_Extra"
         Gui, ICScriptHub:Add, Link, Hidden x+0 vBGFBFS_GetLevelUpAddonLink hwndBGFBFS_GetLevelUpAddonLink, <a href="%link%">LevelUp</a>
@@ -285,7 +285,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
     SetupMouseClickGroup()
     {
         global
-        Gui, ICScriptHub:Add, CheckBox, xs yp+5 vBGFBFS_MouseClick, Enable mouse clicks to cancel Briv's jump animation (Ctrl+Alt+X to toggle on/off)
+        local yTitleSpacing := this.YTitleSpacing
+        Gui, ICScriptHub:Add, CheckBox, xs yp+%yTitleSpacing% vBGFBFS_MouseClick, Enable mouse clicks to cancel Briv's jump animation (Ctrl+Alt+X to toggle on/off)
         Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickText, (Recommended for 5J/4J TT, highly recommended for 6J/4J TT/RAC and 7J/4J TT)
         GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
         Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickTextWarning, This option should NOT be used if actively using the computer.
@@ -306,7 +307,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
        NumPut(0x10, LITEM, 12, "UInt")           ; LIS_DEFAULTCOLORS
        While DllCall("SendMessage", "Ptr", hLink, "UInt", 0x0702, "Ptr", 0, "Ptr", &LITEM, "UInt") ; LM_SETITEM
           NumPut(A_Index, LITEM, 4, "Int")
-       GuiControl, +Redraw, %hLink%
+;       GuiControl, +Redraw, %hLink%
     }
 
     ; Builds mod50 checkboxes for PreferredBrivJumpZones.

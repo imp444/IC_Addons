@@ -6,11 +6,8 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
     ; Tests to make sure Gem Farm is properly set up before attempting to run.
     PreFlightCheck()
     {
-        settings := g_SF.LoadObjectFromJSON(A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json")
-        if (!settings.Enabled)
+        if (!g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ])
             return this.base.PreFlightCheck()
-        else
-            g_SharedData.BGFBFS_ToggleAddon(true)
         memoryVersion := g_SF.Memory.GameManager.GetVersion()
         ; Test Favorite Exists
         txtCheck := "`n`nOther potential solutions:"
@@ -59,7 +56,7 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
     StackFarmSetup(params*)
     {
         this.base.StackFarmSetup(params*)
-        if (!g_SharedData.BGFBFS_Enabled)
+        if (!g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ])
             return
         if (g_SF.IsCurrentFormation(g_SF.Memory.GetFormationByFavorite(2)))
             g_SharedData.BGFBFS_UpdateSkipAmount(2)
@@ -71,32 +68,15 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
 ; Overrides IC_BrivSharedFunctions_Class.KillCurrentBoss()
 class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
-    static BGFBFS_Initialized := false
-    static RetryInit := 0
-
-    ; Update target values from file on launch
-    BGFBFS_Init()
-    {
-        if (g_SharedData.BrivGemFarmLevelUpRunning()) ; LevelUp addon check
-            g_BrivGemFarm.base := IC_BrivGemFarm_LevelUp_Class
-        settings := this.LoadObjectFromJSON(A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json")
-        ; Retry once at most
-        if (!IsObject(settings) && !IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class.RetryInit++)
-            return false
-        g_SharedData.BGFBFS_UpdateSettings(settings.targetQ, settings.targetE, settings.Preset, settings.MouseClick)
-        return true
-    }
-
     ; a method to swap formations and cancel briv's jump animation.
     SetFormation(settings := "")
     {
-        if (!this.BGFBFS_Initialized) ;only send input messages if necessary
-            this.BGFBFS_Initialized := this.BGFBFS_Init()
-        if (!g_SharedData.BGFBFS_Enabled)
+        if (!g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ])
             return base.SetFormation(settings)
         if(settings != "")
             this.Settings := settings
-        if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "") ; Not refreshed if for DoDashWait() is skipped
+        ; Not refreshed if for DoDashWait() is skipped
+        if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "")
             this.Memory.ActiveEffectKeyHandler.Refresh()
         currentZone := this.Memory.ReadCurrentZone()
         ;bench briv if jump animation override is added to list and it isn't a quick transition (reading ReadFormationTransitionDir makes sure QT isn't read too early)
@@ -151,7 +131,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     ; True/False on whether Briv should be benched based on game conditions.
     BenchBrivConditions(settings)
     {
-        if (!g_SharedData.BGFBFS_Enabled)
+        if (!g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ])
             return base.BenchBrivConditions(settings)
         ;bench briv if jump animation override is added to list and it isn't a quick transition (reading ReadFormationTransitionDir makes sure QT isn't read too early)
        ; if (this.Memory.ReadTransitionOverrideSize() == 1 AND this.Memory.ReadTransitionDirection() != 2 AND this.Memory.ReadFormationTransitionDir() == 3 )
@@ -172,7 +152,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     ; If Briv has enough stacks to jump, don't force switch to e and wait for the boss to be killed.
     KillCurrentBoss(params*)
     {
-        if (!g_SharedData.BGFBFS_Enabled || this.Memory.ReadHasteStacks() < 50)
+        if (!g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ] || this.Memory.ReadHasteStacks() < 50)
             return base.KillCurrentBoss(params*)
         return true
     }
@@ -253,20 +233,22 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
 ; Extends IC_SharedData_Class
 class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Class
 {
-;    BGFBFS_Enabled
 ;    BGFBFS_savedQSKipAmount
 ;    BGFBFS_savedWSKipAmount
 ;    BGFBFS_savedESKipAmount
 
+    ; Load settings after "Start Gem Farm" has been clicked.
+    BGFBFS_Init()
+    {
+        if (this.BGFLU_Running()) ; LevelUp addon check
+            g_BrivGemFarm.base := IC_BrivGemFarm_LevelUp_Class
+        this.BGFBFS_UpdateSettingsFromFile()
+    }
+
     ; Return true if the class has been updated by the addon
     BGFBFS_Running()
     {
-        return true
-    }
-
-    BGFBFS_ToggleAddon(enabled)
-    {
-        this.BGFBFS_Enabled := enabled
+        return g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ]
     }
 
     BGFBFS_CurrentPreset()
@@ -299,13 +281,18 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
         this.SwapsMadeThisRun++
     }
 
-    ; Update target values used to check for Briv Q/E formation swaps.
-    ; Update preset name.
-    BGFBFS_UpdateSettings(targetQ := 0, targetE := 0, preset := "", mouseClick := false)
+    ; Load settings from the GUI settings file.
+    BGFBFS_UpdateSettingsFromFile(fileName := "")
     {
-        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ] := targetQ
-        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetE" ] := targetE
-        g_BrivUserSettingsFromAddons[ "BGFBFS_Preset" ] := preset
-        g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] := mouseClick
+        if (fileName == "")
+            fileName := IC_BrivGemFarm_BrivFeatSwap_Functions.SettingsPath
+        settings := g_SF.LoadObjectFromJSON(fileName)
+        if (!IsObject(settings))
+            return false
+        g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ] := settings.Enabled
+        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ] := settings.targetQ
+        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetE" ] := settings.targetE
+        g_BrivUserSettingsFromAddons[ "BGFBFS_Preset" ] := settings.Preset
+        g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] := settings.MouseClick
     }
 }

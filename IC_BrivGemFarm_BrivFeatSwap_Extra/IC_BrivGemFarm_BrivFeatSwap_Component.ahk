@@ -23,8 +23,6 @@ else
 */
 Class IC_BrivGemFarm_BrivFeatSwap_Component
 {
-    static SettingsPath := A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json"
-
     DetectedSkipAmount := ""
     DetectedSkipChance := ""
     DetectedResetArea := 2000
@@ -42,7 +40,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         this.SavedPreferredAdvancedSettings := this.GetPreferredAdvancedSettings(true)
         this.SetupPresets()
         this.UpdateStatus()
-        this.Settings := settings := g_SF.LoadObjectFromJSON(this.SettingsPath)
+        this.Settings := settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_BrivFeatSwap_Functions.SettingsPath)
         if (IsObject(settings))
         {
             if (!settings.HasKey("Enabled"))
@@ -109,26 +107,23 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            if (!SharedRunData.BGFBFS_Running)
+            if (SharedRunData.BGFBFS_Running == "")
             {
                 this.Stop()
                 GuiControl, ICScriptHub:Show, BGFBFS_StatusWarning
                 str := "BrivGemFarm Briv Feat Swap addon was loaded after Briv Gem Farm started.`n"
                 MsgBox, % str . "If you want it enabled, press Stop/Start to retry."
             }
-            else
+            else if (SharedRunData.BGFBFS_Running)
             {
-                if (SharedRunData.BGFBFS_Enabled)
-                {
-                    GuiControl, ICScriptHub:Text, BGFBFS_StatusText, % "Running " . SharedRunData.BGFBFS_CurrentPreset
-                    GuiControl, ICScriptHub:Text, BrivFeatSwapQValue, % SharedRunData.BGFBFS_savedQSKipAmount
-                    GuiControl, ICScriptHub:Text, BrivFeatSwapWValue, % SharedRunData.BGFBFS_savedWSKipAmount
-                    GuiControl, ICScriptHub:Text, BrivFeatSwapEValue, % SharedRunData.BGFBFS_savedESKipAmount
-                    GuiControl, ICScriptHub:Text, BrivFeatSwapsMadeThisRunValue, % SharedRunData.SwapsMadeThisRun
-                }
-                else
-                    GuiControl, ICScriptHub:Text, BGFBFS_StatusText, % "Disabled"
+                GuiControl, ICScriptHub:Text, BGFBFS_StatusText, % "Running " . SharedRunData.BGFBFS_CurrentPreset
+                GuiControl, ICScriptHub:Text, BrivFeatSwapQValue, % SharedRunData.BGFBFS_savedQSKipAmount
+                GuiControl, ICScriptHub:Text, BrivFeatSwapWValue, % SharedRunData.BGFBFS_savedWSKipAmount
+                GuiControl, ICScriptHub:Text, BrivFeatSwapEValue, % SharedRunData.BGFBFS_savedESKipAmount
+                GuiControl, ICScriptHub:Text, BrivFeatSwapsMadeThisRunValue, % SharedRunData.SwapsMadeThisRun
             }
+            else
+                GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Disabled
         }
         catch
         {
@@ -198,14 +193,13 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             g_BrivGemFarm_LevelUp.SaveSettings(true)
         settings.targetQ := targetQ
         settings.targetE := targetE
-        g_SF.WriteObjectToJSON(this.SettingsPath, settings)
+        g_SF.WriteObjectToJSON(IC_BrivGemFarm_BrivFeatSwap_Functions.SettingsPath, settings)
         GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Settings saved
         ; Apply settings to BrivGemFarm
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            SharedRunData.BGFBFS_ToggleAddon(settings.Enabled)
-            SharedRunData.BGFBFS_UpdateSettings(targetQ, targetE, settings.Preset, settings.MouseClick)
+            SharedRunData.BGFBFS_UpdateSettingsFromFile()
         }
         catch
         {

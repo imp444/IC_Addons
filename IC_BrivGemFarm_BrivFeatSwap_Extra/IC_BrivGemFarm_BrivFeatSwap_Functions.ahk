@@ -4,6 +4,7 @@
 class IC_BrivGemFarm_BrivFeatSwap_Functions
 {
     static Injected := false
+    static SettingsPath := A_LineFile . "\..\BrivGemFarm_BrivFeatSwap_Settings.json"
 
     ; Adds IC_BrivGemFarm_BrivFeatSwap_Addon.ahk to the startup of the Briv Gem Farm script.
     InjectAddon(external := false)

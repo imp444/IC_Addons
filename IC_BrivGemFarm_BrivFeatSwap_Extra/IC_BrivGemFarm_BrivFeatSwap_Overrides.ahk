@@ -273,7 +273,14 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
     ; Saves current Briv jump amount
     BGFBFS_UpdateSkipAmount(formationIndex := 0)
     {
-        skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
+        champID := ActiveEffectKeySharedFunctions.Briv.HeroID
+        if (g_SF.IsChampInFormation(champID, g_SF.Memory.GetCurrentFormation()))
+            skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
+        else
+            skipAmount := 0
+        ; Can't swap during reset
+        if (g_SF.Memory.ReadResetting())
+            return skipAmount
         Switch formationIndex
         {
             Case 1:

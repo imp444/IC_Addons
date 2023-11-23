@@ -114,14 +114,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
                 return
         }
         ;check to bench briv
-        if ((g_SharedData.BGFBFS_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetE" ] || mouseClickEnabled && this.BGFBFS_IsFormationEmpty(currentFormation)) && this.BenchBrivConditions(this.Settings))
+        if ((g_SharedData.BGFBFS_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "BGFBFS_TargetE" ] || mouseClickEnabled && this.BGFBFS_IsFormationEmpty(currentFormation)) && this.BenchBrivConditions(this.Settings))
         {
             this.DirectedInput(,,["{e}"]*)
             g_SharedData.BGFBFS_UpdateSkipAmount(3)
             return
         }
         ;check to unbench briv
-        if ((g_SharedData.BGFBFS_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "TargetQ" ] || mouseClickEnabled && this.BGFBFS_IsFormationEmpty(currentFormation)) && this.UnBenchBrivConditions(this.Settings))
+        if ((g_SharedData.BGFBFS_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ] || mouseClickEnabled && this.BGFBFS_IsFormationEmpty(currentFormation)) && this.UnBenchBrivConditions(this.Settings))
         {
             this.DirectedInput(,,["{q}"]*)
             g_SharedData.BGFBFS_UpdateSkipAmount(1)
@@ -254,10 +254,9 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
 class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Class
 {
 ;    BGFBFS_Enabled
-;    BGFBFS_Preset
-;    BrivFeatSwap_savedQSKipAmount
-;    BrivFeatSwap_savedWSKipAmount
-;    BrivFeatSwap_savedESKipAmount
+;    BGFBFS_savedQSKipAmount
+;    BGFBFS_savedWSKipAmount
+;    BGFBFS_savedESKipAmount
 
     ; Return true if the class has been updated by the addon
     BGFBFS_Running()
@@ -270,7 +269,12 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
         this.BGFBFS_Enabled := enabled
     }
 
-    ; Saves current Briv jump amount
+    BGFBFS_CurrentPreset()
+    {
+        return g_BrivUserSettingsFromAddons[ "BGFBFS_Preset" ]
+    }
+
+    ; Save current Briv jump amount.
     BGFBFS_UpdateSkipAmount(formationIndex := 0)
     {
         champID := ActiveEffectKeySharedFunctions.Briv.HeroID
@@ -284,24 +288,24 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
         Switch formationIndex
         {
             Case 1:
-                this.BrivFeatSwap_savedQSKipAmount := skipAmount
+                this.BGFBFS_savedQSKipAmount := skipAmount
             Case 2:
-                this.BrivFeatSwap_savedWSKipAmount := skipAmount
+                this.BGFBFS_savedWSKipAmount := skipAmount
             Case 3:
-                this.BrivFeatSwap_savedESKipAmount := skipAmount
+                this.BGFBFS_savedESKipAmount := skipAmount
             Default:
                 return skipAmount
         }
         this.SwapsMadeThisRun++
     }
 
-    ; Update target values used to check for briv Q/E formation swaps
-    ; Update preset name
+    ; Update target values used to check for Briv Q/E formation swaps.
+    ; Update preset name.
     BGFBFS_UpdateSettings(targetQ := 0, targetE := 0, preset := "", mouseClick := false)
     {
-        g_BrivUserSettingsFromAddons[ "TargetQ" ] := targetQ
-        g_BrivUserSettingsFromAddons[ "TargetE" ] := targetE
-        this.BGFBFS_Preset := preset
+        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ] := targetQ
+        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetE" ] := targetE
+        g_BrivUserSettingsFromAddons[ "BGFBFS_Preset" ] := preset
         g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] := mouseClick
     }
 }

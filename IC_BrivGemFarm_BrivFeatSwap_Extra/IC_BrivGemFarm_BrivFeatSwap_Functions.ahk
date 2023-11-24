@@ -82,4 +82,45 @@ class IC_BrivGemFarm_BrivFeatSwap_Functions
         WinGetPos, x, y, w, h, ahk_exe %exeName%
         return (monitorCoordsLeft == x && monitorCoordsTop == y)
     }
+
+    GetBrivLoot()
+    {
+        BrivID := 58
+        BrivJumpSlot := 4
+        gild := g_SF.Memory.ReadHeroLootGild(BrivID, BrivJumpSlot)
+        enchant := Floor(g_SF.Memory.ReadHeroLootEnchant(BrivID, BrivJumpSlot))
+        rarity := g_SF.Memory.ReadHeroLootRarityValue(BrivID, BrivJumpSlot)
+        return {gild:gild, enchant:enchant, rarity:rarity}
+    }
+
+    GetBrivSkipValues()
+    {
+        loot := this.GetBrivLoot()
+        gild := loot.gild
+        enchant := loot.enchant
+        rarity := loot.rarity
+        if (gild == "" || enchant == "" || rarity == "")
+            return ""
+        return this.CalculateAreaSkipValues(gild, enchant, rarity)
+    }
+
+    CalculateAreaSkipValues(gild, enchant, rarity, decimals := 5)
+    {
+        baseEffect := 25
+        gildMult := (gild == 1) ? 1.5 : (gild == 2) ? 2 : 1
+        lootMultBonus := (1 + Max(enchant, 0) * 0.004) * gildMult
+        rarityMult := (rarity == 1) ? 0.1 : (rarity == 2) ? 0.3 : (rarity == 3) ? 0.5 : (rarity == 4) ? 1 : 0
+        skipChance := baseEffect * (1 + (lootMultBonus * rarityMult)) * 0.01
+        skipAmount := 1
+        if (skipChance > 1)
+        {
+            while (skipChance > 1)
+            {
+                skipChance *= 0.5
+                ++skipAmount
+            }
+            skipChance := (skipChance - 0.5) / (1 - 0.5) * (1 - 0.01) + 0.01
+        }
+        return [skipAmount, Round(100 * skipChance, decimals)]
+    }
 }

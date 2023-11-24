@@ -100,10 +100,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Update the GUI, try to read Q/W/E skip amounts
     UpdateStatus()
     {
-        if (this.DetectedSkipAmount == "")
-            this.UpdateDetectedSkipAmount()
-        else
-            this.GetModronResetArea()
+        this.UpdateDetectedSkipAmount()
+        this.GetModronResetArea()
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
@@ -159,19 +157,20 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         if (this.GameIsReady())
         {
             this.GetModronResetArea()
-            if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "")
-                g_SF.Memory.ActiveEffectKeyHandler.Refresh()
-            skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
-            ; Don't raed formation with Wasting Haste.
-            if (skipAmount == 4)
-                return
-            skipChance := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipChance()
+            skipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.GetBrivSkipValues()
+            skipAmount := skipValues[1]
+            skipChance := skipValues[2]
             this.DetectedSkipAmount := skipAmount
             this.DetectedSkipChance := skipChance
             GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
             this.UpdatePresetWarning(targetQ)
-            str := "Briv skip: " . skipAmount . "J" . Format("{:.2f}", 100 * skipChance) . "%"
+            if (skipChance == 100)
+                skipStr := Format("{:.2f}", skipChance) . "%"
+            else
+                skipStr := Format("{:.5f}", skipChance) . "%"
+            str := "Briv skip: " . skipAmount . "J" . skipStr
             GuiControl, ICScriptHub:, BGFBFS_DetectedText, % str
+            g_BrivFeatSwapGui.AddBrivSkipTooltip()
         }
         else
             GuiControl, ICScriptHub:, BGFBFS_DetectedText, Briv skip: Game closed.
@@ -317,7 +316,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     UpdatePresetWarning(targetQ)
     {
         controlID := "BGFBFS_PresetWarningText"
-        if ((detectedChance := this.DetectedSkipChance) != "" && detectedChance != 1)
+        if ((detectedChance := this.DetectedSkipChance) != "" && detectedChance != 100)
             GuiControl, ICScriptHub:, %controlID%, % "WARNING: Briv not at 100" . "%" . " skip chance."
         else if ((detectedAmount := this.DetectedSkipAmount) != "" && targetQ != detectedAmount)
             GuiControl, ICScriptHub:, %controlID%, WARNING: Wrong preset for current Briv skip.

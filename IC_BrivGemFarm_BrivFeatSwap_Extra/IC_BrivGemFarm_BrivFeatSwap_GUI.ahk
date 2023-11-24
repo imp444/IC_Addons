@@ -334,7 +334,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Add, Checkbox, vBGFBFS_CopyPasteBGFAS_Mod_50_%loopCount% Checked x%xLoc% y%yLoc% gBGFBFS_Mod50CheckBoxes, % loopCount
     }
 
-    ; Returns the width of DDL accomodating the longest item in list
+    ; Returns the width of DDL accomodating the longest item in list.
     DropDownSize(List, Font:="", FontSize:=10, Padding:=24)
     {
         Loop, Parse, List, |
@@ -349,7 +349,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         return X + Padding
     }
 
-    ; Show tooltips on mouseover
+    ; Show tooltips on mouseover.
     AddToolTips()
     {
         GUIFunctions.AddToolTip("BGFBFS_Enabled", "Enable/disable this addon.")
@@ -364,5 +364,21 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         GUIFunctions.AddToolTip("BGFBFS_StacksRequired", "Stacks required to jump all the way to the reset zone, including walks.")
         GUIFunctions.AddToolTip("BGFBFS_BrivMinLevelArea", "Option from the LevelUp addon used to delay the leveling of Briv.")
         GUIFunctions.AddToolTip("BGFBFS_BrivMinLevelAreaText", "Option from the LevelUp addon used to delay the leveling of Briv.")
+    }
+
+    ; Show Briv's slot 4 current item gild/raity/level.
+    AddBrivSkipTooltip()
+    {
+        GuiControlGet, visible, ICScriptHub:Visible, BGFBFS_DetectedText
+        if (!visible)
+            return
+        loot := IC_BrivGemFarm_BrivFeatSwap_Functions.GetBrivLoot()
+        gild := loot.gild
+        enchant := loot.enchant
+        rarity := loot.rarity
+        str := (gild == 1) ? "Shiny " : (gild == 2) ? "Golden " : ""
+        str .= (rarity == 1) ? "Common " : (rarity == 2) ? "Uncommon " : (rarity == 3) ? "Rare " : (rarity == 4) ? "Epic " : ""
+        str .= "level " . (enchant + 1)
+        GUIFunctions.AddToolTip("BGFBFS_DetectedText", str)
     }
 }

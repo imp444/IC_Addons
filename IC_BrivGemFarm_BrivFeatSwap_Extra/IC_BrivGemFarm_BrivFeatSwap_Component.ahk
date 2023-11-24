@@ -160,6 +160,9 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             skipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.GetBrivSkipValues()
             skipAmount := skipValues[1]
             skipChance := skipValues[2]
+            noUpdate := skipAmount == this.DetectedSkipAmount && skipChance == this.DetectedSkipChance
+            if (g_BrivFeatSwapGui.ToolTipAdded && noUpdate)
+                return
             this.DetectedSkipAmount := skipAmount
             this.DetectedSkipChance := skipChance
             GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
@@ -172,7 +175,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             GuiControl, ICScriptHub:, BGFBFS_DetectedText, % str
             g_BrivFeatSwapGui.AddBrivSkipTooltip()
         }
-        else
+        else if (this.DetectedSkipAmount == "" || this.DetectedSkipChance == "")
             GuiControl, ICScriptHub:, BGFBFS_DetectedText, Briv skip: Game closed.
     }
 
@@ -369,7 +372,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         if (this.GameIsReady())
         {
-            if ((resetArea := g_SF.Memory.GetModronResetArea()) > 0) ; -1 on failure
+            resetArea := g_SF.Memory.GetModronResetArea()
+            if (resetArea > 0 && resetArea != this.DetectedResetArea) ; -1 on failure
             {
                 this.DetectedResetArea := resetArea
                 GuiControl, ICScriptHub:Text, BGFBFS_ResetAreaText, % "Reset area (Modron reset: " . resetArea . ")"

@@ -129,6 +129,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
     XSpacing := 10
     YSpacing := 10
     YTitleSpacing := 20
+    ToolTipAdded := false
 
     SetupGroups()
     {
@@ -378,7 +379,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         rarity := loot.rarity
         str := (gild == 1) ? "Shiny " : (gild == 2) ? "Golden " : ""
         str .= (rarity == 1) ? "Common " : (rarity == 2) ? "Uncommon " : (rarity == 3) ? "Rare " : (rarity == 4) ? "Epic " : ""
-        str .= "level " . (enchant + 1)
+        str .= enchant != "" ? "level " . (enchant + 1) : ""
         GUIFunctions.AddToolTip("BGFBFS_DetectedText", str)
+        this.ToolTipAdded := true
     }
 }

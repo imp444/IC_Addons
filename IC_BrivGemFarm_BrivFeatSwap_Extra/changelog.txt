@@ -1,3 +1,11 @@
+November 25, 2023 - v1.5.8
+    - Updated 8/4J + walk 1/2/3/4 Briv jump zones to be the same as 8/4J.
+    - Updated 9J/4J Briv jump zones to allow to stay on a 100%QT path if the party ends up in z2/z12/z22/z32/z42, as suggested by Horizon.
+    - Briv's item 4 levels are used to calculate skip values displayed in the addon's tab. The item's level and loot will be shown on mouseover.
+    - Fixed LevelUp addon link being drawn in the wrong tab.
+    - Fixed an issue with incorrect Briv skip values being read when Briv is not on the field.
+    - Fixed a bug in the stacks calculator that would cause mod[z50] path calculation to always use the formation E value for z100 and higher even when it was checked.
+
 October 26, 2023 - v1.5.7
     - Fixed an issue with the mouse click setting always switching to the E formation before Q after click cancelling when the formation is empty.
     - Updated README with instructions for Thellora.

@@ -95,7 +95,8 @@ Maxed Virgil + 2 Rivals of Waterdeep and using Vajra for patron can stil complet
 With enough stacks, Thellora can skip right to the faster repeating sequence.  
 For each route, you should aim to land on an area that matches one of the 🔁 base zones.  
 The number equal to your (favor - 1) should have the last two digits equal to one of the 🔁 numbers.
-If this is not possible, you can walk to it by setting the "Minimum area to reach before leveling Briv" setting to the level that matches the next 🔁 zone you will encounter.
+If this is not possible, you can walk to it by setting the "Minimum area to reach before leveling Briv" setting
+to the level that matches the next 🔁 zone you will encounter (or 5 zones before and 4-jumping into the path).
 > The path to the 🔁 zone must be clear of armored bosses you can't beat. (TT: z30/z35, RAC: z5/z40)
 
 | **5J/4J TT**                                                   |

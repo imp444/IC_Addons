@@ -133,9 +133,9 @@ If this is not possible, you can walk to it by setting the "Minimum area to reac
 | **-** 6 jumps /50 vs 11 jumps /100 for 8J TT                            | =                                                       |
 | **+** 6/6 QTs after z37 vs 6/11 QTs for 8J TT                           | =                                                       |
 | **-** Can't cancel Briv's jump <br/>(first loop z1->z10->z19->z28->z37) | **+** 100% QT, avoids z10                               |
-| ![](Images/8-4j_tt_setup.png)                                           | ![](Images/8-4j_tt_setup_enhanced.png)                  |
+| ![](Images/8-4j_tt_setup.png)                                           | =                                                       |
 
->For 8J/4J, the first option is recommended when using Thellora.
+>For 8J/4J, the second option can be used as an alternative when not using Thellora.
 
 | **9J/4J TT**                                |
 |:--------------------------------------------|

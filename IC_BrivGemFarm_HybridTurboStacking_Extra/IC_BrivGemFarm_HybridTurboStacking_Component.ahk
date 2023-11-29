@@ -170,6 +170,8 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         if (resets == "")
             return
         g_HybridTurboStackingGui.UpdateResets(resets)
+        if (!g_HybridTurboStackingGui.AllowForecastUpdate)
+            return
         forecast := (this.Forecast == "" || updateRange) ? [] : this.Forecast
         minIndex := forecast[1][1] == "" ? 0 : forecast[1][1]
         ; Don't update when it is not needeed.

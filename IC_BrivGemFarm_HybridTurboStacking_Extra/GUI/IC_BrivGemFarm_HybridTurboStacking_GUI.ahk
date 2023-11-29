@@ -118,6 +118,7 @@ BGFHTS_100Melf()
 
 BGFHTS_ShowMelfForecast()
 {
+    g_HybridTurboStackingGui.FirstForecastUpdate()
     Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Show, AutoSize Center
 }
 
@@ -151,7 +152,9 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
     static LastWinWidth := 0
     static LastWinHeight := 0
     static MaxLVWidth := 0
+
     LV_Colors_Instance := ""
+    AllowForecastUpdate := false
 
     Init()
     {
@@ -328,6 +331,15 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
     UpdateResets(value)
     {
         GuiControl, ICScriptHub:, BGFHTS_Resets, % value
+    }
+
+    FirstForecastUpdate()
+    {
+        if (!this.AllowForecastUpdate)
+        {
+            this.AllowForecastUpdate := true
+            g_HybridTurboStacking.UpdateMelfForecast(true)
+        }
     }
 
     UpdateForecast(data, min := 0, max := 2050, success := 0)

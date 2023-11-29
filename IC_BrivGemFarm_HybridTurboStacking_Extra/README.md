@@ -130,7 +130,7 @@ Tatyana/Melf won't work optimally or even work at all in boss zones or in zones 
 Stacking in a boss zone is disabled by default, and you can manually disable other zones.
 
 Click on "Melf forecast" to open a window showing which Melf effects you will get for the next 1000 resets.
-The first +enemy spawn effect is highlighted in green for each reset count, then the rermaining others,
+The first "+chance to spawn additional enemies" effect is highlighted in green for each reset count, then the remaining others,
 if they happen to be in the range specified in settings.
 The whole row will be highlighted in red if the first speed effect is not available within the range for that reset.
 

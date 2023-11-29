@@ -111,7 +111,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         StartTime := A_TickCount
         ElapsedTime := 0
         g_SF.WaitForTransition()
-        while (g_SF.Memory.ReadHighestZone() == highestZone && ElapsedTime < 3000)
+        while (g_SF.Memory.ReadQuestRemaining() > 0 && ElapsedTime < maxTime)
         {
             g_SF.SetFormation(g_BrivUserSettings)
             Sleep, 30

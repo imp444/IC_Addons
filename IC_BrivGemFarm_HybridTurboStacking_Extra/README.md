@@ -28,8 +28,8 @@ Briv stores power whenever he takes damage and uses it to buff the party and Spr
 Whenever Briv comes under attack metal shoots out of his pores and covers him in strong armor.
 While armored, Briv takes 10% less damage and gains stacks of Steelbones whenever he is hit by an enemy attack.
 
-**Briv** is used to gather steelbones stacks for himself, that are converted to Sprint
-stacks after reset and consumed every time he jumps forward.
+**Briv** is used to gather steelbones stacks for himself, which are converted to Sprint
+stacks after resetting and then consumed every time he jumps forward.
 
 <img alt="Melf" height="48" src="Images/Melf_portrait.png" width="48"/>
 
@@ -70,6 +70,8 @@ to ForceOfflineGemThreshold and/or a value higher than 1 to ForceOfflineRunThres
 
 2. Setup and save the W formation in-game.
 <img alt="Advanced settings" src="Images/saved_formations.png"/>
+Try to place Briv in the front-most column so enemies can start to attack faster, and Tatyana behind him.
+Place Melf not adjacent to any champion to reduce incoming effect calculations.
 
 3. Setup and save specializations in Modron in-game, so that they don't pop up during leveling.  
 The trick is to use a specific formation with all the champions used and make sure

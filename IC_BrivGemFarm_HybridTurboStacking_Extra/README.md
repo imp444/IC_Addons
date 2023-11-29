@@ -13,7 +13,7 @@ ___
 
 Hybrid stacking is a Briv Gem Farm Briv stacking method that was made popular by **Hamerstein**.  
 It stacks Briv online for a set number of resets or until a number a gems has been reached, using Tatyana to pull enemies,
-then goes offline to by chests and prevent game memory leak buildup.
+then goes offline to buy chests and prevent any memory leaks in the game from building up.
 
 This Addon uses several other techniques to improve the overall stacking speed and setup.
 
@@ -71,7 +71,7 @@ to ForceOfflineGemThreshold and/or a value higher than 1 to ForceOfflineRunThres
 2. Setup and save the W formation in-game.
 <img alt="Advanced settings" src="Images/saved_formations.png"/>
 Try to place Briv in the front-most column so enemies can start to attack faster, and Tatyana behind him.
-Place Melf not adjacent to any champion to reduce incoming effect calculations.
+Place Melf not adjacent to any champion to reduce incoming effect calculations.    
 
 3. Setup and save specializations in Modron in-game, so that they don't pop up during leveling.  
 The trick is to use a specific formation with all the champions used and make sure

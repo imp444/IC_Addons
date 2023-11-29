@@ -71,7 +71,7 @@ to ForceOfflineGemThreshold and/or a value higher than 1 to ForceOfflineRunThres
 2. Setup and save the W formation in-game.
 <img alt="Advanced settings" src="Images/saved_formations.png"/>
 Try to place Briv in the front-most column so enemies can start to attack faster, and Tatyana behind him.
-Place Melf not adjacent to any champion to reduce incoming effect calculations.    
+Place Melf not adjacent to any champion to reduce incoming effect calculations.<br>
 
 3. Setup and save specializations in Modron in-game, so that they don't pop up during leveling.  
 The trick is to use a specific formation with all the champions used and make sure
@@ -101,7 +101,7 @@ Activates Warden's ultimate when the number of enemies on the screen has reached
 Very useful with Tatyana, less with Melf since unlike with Tatyana, enemies spawning is staggered.
 Setting the value to 0 disables the feature.
 
->**⚠️ Be careful**: A high enough BUD combined with enough item levels on Warden's slot 6 can cause the ultimate
+>**⚠️ Be careful**: A high enough BUD combined with enough item levels on Warden's slot 5 can cause the ultimate
 to kill enemies in lower zones.
 
 ___

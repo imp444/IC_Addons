@@ -1,3 +1,6 @@
+November 30, 2023 - v1.0.3
+    - The script will now try harder to turn autoprogress off before stacking.
+
 November 30, 2023 - v1.0.2
     - Fixed offline stack zone having priority over Melf Min StackZone.
     - Added additional statuses that will show up during online stacking.

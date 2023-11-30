@@ -79,7 +79,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             this.BGFHTS_DelayedOffline := false
             return this.StackRestart()
         }
-        g_SF.ToggleAutoProgress(0)
+        g_SF.ToggleAutoProgress( 0, false, true )
         ; Complete the current zone
         completed := g_BrivUserSettingsFromAddons[ "BGFHTS_CompleteOnlineStackZone" ] && this.BGFHTS_WaitForZoneCompleted()
         this.StackFarmSetup()

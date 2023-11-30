@@ -1,3 +1,4 @@
+; Overrides IC_BrivGemFarm_Class.TestForSteelBonesStackFarming()
 ; Overrides IC_BrivGemFarm_Class.ShouldOfflineStack()
 ; Overrides IC_BrivGemFarm_Class.GetNumStacksFarmed()
 ; Overrides IC_BrivGemFarm_Class.StackNormal()
@@ -8,10 +9,23 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
 ;    BGFHTS_DelayedOffline := false
 ;    BGFHTS_LastOfflineReset := 0
 
+    TestForSteelBonesStackFarming()
+    {
+        if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ] || this.ShouldOfflineStack())
+            return base.TestForSteelBonesStackFarming()
+        if (!g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ])
+            return base.TestForSteelBonesStackFarming()
+        ; Use Melf Min StackZone settings
+        savedStackZone := g_BrivUserSettings[ "StackZone" ]
+        g_BrivUserSettings[ "StackZone" ] := g_BrivUserSettingsFromAddons[ "BGFHTS_MelfMinStackZone" ] - 1
+        base.TestForSteelBonesStackFarming()
+        g_BrivUserSettings[ "StackZone" ] := savedStackZone
+    }
+
     ; Determines if offline stacking is expected with current settings and conditions.
     ShouldOfflineStack()
     {
-        if (!g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunDelayOffline" ])
+        if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ] || !g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunDelayOffline" ])
             return base.ShouldOfflineStack()
         shouldOfflineStack := base.ShouldOfflineStack()
         targetStacks := g_BrivUserSettings[ "TargetStacks" ]
@@ -175,7 +189,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
 ; Extends IC_SharedData_Class
 class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedData_Class
 {
-;    BGFHTS_CurrentRunEffects := ""
 ;    BGFHTS_CurrentRunStackRange := ""
 ;    BGFHTS_PreviousStackZone := 0
 ;    BGFHTS_TimerFunction := ""

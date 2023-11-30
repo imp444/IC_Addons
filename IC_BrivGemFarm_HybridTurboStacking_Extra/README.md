@@ -64,18 +64,18 @@ ___
 
 ## Setup:
 
-1. Enable hybrid stacking in ICScripthUb by setting a value higher than 0
+1. Enable hybrid stacking in ICScriptHub by setting a value higher than 0
 to ForceOfflineGemThreshold and/or a value higher than 1 to ForceOfflineRunThreshold.  
 <img alt="Advanced settings" src="Images/advanced_settings.png"/>
 
 2. Setup and save the W formation in-game.
 <img alt="Advanced settings" src="Images/saved_formations.png"/>
 Try to place Briv in the front-most column so enemies can start to attack faster, and Tatyana behind him.
-Place Melf not adjacent to any champion to reduce incoming effect calculations.<br>
+Place Melf not adjacent to any champion to reduce incoming effect calculations.
 
 3. Setup and save specializations in Modron in-game, so that they don't pop up during leveling.  
-The trick is to use a specific formation with all the champions used and make sure
-this is the formation loaded in the Modron.  
+The trick is to save a specific formation that contains all the champions that are leveled up during the run
+and making sure that it is the formation loaded in the Modron.  
 <img alt="Advanced settings" src="Images/specs_formation.png"/>
 <img alt="Advanced settings" src="Images/saved_specs.png"/>
 
@@ -101,8 +101,8 @@ Activates Warden's ultimate when the number of enemies on the screen has reached
 Very useful with Tatyana, less with Melf since unlike with Tatyana, enemies spawning is staggered.
 Setting the value to 0 disables the feature.
 
->**⚠️ Be careful**: A high enough BUD combined with enough item levels on Warden's slot 5 can cause the ultimate
-to kill enemies in lower zones.
+>**⚠️ Be careful**: A high/buggy BUD combined with enough item levels on Warden's slot 5 can cause the ultimate
+to deal enough damage to kill enemies in lower zones.
 
 ___
 

@@ -121,7 +121,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
     Start()
     {
         fncToCallOnTimer := this.TimerFunction
-        SetTimer, %fncToCallOnTimer%, 1000, 0
+        SetTimer, %fncToCallOnTimer%, 500, 0
     }
 
     Stop()
@@ -152,7 +152,9 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
                 data.CurrentRunStackRange := SharedRunData.BGFHTS_CurrentRunStackRange
                 data.PreviousStackZone := SharedRunData.BGFHTS_PreviousStackZone
                 g_HybridTurboStackingGui.UpdateGUI(data)
-                GuiControl, ICScriptHub:Text, BGFHTS_StatusText, Running
+                status := SharedRunData.BGFHTS_Status
+                str := "Running" . (status != "" ? " - " . status : "")
+                GuiControl, ICScriptHub:Text, BGFHTS_StatusText, % str
             }
             else
                 GuiControl, ICScriptHub:Text, BGFHTS_StatusText, Disabled

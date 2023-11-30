@@ -89,6 +89,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         usedWardenUlt := false
         while ( stacks < targetStacks AND ElapsedTime < maxOnlineStackTime )
         {
+            g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
             g_SF.FallBackFromBossZone()
             ; Warden ultimate
             wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
@@ -116,6 +117,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             g_SharedData.BGFHTS_PreviousStackZone := g_SF.Memory.ReadCurrentZone()
             g_SharedData.BGFHTS_CurrentRunStackRange := ["", ""]
         }
+        g_SharedData.BGFHTS_Status := "Online stacking done"
     }
 
     BGFHTS_WaitForZoneCompleted(maxTime := 3000)
@@ -124,9 +126,13 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         highestZone := g_SF.Memory.ReadHighestZone()
         StartTime := A_TickCount
         ElapsedTime := 0
+        g_SharedData.BGFHTS_Status := "Stacking: Waiting for transition"
         g_SF.WaitForTransition()
-        while (g_SF.Memory.ReadQuestRemaining() > 0 && ElapsedTime < maxTime)
+        quest := g_SF.Memory.ReadQuestRemaining()
+        while (quest > 0 && ElapsedTime < maxTime)
         {
+            quest := g_SF.Memory.ReadQuestRemaining()
+            g_SharedData.BGFHTS_Status := "Stacking: Waiting for area completion " . quest
             g_SF.SetFormation(g_BrivUserSettings)
             Sleep, 30
             ElapsedTime := A_TickCount - StartTime
@@ -191,6 +197,7 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
 {
 ;    BGFHTS_CurrentRunStackRange := ""
 ;    BGFHTS_PreviousStackZone := 0
+;    BGFHTS_Status := ""
 ;    BGFHTS_TimerFunction := ""
 
     ; Return true if the class has been updated by the addon.
@@ -247,6 +254,7 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         resets := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
         if (forceUpdate || resets > lastResets || !IsObject(this.BGFHTS_CurrentRunStackRange))
         {
+            g_SharedData.BGFHTS_Status := ""
             this.BGFHTS_CurrentRunStackRange := this.BGFHTS_CheckMelf()
             lastResets := resets
         }

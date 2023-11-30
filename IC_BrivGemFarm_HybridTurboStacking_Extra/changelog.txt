@@ -1,3 +1,7 @@
+November 30, 2023 - v1.0.2
+    - Fixed offline stack zone having priority over Melf Min StackZone.
+    - Added additional statuses that will show up during online stacking.
+
 November 29, 2023 - v1.0.1
     - Fixed the "Complete the stacking zone before online stacking" setting not properly waiting for objectives to go down to 0.
     - Melf forecast will not be updated until the "Melf forecast" button has been clicked at least once.

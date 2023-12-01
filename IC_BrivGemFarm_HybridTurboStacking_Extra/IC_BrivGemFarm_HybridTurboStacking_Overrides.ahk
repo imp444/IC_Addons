@@ -170,19 +170,20 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Stack immediately if Briv can't jump anymore.
         if (g_SF.Memory.ReadHasteStacks() < 50)
             return false
-        currentZone := g_SF.Memory.ReadCurrentZone()
         ; Stack immediately if not inside range.
         range := g_SharedData.BGFHTS_CurrentRunStackRange
         if (range[1] == "" || range[2] == "")
             return false
         stackZone := range[1]
         ; Stack immediately to prevent resetting before stacking.
+        currentZone := g_SF.Memory.ReadCurrentZone()
         if (currentZone > IC_BrivGemFarm_HybridTurboStacking_Functions.GetLastSafeStackZone())
             return false
         if (stackZone)
         {
+            highestZone := g_SF.Memory.ReadHighestZone()
             mod50Zones := g_BrivUserSettingsFromAddons[ "BGFHTS_PreferredBrivStackZones" ]
-            mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)
+            mod50Index := Mod(highestZone, 50) == 0 ? 50 : Mod(highestZone, 50)
             if (mod50Zones[mod50Index] == 0)
                 return true
             if (!IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore())

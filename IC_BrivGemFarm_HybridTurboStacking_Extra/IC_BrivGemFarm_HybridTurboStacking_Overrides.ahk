@@ -179,7 +179,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Stack immediately to prevent resetting before stacking.
         if (currentZone > IC_BrivGemFarm_HybridTurboStacking_Functions.GetLastSafeStackZone())
             return false
-        if (stackZone && stackZone != currentZone )
+        if (stackZone)
         {
             mod50Zones := g_BrivUserSettingsFromAddons[ "BGFHTS_PreferredBrivStackZones" ]
             mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)

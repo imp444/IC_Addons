@@ -1,3 +1,6 @@
+December 01, 2023 - v1.0.4
+    - Fixed online stacking with Melf ignoring Preferred Briv stack zones and stacking in the first zone in the range.
+
 November 30, 2023 - v1.0.3
     - The script will now try harder to turn autoprogress off before stacking.
 

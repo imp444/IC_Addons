@@ -146,6 +146,8 @@ to the level that matches the next 🔁 zone you will encounter (or 5 zones befo
 | **+** 6/6 QTs vs 3/5 QTs for 9J TT          |
 | ![](Images/9-4j_tt_setup.png)               |
 
+>🔁 2, 12, 22, 27, 37, 47 is still 100%QT without collect zones if landing on this path with Thellora.       
+
 ## Stacks:
 
 For all the routes except for 5J/4J, more Briv Steelbones/Sprint stacks are needed to reach the reset area

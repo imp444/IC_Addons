@@ -291,7 +291,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             case "8J/4J Tall Tales + walk 1/2/3/4":
                 this.ApplyPresets(57952963557919, 8, 4)
             case "9J/4J Tall Tales":
-                this.ApplyPresets(580108934512143, 9, 4)
+                this.ApplyPresets(17571766008863, 9, 4)
             case default:
                 this.ApplyPresets(this.SavedPreferredAdvancedSettings, this.Settings.targetQ, this.Settings.targetE)
         }

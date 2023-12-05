@@ -331,7 +331,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             GuiControl, ICScriptHub:, BrivFeatSwapQPartialText, % partialText
             return
         }
-        else if ((detectedAmount := this.DetectedSkipAmount) != "" && targetQ != detectedAmount)
+        else if (this.GetPresetName() != "" && (detectedAmount := this.DetectedSkipAmount) != "" && targetQ != detectedAmount)
         {
             GuiControl, ICScriptHub:, %controlID%, WARNING: Wrong preset for current Briv skip.
             partialText := "(" . targetSkipValues[1] . ")"

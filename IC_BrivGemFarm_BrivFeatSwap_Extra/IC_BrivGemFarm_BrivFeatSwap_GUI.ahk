@@ -143,7 +143,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Font, w400
         Gui, ICScriptHub:Add, DropDownList, x+%xSpacing% yp-3 w100 vBGFBFS_Preset gBGFBFS_Preset
         GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-        Gui, ICScriptHub:Add, Text, x+27 ys w300 vBGFBFS_PresetWarningText
+        Gui, ICScriptHub:Add, Text, x+27 yp w300 R2 vBGFBFS_PresetWarningText
         GUIFunctions.UseThemeTextColor()
         this.SetupSkipSetupGroup()
         this.SetupStacksSetupGroup()
@@ -172,6 +172,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapQValue x+%xSpacing% w20
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
         Gui, ICScriptHub:Add, Edit, x%posX% y+-16 h19 w33 Limit3 vBrivGemFarm_BrivFeatSwap_TargetQ gBrivGemFarm_BrivFeatSwap_Target, 0
+        GUIFunctions.UseThemeTextColor("WarningTextColor")
+        Gui, ICScriptHub:Add, Text, vBrivFeatSwapQPartialText x+%xSpacing% h19 w50 0x200
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapWText xs+%xSection% y+%ySpacing% w15, W:
         Gui, ICScriptHub:Add, Text, vBrivFeatSwapWValue x+%xSpacing% w20

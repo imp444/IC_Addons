@@ -123,4 +123,12 @@ class IC_BrivGemFarm_BrivFeatSwap_Functions
         }
         return [skipAmount, Round(100 * skipChance, decimals)]
     }
+
+    GetTargetQSkipValues()
+    {
+        skipValues := this.GetBrivSkipValues()
+        if (skipValues[2] == 100)
+            return [skipValues[1]]
+        return [skipValues[1] - 1, skipValues[1]]
+    }
 }

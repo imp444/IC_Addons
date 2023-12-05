@@ -94,14 +94,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
                 return
         }
         ;check to bench briv
-        if ((g_SharedData.BGFBFS_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "BGFBFS_TargetE" ] || mouseClickEnabled && this.BGFBFS_IsFormationEmpty(currentFormation)) && this.BenchBrivConditions(this.Settings))
+        if (this.BGFBFS_ShouldSwitchFormation(3))
         {
             this.DirectedInput(,,["{e}"]*)
             g_SharedData.BGFBFS_UpdateSkipAmount(3)
             return
         }
         ;check to unbench briv
-        if ((g_SharedData.BGFBFS_UpdateSkipAmount() != g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ] || mouseClickEnabled && this.BGFBFS_IsFormationEmpty(currentFormation)) && this.UnBenchBrivConditions(this.Settings))
+        if (this.BGFBFS_ShouldSwitchFormation(1))
         {
             this.DirectedInput(,,["{q}"]*)
             g_SharedData.BGFBFS_UpdateSkipAmount(1)
@@ -155,6 +155,26 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         if (!g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ] || this.Memory.ReadHasteStacks() < 50)
             return base.KillCurrentBoss(params*)
         return true
+    }
+
+    ; Check if formation switch conditions are met.
+    ; Params: formationFavoriteIndex:int - 1:Q, 2:W, 3:E.
+    BGFBFS_ShouldSwitchFormation(formationFavoriteIndex)
+    {
+        postClickCancel := g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] && this.BGFBFS_IsFormationEmpty(this.Memory.GetCurrentFormation())
+        currentSkip := g_SharedData.BGFBFS_UpdateSkipAmount()
+        if (formationFavoriteIndex == 1)
+        {
+            targetQ := g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ]
+            wrongSkipAmount := currentSkip != targetQ[1] && currentSkip != targetQ[2]
+            return (wrongSkipAmount || postClickCancel) && this.UnBenchBrivConditions(this.Settings)
+        }
+        else if (formationFavoriteIndex == 3)
+        {
+            wrongSkipAmount := currentSkip != g_BrivUserSettingsFromAddons[ "BGFBFS_TargetE" ]
+            return (wrongSkipAmount || postClickCancel) && this.BenchBrivConditions(this.Settings)
+        }
+        return false
     }
 
     ; Returns true if there are no champions in the current formation.
@@ -290,7 +310,8 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
         if (!IsObject(settings))
             return false
         g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ] := settings.Enabled
-        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ] := settings.targetQ
+        multiTargetQ := IC_BrivGemFarm_BrivFeatSwap_Functions.GetTargetQSkipValues()
+        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ] := multiTargetQ
         g_BrivUserSettingsFromAddons[ "BGFBFS_TargetE" ] := settings.targetE
         g_BrivUserSettingsFromAddons[ "BGFBFS_Preset" ] := settings.Preset
         g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] := settings.MouseClick

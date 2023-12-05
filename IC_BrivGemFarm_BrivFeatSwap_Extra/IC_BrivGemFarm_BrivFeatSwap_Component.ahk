@@ -319,12 +319,27 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     UpdatePresetWarning(targetQ)
     {
         controlID := "BGFBFS_PresetWarningText"
+        targetSkipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.GetTargetQSkipValues()
         if ((detectedChance := this.DetectedSkipChance) != "" && detectedChance != 100)
-            GuiControl, ICScriptHub:, %controlID%, % "WARNING: Briv not at 100" . "%" . " skip chance."
+        {
+            warningText := "WARNING: Briv not at 100" . "%" . " skip chance."
+            loot := IC_BrivGemFarm_BrivFeatSwap_Functions.GetBrivLoot()
+            if (loot.gild == 1)
+                warningText .= "`n(Shiny can't get perfect jump for even skip values)"
+            GuiControl, ICScriptHub:, %controlID%, % warningText
+            partialText := "(" . targetSkipValues[1] . "-" . targetSkipValues[2] . ")"
+            GuiControl, ICScriptHub:, BrivFeatSwapQPartialText, % partialText
+            return
+        }
         else if ((detectedAmount := this.DetectedSkipAmount) != "" && targetQ != detectedAmount)
+        {
             GuiControl, ICScriptHub:, %controlID%, WARNING: Wrong preset for current Briv skip.
-        else
-            GuiControl, ICScriptHub:, %controlID%
+            partialText := "(" . targetSkipValues[1] . ")"
+            GuiControl, ICScriptHub:, BrivFeatSwapQPartialText, % partialText
+            return
+        }
+        GuiControl, ICScriptHub:, %controlID%
+        GuiControl, ICScriptHub:, BrivFeatSwapQPartialText
     }
 
     ; Set the state of the mod50 checkboxes for Preferred Briv Jump Zones in BGFBFS tab.

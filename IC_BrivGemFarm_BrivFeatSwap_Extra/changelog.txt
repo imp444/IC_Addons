@@ -1,3 +1,10 @@
+Decemeber 05, 2023 - v1.5.9
+    - Updated 9J/4J Briv jump zones to avoid z32 "collect 10" if the party ends up in z2/z12/z22/z32/z42, as suggested by fedv.
+    - Added a message for imperfect Briv jump with shiny item slot 4 and even jump value.
+    - If Briv is not at perfect jump, both perfect jump and jump+1 values will be used as targetQ for formation switch.
+    - The warning shown when a wrong preset is currently selected won't appear anymore for the blank option.
+    - Fixed an issue that would cause the script to get stuck in an infinite loop if targetQ/targetE values were blank.
+
 November 25, 2023 - v1.5.8
     - Updated 8/4J + walk 1/2/3/4 Briv jump zones to be the same as 8/4J.
     - Updated 9J/4J Briv jump zones to allow to stay on a 100%QT path if the party ends up in z2/z12/z22/z32/z42, as suggested by Horizon.

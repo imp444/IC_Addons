@@ -7,6 +7,7 @@ if(IsObject(IC_BrivGemFarm_Component))
     IC_BrivGemFarm_BrivFeatSwap_Functions.InjectAddon()
     global g_BrivFeatSwap := new IC_BrivGemFarm_BrivFeatSwap_Component
     global g_BrivFeatSwapGui := new IC_BrivGemFarm_BrivFeatSwap_GUI
+    g_BrivFeatSwapGui.SetupGroups()
     g_BrivFeatSwap.Init()
 }
 else
@@ -35,7 +36,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
 
     Init()
     {
-        g_BrivFeatSwapGui.SetupGroups()
         ; Save the state of the mod50 checkboxes for Preferred Briv Jump Zones in Advanced Settings tab.
         this.SavedPreferredAdvancedSettings := this.GetPreferredAdvancedSettings(true)
         this.SetupPresets()
@@ -554,8 +554,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     CalcPath(mod50values, resetArea, skipQ, skipE, brivMinLevelArea := 1, brivMetalbornArea := 1)
     {
         preset :=  this.GetPresetName()
-        qVal := skipQ + 1
-        eVal := skipE + 1
+        qVal := skipQ != "" ? skipQ + 1 : 1
+        eVal := skipE != "" ? skipE + 1 : 1
         noMbJumps := mbJumps := walks := 0
         if (!Isobject(mod50values))
         {
@@ -597,8 +597,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     CalcPathStacks(mod50values, stacks, skipQ, skipE, brivMinLevelArea := 1, brivMetalbornArea := 1)
     {
         preset :=  this.GetPresetName()
-        qVal := skipQ + 1
-        eVal := skipE + 1
+        qVal := skipQ != "" ? skipQ + 1 : 1
+        eVal := skipE != "" ? skipE + 1 : 1
         if (!Isobject(mod50values))
         {
             mod50Int := mod50values

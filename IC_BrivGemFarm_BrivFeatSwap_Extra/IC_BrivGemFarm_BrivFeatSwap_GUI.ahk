@@ -29,7 +29,7 @@ BGFBFS_ValidateInput(min := 0, max := 1)
         input := input < min ? min : max
         GuiControl, ICScriptHub:Text, %A_GuiControl%, % input
     }
-    if (LTrim(input, 0) == beforeSubmit && (input . " ") != (beforeSubmit . " "))
+    if (beforeSubmit != "" && LTrim(input, 0) == beforeSubmit && (input . " ") != (beforeSubmit . " "))
     {
         input := LTrim(beforeSubmit, "0")
         GuiControl, ICScriptHub:Text, %A_GuiControl%, % input

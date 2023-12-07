@@ -525,13 +525,13 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     {
         if (clickLevel > 1)
         {
-            if (this.BGFLU_ReadClickLevel() >= clickLevel)
+            if (this.Memory.BGFLU_ReadClickLevel() >= clickLevel)
                 return true
             if (numClicks == 1)
                 return this.BGFLU_LevelClickDamage(1)
             StartTime := A_TickCount
             ElapsedTime := 0
-            while (this.BGFLU_ReadClickLevel() < clickLevel && ElapsedTime < timeout)
+            while (this.Memory.BGFLU_ReadClickLevel() < clickLevel && ElapsedTime < timeout)
             {
                 this.BGFLU_LevelClickDamage(1)
                 ElapsedTime := A_TickCount - StartTime
@@ -562,11 +562,6 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             }
         }
         Critical, Off
-    }
-
-    BGFLU_ReadClickLevel()
-    {
-        return this.Memory.GameManager.game.gameInstances[this.Memory.GameInstance].ClickLevel.Read()
     }
 
     ; Retrieves the required level of the last upgrade of a champion.
@@ -696,5 +691,14 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
             settings["SavedFormations"] := savedFormations
             g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Functions.SettingsPath, settings)
         }
+    }
+}
+
+; Extends IC_MemoryFunctions_Class
+class IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Class extends IC_MemoryFunctions_Class
+{
+    BGFLU_ReadClickLevel()
+    {
+        return this.GameManager.game.gameInstances[this.GameInstance].ClickLevel.Read()
     }
 }

@@ -4,3 +4,4 @@
 IC_UpdateClass_Class.UpdateClassFunctions(g_BrivGemFarm, IC_BrivGemFarm_LevelUp_Class)
 IC_UpdateClass_Class.UpdateClassFunctions(g_SF, IC_BrivGemFarm_LevelUp_SharedFunctions_Class)
 IC_UpdateClass_Class.UpdateClassFunctions(g_SharedData, IC_BrivGemFarm_LevelUp_IC_SharedData_Class)
+IC_UpdateClass_Class.UpdateClassFunctions(g_SF.Memory, IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Class)

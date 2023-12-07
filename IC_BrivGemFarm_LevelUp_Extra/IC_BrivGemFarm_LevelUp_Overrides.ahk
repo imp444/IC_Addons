@@ -42,6 +42,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             g_SF.SetFormation(g_BrivUserSettings)
             if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
             {
+                g_SharedData.BGFLU_SetStatus()
                 g_SharedData.BGFLU_SaveFormations()
                 g_SharedData.SwapsMadeThisRun := 0
                 g_SharedData.BossesHitThisRun := 0
@@ -169,7 +170,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         currentZone := g_SF.Memory.ReadCurrentZone()
         if (forceBrivShandie || currentZone == 1)
             g_SF.ToggleAutoProgress(0)
-        g_SharedData.LoopString := "Leveling champions to the minimum level"
+        g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         g_SF.DirectedInput(,, "{q}") ; switch to Briv in slot 5
@@ -285,7 +286,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 targetLevel := this.BGFLU_GetTargetLevel(champID)
                 if (this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
                 {
-                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
+                    text := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
+                    g_SharedData.BGFLU_SetStatus(text)
                     g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; Level up single champ once
                     return false
                 }
@@ -308,11 +310,14 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             ; Level up a single champion once
             if (this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
             {
-                g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
+                text := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . targetLevel . ")"
+                g_SharedData.BGFLU_SetStatus(text)
                 g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}")
                 return false
             }
         }
+        if (levelBriv)
+            g_SharedData.BGFLU_SetStatus("Finished leveling champions.")
         return levelBriv
     }
 
@@ -333,12 +338,14 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 lastUpgrade := g_SF.BGFLU_GetLastUpgradeLevel(champID)
                 if (this.BGFLU_ChampUnderTargetLevel(champID, lastUpgrade))
                 {
-                    g_SharedData.LoopString := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to soft cap (" . lastUpgrade . ")"
+                    text := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to soft cap (" . lastUpgrade . ")"
+                    g_SharedData.BGFLU_SetStatus(text)
                     g_SF.DirectedInput(,, "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}") ; level up single champ once
                     return false
                 }
             }
         }
+        g_SharedData.BGFLU_SetStatus("Finished leveling champions.")
         return true
     }
 
@@ -586,6 +593,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
 ; Extends IC_SharedData_Class
 class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
 {
+;    BGFLU_Status := ""
 ;    BGFLU_UpdateMaxLevels := false ; Update max level immediately
 
     ; Return true if the class has been updated by the addon
@@ -598,6 +606,11 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
     BGFLU_Running()
     {
         return true
+    }
+
+    BGFLU_SetStatus(text := "")
+    {
+        this.BGFLU_Status := text
     }
 
     ; Load settings from the GUI settings file

@@ -66,7 +66,9 @@ Class IC_BrivGemFarm_LevelUp_Component
     {
         this.TimerFunctions := {}
         fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
-        this.TimerFunctions[fncToCallOnTimer] := 3000
+        this.TimerFunctions[fncToCallOnTimer] := 500
+        fncToCallOnTimer := ObjBindMethod(this, "UpdateWarningStatus")
+        this.TimerFunctions[fncToCallOnTimer] := 4000
         g_BrivFarmAddonStartFunctions.Push(ObjBindMethod(this, "Start"))
         g_BrivFarmAddonStopFunctions.Push(ObjBindMethod(this, "Stop"))
     }
@@ -88,9 +90,28 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:Text, BGFLU_StatusWarning,
     }
 
-    ; Updates status string / warnings on a timer
-    ; Checks if the addon is running while BrivGemFarm is active, and if F keys are enabled
+    ; Updates status on a timer
     UpdateStatus()
+    {
+        try ; avoid thrown errors when comobject is not available.
+        {
+            SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
+            if (SharedRunData.BGFLU_Running) ; Addon running check
+            {
+                status := SharedRunData.BGFLU_Status
+                str := "Running" . (status != "" ? " - " . status : "")
+                GuiControl, ICScriptHub:Text, BGFLU_StatusText, % str
+            }
+        }
+        catch
+        {
+            GuiControl, ICScriptHub:Text, BGFLU_StatusText, Waiting for Gem Farm to start
+        }
+    }
+
+    ; Updates warnings on a timer
+    ; Checks if the addon is running while BrivGemFarm is active, and if F keys are enabled
+    UpdateWarningStatus()
     {
         static statuses := []
         static statusIndex := 0
@@ -100,7 +121,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         static loadWarning := false
         static loadWarningMsg := "WARNING: Addon was loaded too late. Stop/start Gem Farm to resume."
 
-        if (!g_BrivUserSettings[ "Fkeys" ]) ; F kets check
+        if (!g_BrivUserSettings[ "Fkeys" ]) ; F keys check
         {
             if (!fKeyWarning)
             {
@@ -138,12 +159,7 @@ Class IC_BrivGemFarm_LevelUp_Component
                     for k, v in statuses
                         if (v == loadWarningMsg)
                             statuses.RemoveAt(k)
-                GuiControl, ICScriptHub:Text, BGFLU_StatusText, Running
             }
-        }
-        catch
-        {
-            GuiControl, ICScriptHub:Text, BGFLU_StatusText, Waiting for Gem Farm to start
         }
         ; Display all statuses one after the other, then start again from the beginning
         statusIndex := statuses.Length() < statusIndex ? 1 : statusIndex

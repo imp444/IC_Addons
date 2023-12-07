@@ -10,7 +10,7 @@ Gui, ICScriptHub:Tab, BrivGF LevelUp
 
 GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
 Gui, ICScriptHub:Add, Text, x+8 Section vBGFLU_Status, Status:
-Gui, ICScriptHub:Add, Text, x+5 w170 vBGFLU_StatusText, Not Running
+Gui, ICScriptHub:Add, Text, x+5 w500 vBGFLU_StatusText, Not Running
 
 GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
 Gui, ICScriptHub:Add, Text, xs ys+15 w500 vBGFLU_StatusWarning,

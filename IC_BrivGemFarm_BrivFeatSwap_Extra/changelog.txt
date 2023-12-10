@@ -1,3 +1,6 @@
+Decemeber 10, 2023 - v1.5.10
+    - Updated preferred Briv jump zones for 5J/4J, 6J/4J, 7J/4J and 9J/4J TT presets.
+
 Decemeber 05, 2023 - v1.5.9
     - Updated 9J/4J Briv jump zones to avoid z32 "collect 10" if the party ends up in z2/z12/z22/z32/z42, as suggested by fedv.
     - Added a message for imperfect Briv jump with shiny item slot 4 and even jump value.

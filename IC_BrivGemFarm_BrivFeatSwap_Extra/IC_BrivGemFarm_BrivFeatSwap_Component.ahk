@@ -279,19 +279,19 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         Switch name
         {
             case "5J/4J Tall Tales":
-                this.ApplyPresets(500953867244502, 5, 4)
+                this.ApplyPresets(498342527128532, 5, 4)
             case "6J/4J Resolve Amongst Chaos":
                 this.ApplyPresets(948417617686362, 6, 4)
             case "6J/4J Tall Tales":
-                this.ApplyPresets(800167230925023, 6, 4)
+                this.ApplyPresets(800122939009243, 6, 4)
             case "7J/4J Tall Tales":
-                this.ApplyPresets(380222613450972, 7, 4)
+                this.ApplyPresets(380222613385436, 7, 4)
             case "8J/4J Tall Tales":
                 this.ApplyPresets(57952963557919, 8, 4)
             case "8J/4J Tall Tales + walk 1/2/3/4":
                 this.ApplyPresets(57952963557919, 8, 4)
             case "9J/4J Tall Tales":
-                this.ApplyPresets(17571766008863, 9, 4)
+                this.ApplyPresets(35181131988031, 9, 4)
             case default:
                 this.ApplyPresets(this.SavedPreferredAdvancedSettings, this.Settings.targetQ, this.Settings.targetE)
         }

@@ -51,8 +51,10 @@ Class IC_AreaTiming_TimerScriptWorker
         static currentRun := ""
         ; Current recorded area progress
         static timeObj := new IC_AreaTiming_TimeObject
-        ; Briv stacks value before stacking
-        static stacksBefore := 0
+        ; Briv sprint stacks
+        static sprintStacks := 0
+        ; Briv steelborne stacks before stacking
+        static sbStacksBefore := 0
         ; True during stacking
         static stacking := false
         ; Current recorded stacking progress
@@ -71,6 +73,9 @@ Class IC_AreaTiming_TimerScriptWorker
         Critical, On
         currentZone := g_SF.Memory.ReadCurrentZone()
         highestZone := g_SF.Memory.ReadHighestZone()
+        resetting := g_SF.Memory.ReadResetting()
+        if (!resetting)
+            sprintStacks := g_SF.Memory.ReadHasteStacks()
         ; Area cleared. CurrentZone = -1 after offline sim is completed.
         areaProgress := highestZone > currentZone || highestZone > lastZone
         if (!areaClearTrigger && areaProgress && currentZone != -1)
@@ -156,12 +161,12 @@ Class IC_AreaTiming_TimerScriptWorker
         isQFormation := g_SF.IsCurrentFormation(formationQ)
         isWFormation := g_SF.IsCurrentFormation(formationW)
         isEFormation := g_SF.IsCurrentFormation(formationE)
-        if (!stacking && cond && isWFormation && currentZone != 1 && !skipFirstValue)
+        if (!stacking && !resetting && cond && isWFormation && currentZone != 1 && !skipFirstValue)
         {
             if (!g_SF.Memory.ReadTransitioning())
             {
                 stacking := true
-                stacksBefore := g_SF.Memory.ReadSBStacks()
+                sbStacksBefore := g_SF.Memory.ReadSBStacks()
                 currentZone := g_SF.Memory.ReadCurrentZone()
                 stacksTimeObj.Reset()
                 stacksTimeObj.SetAreaStarted(currentZone)
@@ -193,7 +198,7 @@ Class IC_AreaTiming_TimerScriptWorker
                     }
                 }
                 ; Update game speed if offline stacking
-                if (g_SF.Memory.ReadSBStacks() > stacksBefore || offlineTrigger && !offlineDone)
+                if (g_SF.Memory.ReadSBStacks() > sbStacksBefore || offlineTrigger && !offlineDone)
                 {
                     gameSpeed := this.ReadUncappedTimeScaleMultiplier()
                     if (gameSpeed != "" && gameSpeed != 0)
@@ -203,12 +208,16 @@ Class IC_AreaTiming_TimerScriptWorker
                     }
                 }
             }
-            else if (offlineDone && (isQFormation || isEFormation))
+            else if (offlineDone && (isQFormation || isEFormation || resetting))
             {
                 stacking := stackingGameSpeedTrigger := false
                 offlineTrigger := offlineStartZoneUpdate := false
                 stacksAfter := g_SF.Memory.ReadSBStacks()
-                dStacks := stacksAfter - stacksBefore
+                ; Conversion happened
+                if (resetting && stacksAfter < 2)
+                    dStacks := g_SF.Memory.ReadHasteStacks() - sprintStacks
+                else
+                    dStacks := stacksAfter - sbStacksBefore
                 currentZone := g_SF.Memory.ReadCurrentZone()
                 stacksTimeObj.SetAreaTransitioned(currentZone, dStacks)
                 currentRun.AddStacksItem(stacksTimeObj)

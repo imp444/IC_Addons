@@ -119,6 +119,7 @@ Class IC_AreaTiming_Component
             else
             {
                 this.DeleteScriptFromMiniscripts()
+                ; Remove button sync
                 for k, v in g_BrivFarmAddonStartFunctions
                     if (v == boundStart)
                         g_BrivFarmAddonStartFunctions.Delete(k)
@@ -229,29 +230,43 @@ Class IC_AreaTiming_Component
             }
         }
         ; GUID not found in miniscripts.
-        lastGUID := g_SF.LoadObjectFromJSON(this.LastGUIDPath).GUID_IC_AreaTiming_TimerScript_Run
-        if (lastGUID != "")
+        guid := this.GetLastGUID()
+        if (guid != "")
         {
-            this.TimerScriptGUID := lastGUID
-            g_Miniscripts[lastGUID] := this.TimerScriptLoc
-            g_SF.WriteObjectToJSON(this.MiniscriptsPath, g_Miniscripts)
-            return lastGUID
+            this.TimerScriptGUID := guid
+            if (this.Settings.BrivGemFarmSync)
+            {
+                g_Miniscripts[guid] := this.TimerScriptLoc
+                g_SF.WriteObjectToJSON(this.MiniscriptsPath, g_Miniscripts)
+            }
         }
-        return ""
+        return guid
+    }
+
+    ; Returns the saved GUID of the timer script in this addons folder.
+    ; Should be the same as the one in the Miniscripts file except for edge cases.
+    GetLastGUID()
+    {
+        settings := g_SF.LoadObjectFromJSON(this.LastGUIDPath)
+        return settings.GUID_IC_AreaTiming_TimerScript_Run
     }
 
     ; Add this script's GUID to the Miniscripts file.
     AddScriptToMiniscripts()
     {
-        ; Don't add if the process is still running.
-        if (this.IsTimerScriptRunning())
-            return
         ; Delete previous GUID
         this.DeleteScriptFromMiniscripts()
-        ; Create unique identifier (GUID) for the addon to be used by Script Hub.
-        this.TimerScriptGUID := guid := ComObjCreate("Scriptlet.TypeLib").Guid
-        obj := {GUID_IC_AreaTiming_TimerScript_Run:guid}
-        g_SF.WriteObjectToJSON(this.LastGUIDPath, obj)
+        if (this.IsTimerScriptRunning())
+            guid := this.GetLastGUID()
+        if (guid == "")
+        {
+            ; Create unique identifier (GUID) for the addon to be used by Script Hub.
+            this.TimerScriptGUID := guid := ComObjCreate("Scriptlet.TypeLib").Guid
+            obj := {GUID_IC_AreaTiming_TimerScript_Run:guid}
+            g_SF.WriteObjectToJSON(this.LastGUIDPath, obj)
+        }
+        if (!this.Settings.BrivGemFarmSync)
+            return
         ; Added the script to be run when play is pressed to the list of scripts to be run.
         g_Miniscripts[guid] := this.TimerScriptLoc
         g_SF.WriteObjectToJSON(this.MiniscriptsPath, g_Miniscripts)
@@ -260,9 +275,6 @@ Class IC_AreaTiming_Component
     ; Remove this script's GUID from the Miniscripts file.
     DeleteScriptFromMiniscripts()
     {
-        ; Don't delete if the process is still running.
-        if (this.IsTimerScriptRunning())
-            return
         for k, v in g_Miniscripts
         {
             if (InStr(v, this.TimerScriptFileName))
@@ -283,6 +295,7 @@ Class IC_AreaTiming_Component
             this.Reset()
             this.Update(true)
         }
+        ; Remove reference in LastGUID_Miniscripts.json.
         if (!this.Settings.BrivGemFarmSync)
             this.DeleteScriptFromMiniscripts()
     }

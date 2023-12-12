@@ -15,6 +15,7 @@ Class IC_AreaTiming_Component
 {
     ; File locations
     static SettingsPath := A_LineFile . "\..\AreaTiming_Settings.json"
+    static LastGUIDPath := A_LineFile . "\..\LastGUID_AreaTiming.json"
     static MiniscriptsPath := A_LineFile . "\..\..\IC_BrivGemFarm_Performance\LastGUID_Miniscripts.json"
     static TimerScriptFileName := "IC_AreaTiming_TimerScript_Run.ahk"
     ; Constants (might differ depending on game version)
@@ -214,6 +215,7 @@ Class IC_AreaTiming_Component
     }
 
     ; Retrieve the saved GUID of the timer script in the Miniscripts file.
+    ; If not found, use the GUID saved in the LastGUID_AreaTiming.json file.
     UpdateLastGUID()
     {
         miniscripts := g_SF.LoadObjectFromJSON(this.MiniscriptsPath)
@@ -226,7 +228,15 @@ Class IC_AreaTiming_Component
                 return k
             }
         }
-        ; GUID not found
+        ; GUID not found in miniscripts.
+        lastGUID := g_SF.LoadObjectFromJSON(this.LastGUIDPath).GUID_IC_AreaTiming_TimerScript_Run
+        if (lastGUID != "")
+        {
+            this.TimerScriptGUID := lastGUID
+            g_Miniscripts[lastGUID] := this.TimerScriptLoc
+            g_SF.WriteObjectToJSON(this.MiniscriptsPath, g_Miniscripts)
+            return lastGUID
+        }
         return ""
     }
 
@@ -240,6 +250,8 @@ Class IC_AreaTiming_Component
         this.DeleteScriptFromMiniscripts()
         ; Create unique identifier (GUID) for the addon to be used by Script Hub.
         this.TimerScriptGUID := guid := ComObjCreate("Scriptlet.TypeLib").Guid
+        obj := {GUID_IC_AreaTiming_TimerScript_Run:guid}
+        g_SF.WriteObjectToJSON(this.LastGUIDPath, obj)
         ; Added the script to be run when play is pressed to the list of scripts to be run.
         g_Miniscripts[guid] := this.TimerScriptLoc
         g_SF.WriteObjectToJSON(this.MiniscriptsPath, g_Miniscripts)

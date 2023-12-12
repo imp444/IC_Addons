@@ -1,3 +1,8 @@
+December 12, 2023 - v1.0.4
+    - Fixed an issue that would make ScriptHub crash when trying to reconnect to the timer script.
+    - Fixed the behavior of the "Start/Stop along with BrivGemFarm" button.
+    - Fixed stacks not being recorded if Modron reset happens before the script can switch back to a different formation from the stacking formation.
+
 October 25, 2023 - v1.0.3
     - The start/stop/close buttons are grayed out depending on the state of the timer script.
     - Prevented a potential issue when using a portable version of AHK.

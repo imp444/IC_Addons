@@ -441,12 +441,13 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         ; Make sure the ability handler has the correct base address.
         ; It can change on game restarts or modron resets.
         this.Memory.ActiveEffectKeyHandler.Refresh()
-        StartTime := A_TickCount
-        ElapsedTime := 0
         timeScale := this.Memory.ReadTimeScaleMultiplier()
         timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
-        timeout := 30000 ; 60s seconds ( previously / timescale (6s at 10x) )
-        estimate := (timeout / timeScale) ; no buffer: 60s / timescale to show in LoopString
+        ; 30s seconds without the feat, 10s with the feat.
+        timeout := this.BGFLU_SecondWindActive() ? 10000 : 30000
+        estimate := (timeout / timeScale)
+        StartTime := A_TickCount
+        ElapsedTime := 0
         ; Loop escape conditions:
         ;   does full timeout duration
         ;   past highest accepted dashwait triggering area
@@ -460,8 +461,19 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
             Sleep, 30
+            if (this.Memory.ReadTransitioning())
+                estimate += 30
         }
         g_PreviousZoneStartTime := A_TickCount
+    }
+
+    BGFLU_SecondWindActive()
+    {
+        feats := this.Memory.BGFLU_GetHeroFeats(47)
+        for k, v in feats
+            if (v == 1035)
+                return true
+        return false
     }
 
     ; Wait for Thellora to activate her Rush ability.
@@ -702,5 +714,22 @@ class IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Class extends IC_MemoryFunctions
     BGFLU_ReadClickLevel()
     {
         return this.GameManager.game.gameInstances[this.GameInstance].ClickLevel.Read()
+    }
+
+    BGFLU_GetHeroFeats(heroID)
+    {
+        if (heroID < 1)
+            return ""
+        size := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.FeatHandler.heroFeatSlots[heroID].List.size.Read()
+        ; Sanity check, should be < 4 but set to 6 in case of future feat num increase.
+        if (size < 0 || size > 6)
+            return ""
+        featList := []
+        Loop, %size%
+        {
+            value := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.FeatHandler.heroFeatSlots[heroID].List[A_Index - 1].ID.Read()
+            featList.Push(value)
+        }
+        return featList
     }
 }

@@ -91,7 +91,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SharedData.BGFLU_UpdateMaxLevels := false
                 ; Stop click spam
                 if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
-                    g_SF.BGFLU_LevelClickDamage(1)
+                    g_SF.BGFLU_StopSpamClickDamage()
             }
             ; Click damage
             if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
@@ -584,6 +584,17 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
                 this.DirectedInput(hold := 0,, ["{ClickDmg}","{RCtrl}"]*) ;keysup
             }
         }
+        Critical, Off
+    }
+
+    ; Stop click damage input.
+    BGFLU_StopSpamClickDamage()
+    {
+        Critical, On
+        if (g_UserSettings[ "NoCtrlKeypress" ])
+            this.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
+        else
+            this.DirectedInput(hold := 0,, ["{ClickDmg}","{RCtrl}"]*) ;keysup
         Critical, Off
     }
 

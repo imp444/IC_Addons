@@ -537,6 +537,10 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     ;         timeout:int - Maximum waiting time.
     BGFLU_DoClickDamageSetup(numClicks := 0, clickLevel := 1, timeout := 100)
     {
+        ; Don't level up click damage if the is not enough gold for at least one upgrade.
+        maxAmount := g_SF.Memory.BGFLU_ReadClickLevelUpAllowed()
+        if (maxAmount == 0)
+            return true
         if (clickLevel > 1)
         {
             if (this.Memory.BGFLU_ReadClickLevel() >= clickLevel)
@@ -547,7 +551,12 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             ElapsedTime := 0
             while (this.Memory.BGFLU_ReadClickLevel() < clickLevel && ElapsedTime < timeout)
             {
+                ; Stop leveling up if not enough gold for a full upgrade.
+                maxAmount := g_SF.Memory.BGFLU_ReadClickLevelUpAllowed()
                 this.BGFLU_LevelClickDamage(1)
+                levelUpAmount := g_SF.Memory.BGFLU_ReadLevelUpAmount()
+                if (levelUpAmount > 1 && maxAmount < levelUpAmount)
+                    return true
                 ElapsedTime := A_TickCount - StartTime
             }
             return true
@@ -711,9 +720,22 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
 ; Extends IC_MemoryFunctions_Class
 class IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Class extends IC_MemoryFunctions_Class
 {
+    ; Next upgrade = -100
+    BGFLU_ReadLevelUpAmount()
+    {
+        value := this.GameManager.game.gameInstances[this.GameInstance].Screen.uiController.bottomBar.levelUpAmount.Read()
+        return value == "" ? 100 : value
+    }
+
     BGFLU_ReadClickLevel()
     {
         return this.GameManager.game.gameInstances[this.GameInstance].ClickLevel.Read()
+    }
+
+    BGFLU_ReadClickLevelUpAllowed()
+    {
+        value := this.GameManager.game.gameInstances[this.GameInstance].Screen.uiController.bottomBar.heroPanel.clickDamageBox.maxLevelUpAllowed.Read()
+        return value == "" ? 1 : value
     }
 
     BGFLU_GetHeroFeats(heroID)

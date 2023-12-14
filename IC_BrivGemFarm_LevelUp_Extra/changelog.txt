@@ -1,3 +1,13 @@
+December 14, 2023 - v1.2.2
+    - Text displaying which current hero is being leveled up to min/max target will show up under the Level Up tab instead of the Main loop,
+      to prevent an issue with stats not being updated after resetting.
+    - Click damage will only be leveled up if there is enough gold to buy at least one upgrade.
+    - Click damage will stop being leveled up to the target level when there is not enough gold to buy the full upgrade
+      (depending on the current x10/x25/x100/double arrow leveling settings).
+    - Dashwait timeout is now either 10s or 30s depending on whether Shandie's "Second Wind" feat is active, before timescale is applied (previously always 30s).
+    - Dashwait estimate is increased when the party is currently transitioning to the next zone and Shandie's Dash timer is paused.
+    - Fixed an issue with autoprogress being constantly toggled when using Shandie if the HybridTurboStacking addon is enabled.
+
 November 17, 2023 - v1.2.1
     - Click settings fixes:
         - Fixed "Match highest area" setting temporarily halting the script's execution when there was not enough gold to reach the target level.

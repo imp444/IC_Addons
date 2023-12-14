@@ -433,6 +433,8 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     */
     DoDashWait( DashWaitMaxZone := 2000 )
     {
+        if (this.IsDashActive())
+            return
         this.ToggleAutoProgress( 0, false, true )
         if(this.Memory.ReadChampLvlByID(47) < 120)
             this.LevelChampByID( 47, 120, 7000, "{q}") ; level shandie
@@ -460,12 +462,13 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             Sleep, 30
         }
         g_PreviousZoneStartTime := A_TickCount
-        return
     }
 
     ; Wait for Thellora to activate her Rush ability.
     DoRushWait()
     {
+        if (!this.ShouldRushWait())
+            return
         this.ToggleAutoProgress( 0, false, true )
         ; Make sure the ability handler has the correct base address.
         ; It can change on game restarts or modron resets.
@@ -491,7 +494,6 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             Sleep, 30
         }
         g_PreviousZoneStartTime := A_TickCount
-        return
     }
 
     ; Does once per zone tasks like pressing leveling keys

@@ -562,6 +562,8 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             repl := IC_BrivGemFarm_LevelUp_TextData.GetData("unknown", "Unknown")
         else if (param1 == "jangsao_stellar_nursery_target_count")
             repl := this.ValueIfKeyExists(kvps, "amount___2")
+        else if param1 in sisaspia_spores_used,halo_of_spores_description2
+            repl := ""
         else if (kvps.HasKey(param1)) ; amount
             repl := kvps[param1]
         return repl

@@ -310,11 +310,17 @@ Class IC_BrivGemFarm_LevelUp_EffectData
                 repl := g_HeroDefines.HeroDataByID[upgradeData.hero_id].name
             }
         }
+        else if(param1 == "sources_favored_foe_list_and")
+        {
+            ; Might have multiple tags in the future
+            dataKey := "tag_" . param2 . "_plural"
+            tags := IC_BrivGemFarm_LevelUp_TextData.GetData(dataKey, dataKey)
+            repl := g_HeroDefines.ListString(tags, "and")
+        }
         else if (param2Val != "")
         {
             if (param1 == "not_buffed")
                 repl := param2Val
-
             else if (param1 == "upgrade_name")
                 repl := g_HeroDefines.UpgradeDataByID(param2Val).name
             else if (param1 == "describe_rarity")
@@ -327,7 +333,7 @@ Class IC_BrivGemFarm_LevelUp_EffectData
                 finalKey := IC_BrivGemFarm_LevelUp_TextData.GetData(dataKey, (k == 0) ? "Attack" : "Attacks")
                 repl := g_HeroDefines.ListString(param2Val, "and") . " " . finalKey
             }
-            else if (param1 == "list_or" OR param1 == "describe_tag_list_or")
+            else if param1 in list_or,describe_tag_list_or
                 repl := g_HeroDefines.ListString(param2Val, "or")
             else if (param1 == "describe_tag_list_and")
                 repl := g_HeroDefines.ListString(param2Val, "and")

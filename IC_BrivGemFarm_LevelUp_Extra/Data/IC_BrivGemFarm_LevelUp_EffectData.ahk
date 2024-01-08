@@ -570,6 +570,36 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             repl := this.ValueIfKeyExists(kvps, "amount___2")
         else if param1 in sisaspia_spores_used,halo_of_spores_description2
             repl := ""
+        else if (param1 == "dhani_gold_bonus")
+        {
+            ; dhani_splash_of_yellow
+            effectKey := "effect_string___2"
+            split := StrSplit(kvps[effectKey], ",")
+            repl := 200 * split[2] / 100
+        }
+        else if (param1 == "dhani_aoe_damage")
+        {
+            ; dhani_stroke_of_green
+            effectKey := "effect_string___2"
+            split := StrSplit(kvps[effectKey], ",")
+            repl := 50 * split[2] / 100
+        }
+        else if (param1 == "dhani_stun_duration")
+        {
+            ; stun_mult
+            effectKey := "effect_string___2"
+            split := StrSplit(kvps[effectKey], ",")
+            stunTime := kvps["stun_time___3"]
+            stunMult := split[2] / 100
+            repl := stunMult * stunTime
+        }
+        else if (param1 == "dhani_boss_damage_bonus")
+        {
+            ; dhani_blotch_of_blue
+            effectKey := "effect_string___3"
+            split := StrSplit(kvps[effectKey], ",")
+            repl := 800 * split[2] / 100
+        }
         else if (kvps.HasKey(param1)) ; amount
             repl := kvps[param1]
         return repl

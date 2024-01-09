@@ -317,6 +317,38 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             tags := IC_BrivGemFarm_LevelUp_TextData.GetData(dataKey, dataKey)
             repl := g_HeroDefines.ListString(tags, "and")
         }
+        else if(param1 == "shaka_locked_tag")
+        {
+            effectKey := param2 . "_expressions"
+            ; shaka_celestial_puzzle
+            baseEffect := g_HeroDefines.EffectDataById(821)
+            for k, v in baseEffect["effect_keys"]
+            {
+                if (v["effect_string"] == "shaka_celestial_puzzle")
+                {
+                    effect_string := v
+                    break
+                }
+            }
+            for k, v in effect_string
+            {
+                if (k == effectKey)
+                {
+                    expressions := v
+                    break
+                }
+            }
+            tags := []
+            for k, v in expressions
+            {
+                firstTag := StrSplit(v, "|")[1]
+                tag := IC_BrivGemFarm_LevelUp_TextData.GetData(firstTag, "???")
+                if v contains male
+                    tag .= " / " . IC_BrivGemFarm_LevelUp_TextData.GetData(non_binary, "Nonbinary")
+                tags.Push(tag)
+            }
+            repl := g_HeroDefines.ListString(tags, "or")
+        }
         else if (param2Val != "")
         {
             if (param1 == "not_buffed")

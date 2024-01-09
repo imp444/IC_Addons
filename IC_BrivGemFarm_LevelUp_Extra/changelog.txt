@@ -1,3 +1,6 @@
+January 09, 2024 - v1.2.3
+    - Updated ability descriptions for Sisaspia, Wyll, Shaka and Dhani.
+
 December 14, 2023 - v1.2.2
     - Text displaying which current hero is being leveled up to min/max target will show up under the Level Up tab instead of the Main loop,
       to prevent an issue with stats not being updated after resetting.

@@ -401,11 +401,19 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 
     BGFLU_AllowBrivLeveling()
     {
+        ; Briv can't skip zones if hhe has under 50 stacks
         if (g_SF.Memory.ReadHasteStacks() < 50)
             return true
         highestZone := g_SF.Memory.ReadHighestZone()
-        if (highestZone < g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ])
+        brivMinLevelArea := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]
+        if (highestZone < brivMinLevelArea)
             return false
+        ; Wait for transition to highestZone before leveling during DoRushWait()
+        if (highestZone == brivMinLevelArea && !g_SF.Memory.ReadTransitioning())
+        {
+            if (g_SF.Memory.ReadCurrentZone() < highestZone)
+                return false
+        }
         mod50Index := Mod(highestZone, 50) == 0 ? 50 : Mod(highestZone, 50)
         mod50Zones := g_BrivUserSettingsFromAddons[ "BGFLU_BrivLevelingZones" ]
         if (mod50Zones[mod50Index] == 0 && this.BGFLU_ChampUnderTargetLevel(58, 80))

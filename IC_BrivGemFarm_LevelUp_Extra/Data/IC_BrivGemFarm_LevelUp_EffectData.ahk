@@ -632,6 +632,10 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             split := StrSplit(kvps[effectKey], ",")
             repl := 800 * split[2] / 100
         }
+        else if (param1 == "karlach_rage_max_stacks")
+            repl := this.ValueIfKeyExists(kvps, "default_max_stacks___2")
+        else if (param1 == "karlach_rage_reduce_percent")
+            repl := this.ValueIfKeyExists(kvps, "default_reduce_percent___2")
         else if (kvps.HasKey(param1)) ; amount
             repl := kvps[param1]
         return repl

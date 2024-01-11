@@ -1,6 +1,6 @@
 {
 	"Name":"BrivGemFarm LevelUp",
-	"Version": "v1.2.3",
+	"Version": "v1.2.4",
     "Includes" : "IC_BrivGemFarm_LevelUp_Component.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_LevelUp_Extra",

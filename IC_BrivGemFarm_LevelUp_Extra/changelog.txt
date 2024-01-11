@@ -1,3 +1,8 @@
+January 11, 2024 - v1.2.4
+    - The "Minimum area to reach before leveling Briv" setting now waits until the transition to the highest zone has
+      begun, if the current zone is under the target.
+    - Updated ability description for Karlach.
+
 January 09, 2024 - v1.2.3
     - Updated ability descriptions for Sisaspia, Wyll, Shaka and Dhani.
 

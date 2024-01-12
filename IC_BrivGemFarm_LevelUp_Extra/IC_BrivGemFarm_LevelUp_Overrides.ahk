@@ -74,28 +74,31 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SF.ToggleAutoProgress( 1, true ) ; Toggle autoprogress to skip boss bag
             if (g_SF.Memory.ReadResetting())
                 this.ModronResetCheck()
-            needToStack := this.BGFLU_NeedToStack()
-            ; Level up Briv to MaxLevel after stacking
-            if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
-                setupMaxDone := false
-            ; Check for failed stack conversion
-            if (g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
-                setupFailedConversionDone := false
-            if (!setupMaxDone)
-                setupMaxDone := this.BGFLU_DoPartySetupMax() ; Level up all champs to the specified max level
-            else if (!setupFailedConversionDone)
-                setupFailedConversionDone := this.BGFLU_DoPartySetupFailedConversion() ; Level up all champs to soft cap (including Briv if option checked)
-            if (g_SharedData.BGFLU_UpdateMaxLevels)
+            else
             {
-                setupMaxDone := false
-                g_SharedData.BGFLU_UpdateMaxLevels := false
-                ; Stop click spam
-                if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
-                    g_SF.BGFLU_StopSpamClickDamage()
+                needToStack := this.BGFLU_NeedToStack()
+                ; Level up Briv to MaxLevel after stacking
+                if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
+                    setupMaxDone := false
+                ; Check for failed stack conversion
+                if (g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
+                    setupFailedConversionDone := false
+                if (!setupMaxDone)
+                    setupMaxDone := this.BGFLU_DoPartySetupMax() ; Level up all champs to the specified max level
+                else if (!setupFailedConversionDone)
+                    setupFailedConversionDone := this.BGFLU_DoPartySetupFailedConversion() ; Level up all champs to soft cap (including Briv if option checked)
+                if (g_SharedData.BGFLU_UpdateMaxLevels)
+                {
+                    setupMaxDone := false
+                    g_SharedData.BGFLU_UpdateMaxLevels := false
+                    ; Stop click spam
+                    if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
+                        g_SF.BGFLU_StopSpamClickDamage()
+                }
+                ; Click damage
+                if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
+                    g_SF.BGFLU_DoClickDamageSetup(, g_SF.Memory.ReadHighestZone() + 20)
             }
-            ; Click damage
-            if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-                g_SF.BGFLU_DoClickDamageSetup(, g_SF.Memory.ReadHighestZone() + 20)
             if (CurrentZone > PreviousZone ) ; needs to be greater than because offline could stacking getting stuck in descending zones.
             {
                 PreviousZone := CurrentZone
@@ -399,9 +402,12 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         return stacks < targetStacks
     }
 
+    ; List of conditions that enable or disable Briv leveling.
+    ; If Briv is under level 80, he can't jump. Then walking is possible even
+    ; Briv is in the field formation, e.g. for feat swapping.
     BGFLU_AllowBrivLeveling()
     {
-        ; Briv can't skip zones if hhe has under 50 stacks
+        ; Briv can't skip zones if he has under 50 stacks
         if (g_SF.Memory.ReadHasteStacks() < 50)
             return true
         highestZone := g_SF.Memory.ReadHighestZone()

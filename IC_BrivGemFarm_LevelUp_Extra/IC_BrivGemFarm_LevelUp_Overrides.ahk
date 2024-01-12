@@ -431,6 +431,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 ; Overrides IC_BrivSharedFunctions_Class.DoDashWait()
 ; Overrides IC_BrivSharedFunctions_Class.DoRushWait()
 ; Overrides IC_BrivSharedFunctions_Class.InitZone()
+; Overrides IC_BrivSharedFunctions_Class.WaitForModronReset()
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
 ;    BGFLU_LastUpgradeLevelByID := ""
@@ -630,6 +631,32 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
                 maxUpgradeLevel := Max(requiredLevel, maxUpgradeLevel)
         }
         cachedLevels[champID] := maxUpgradeLevel
+    }
+
+    WaitForModronReset( timeout := 75000)
+    {
+        StartTime := A_TickCount
+        ElapsedTime := 0
+        g_SharedData.LoopString := "Modron Resetting..."
+        this.SetUserCredentials()
+        if (this.sprint != "" AND this.steelbones != "" AND (this.sprint + this.steelbones) < 190000)
+            response := g_serverCall.CallPreventStackFail( this.sprint + this.steelbones, true)
+        while (this.Memory.ReadResetting() AND ElapsedTime < timeout)
+        {
+            ElapsedTime := A_TickCount - StartTime
+            Sleep, 20
+        }
+        g_SharedData.LoopString := "Loading z1..."
+        Sleep, 50
+        while ((!this.Memory.ReadUserIsInited() OR g_SF.Memory.ReadCurrentZone() < 1) AND ElapsedTime < timeout)
+        {
+            ElapsedTime := A_TickCount - StartTime
+        }
+        if (ElapsedTime >= timeout)
+        {
+            return false
+        }
+        return true
     }
 }
 

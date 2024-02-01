@@ -494,12 +494,12 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     ; Wait for Thellora to activate her Rush ability.
     DoRushWait()
     {
-        if (!this.ShouldRushWait())
-            return
-        this.ToggleAutoProgress( 0, false, true )
         ; Make sure the ability handler has the correct base address.
         ; It can change on game restarts or modron resets.
         this.Memory.ActiveEffectKeyHandler.Refresh()
+        if (!this.ShouldRushWait())
+            return
+        this.ToggleAutoProgress( 0, false, true )
         StartTime := A_TickCount
         ElapsedTime := 0
         timeScale := this.Memory.ReadTimeScaleMultiplier()

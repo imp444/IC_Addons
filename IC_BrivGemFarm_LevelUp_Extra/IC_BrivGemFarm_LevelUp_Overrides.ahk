@@ -172,7 +172,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     {
         currentZone := g_SF.Memory.ReadCurrentZone()
         if (forceBrivShandie || currentZone == 1)
-            g_SF.ToggleAutoProgress(0)
+            g_SF.ToggleAutoProgress( 0, false, true )
         g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
         formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects

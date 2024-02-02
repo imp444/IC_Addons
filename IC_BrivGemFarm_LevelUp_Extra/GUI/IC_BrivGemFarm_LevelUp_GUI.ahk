@@ -151,8 +151,9 @@ Class IC_BrivGemFarm_LevelUp_GUI
         ; Timeout during BGFLU_DoPartySetupMin()
         group.AddEdit("BGFLU_MinLevelTimeout",, "w50 Limit5",, true)
         group.AddControl("BGFLU_MinLevelTimeoutText", "Text", "x+5 yp+4", "MinLevel timeout (ms)")
+        group.AddCheckBox("BGFLU_LowFavorMode",,, "Low favor mode", true)
         ; Click damage settings
-        local ClickGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_ClickGroup", "Click damage", "BGFLU_GeneralSettingsGroup", false,, "BGFLU_MinLevelTimeout")
+        local ClickGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_ClickGroup", "Click damage", "BGFLU_GeneralSettingsGroup", false,, "BGFLU_LowFavorMode")
         ClickGroup.AddControl("BGFLU_ClickDamageText", "Text", "x+0", "Level click damage to level")
         ClickGroup.AddEdit("BGFLU_MinClickDamage",, "x+5 yp-3 w50 Limit4")
         ClickGroup.AddControl("BGFLU_MinClickDamageText", "Text", "x+5 yp+3", "on area 1")

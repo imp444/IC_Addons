@@ -45,6 +45,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:, BGFLU_LowFavorMode, % this.Settings.LowFavorMode
         GuiControl, ICScriptHub:, BGFLU_MinClickDamage, % this.Settings.MinClickDamage
         GuiControl, ICScriptHub:, BGFLU_ClickDamageMatchArea, % this.Settings.ClickDamageMatchArea
         GuiControl, ICScriptHub:, BGFLU_ClickDamageSpam, % this.Settings.ClickDamageSpam
@@ -254,6 +255,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % defaultSettings.SkipMinDashWait
             GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
             GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % defaultSettings.MinLevelTimeout
+            GuiControl, ICScriptHub:, BGFLU_LowFavorMode, % defaultSettings.LowFavorMode
             GuiControl, ICScriptHub:, BGFLU_MinClickDamage, % defaultSettings.MinClickDamage
             GuiControl, ICScriptHub:, BGFLU_ClickDamageMatchArea, % defaultSettings.ClickDamageMatchArea
             GuiControl, ICScriptHub:, BGFLU_ClickDamageSpam, % defaultSettings.ClickDamageSpam
@@ -283,6 +285,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.SkipMinDashWait := false
         settings.MaxSimultaneousInputs := 4
         settings.MinLevelTimeout := 5000
+        settings.LowFavorMode := false
         settings.MinClickDamage := 1
         settings.ClickDamageMatchArea := true
         settings.ClickDamageSpam := false
@@ -375,6 +378,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:, BGFLU_LowFavorMode, % this.Settings.LowFavorMode
         GuiControl, ICScriptHub:, BGFLU_MinClickDamage, % this.Settings.MinClickDamage
         GuiControl, ICScriptHub:, BGFLU_ClickDamageMatchArea, % this.Settings.ClickDamageMatchArea
         GuiControl, ICScriptHub:, BGFLU_ClickDamageSpam, % this.Settings.ClickDamageSpam
@@ -767,7 +771,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             {
                 if (IsObject(v))
                     continue
-                if k in ShowSpoilers,ForceBrivShandie,SkipMinDashWait,ClickDamageSpam,LevelToSoftCapFailedConversion,LevelToSoftCapFailedConversionBriv
+                if k in ShowSpoilers,ForceBrivShandie,SkipMinDashWait,LowFavorMode,ClickDamageSpam,LevelToSoftCapFailedConversion,LevelToSoftCapFailedConversionBriv
                 {
                     saved := g_BrivGemFarm_LevelUp.Settings[k] ? "Yes" : "No"
                     v := v ? "Yes" : "No"

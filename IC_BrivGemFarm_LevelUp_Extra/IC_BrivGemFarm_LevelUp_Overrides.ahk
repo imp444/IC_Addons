@@ -222,6 +222,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             g_SF.SetFormation(g_BrivUserSettings) ; Switch to E formation if necessary
             Sleep, 30
             ElapsedTime := A_TickCount - StartTime
+            g_SF.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
         }
         this.DirectedInput(hold := 0,, keyspam*) ; keysup
         remainingTime := timeout - ElapsedTime
@@ -686,7 +687,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         maxAmount := g_SF.Memory.BGFLU_ReadClickLevelUpAllowed()
         if (maxAmount == 0)
             return true
-        if (clickLevel > 1)
+        if (clickLevel > 0)
         {
             if (this.Memory.BGFLU_ReadClickLevel() >= clickLevel)
                 return true

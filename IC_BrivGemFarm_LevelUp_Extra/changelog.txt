@@ -1,3 +1,6 @@
+February 09, 2024 - v1.3.1
+    - Fixed compatibility issues with CloseWelcomeBack addon.
+
 February 09, 2024 - v1.3.0
     - Added a setting to deal with low favor that levels up champions ordered by cost of next upgrade, cheapest first.
     - Fixed an issue with the Thellora handler not being refreshed after Modron reset and Thellora Rush wait being skipped on some occasions.

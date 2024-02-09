@@ -574,7 +574,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 ; Overrides IC_BrivSharedFunctions_Class.DoDashWait()
 ; Overrides IC_BrivSharedFunctions_Class.DoRushWait()
 ; Overrides IC_BrivSharedFunctions_Class.InitZone()
-; Overrides IC_BrivSharedFunctions_Class.WaitForModronReset()
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
 ;    BGFLU_LastUpgradeLevelByID := ""
@@ -775,32 +774,6 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         }
         cachedLevels[champID] := maxUpgradeLevel
     }
-
-    WaitForModronReset( timeout := 75000)
-    {
-        StartTime := A_TickCount
-        ElapsedTime := 0
-        g_SharedData.LoopString := "Modron Resetting..."
-        this.SetUserCredentials()
-        if (this.sprint != "" AND this.steelbones != "" AND (this.sprint + this.steelbones) < 190000)
-            response := g_serverCall.CallPreventStackFail( this.sprint + this.steelbones, true)
-        while (this.Memory.ReadResetting() AND ElapsedTime < timeout)
-        {
-            ElapsedTime := A_TickCount - StartTime
-            Sleep, 20
-        }
-        g_SharedData.LoopString := "Loading z1..."
-        Sleep, 50
-        while ((!this.Memory.ReadUserIsInited() OR g_SF.Memory.ReadCurrentZone() < 1) AND ElapsedTime < timeout)
-        {
-            ElapsedTime := A_TickCount - StartTime
-        }
-        if (ElapsedTime >= timeout)
-        {
-            return false
-        }
-        return true
-    }
 }
 
 ; Extends IC_SharedData_Class
@@ -968,5 +941,51 @@ class IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Class extends IC_MemoryFunctions
             featList.Push(value)
         }
         return featList
+    }
+}
+
+; Overrides IC_BrivSharedFunctions_Class.WaitForModronReset()
+class IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class extends IC_BrivSharedFunctions_Class
+{
+    ; static BGFLU_WaitForModronResetOrder := ""
+
+    BGFLU_SetOverrideFlag()
+    {
+        value := IC_UpdateClass_Class.UpdatedFunctions["IC_BrivSharedFunctions_Class.WaitForModronReset"]
+        IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class.BGFLU_WaitForModronResetOrder := (value == "") ? 1 : 2
+    }
+
+    WaitForModronReset( timeout := 75000)
+    {
+        StartTime := A_TickCount
+        ElapsedTime := 0
+        g_SharedData.LoopString := "Modron Resetting..."
+        this.SetUserCredentials()
+        if (this.sprint != "" AND this.steelbones != "" AND (this.sprint + this.steelbones) < 190000)
+            response := g_serverCall.CallPreventStackFail( this.sprint + this.steelbones, true)
+        while (this.Memory.ReadResetting() AND ElapsedTime < timeout)
+        {
+            ElapsedTime := A_TickCount - StartTime
+            Sleep, 20
+        }
+        g_SharedData.LoopString := "Loading z1..."
+        Sleep, 50
+        while ((!this.Memory.ReadUserIsInited() OR g_SF.Memory.ReadCurrentZone() < 1) AND ElapsedTime < timeout)
+        {
+            ElapsedTime := A_TickCount - StartTime
+        }
+        if (ElapsedTime >= timeout)
+        {
+            return false
+        }
+        ; CloseWelcomeBack addon is above LevelUp in enabled addons order
+        if (IsObject(IC_BrivCloseWelcomeBack_SharedFunctions_Class) && (IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class.BGFLU_WaitForModronResetOrder == 2))
+        {
+            ; Disable recursion
+            IC_BrivCloseWelcomeBack_SharedFunctions_Class.base := ""
+            IC_BrivCloseWelcomeBack_SharedFunctions_Class.WaitForModronReset(timeout)
+            IC_BrivCloseWelcomeBack_SharedFunctions_Class.base := IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class
+        }
+        return true
     }
 }

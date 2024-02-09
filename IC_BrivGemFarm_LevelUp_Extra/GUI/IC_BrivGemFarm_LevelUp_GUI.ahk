@@ -156,7 +156,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
         local ClickGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_ClickGroup", "Click damage", "BGFLU_GeneralSettingsGroup", false,, "BGFLU_LowFavorMode")
         ClickGroup.AddControl("BGFLU_ClickDamageText", "Text", "x+0", "Level click damage to level")
         ClickGroup.AddEdit("BGFLU_MinClickDamage",, "x+5 yp-3 w50 Limit4")
-        ClickGroup.AddControl("BGFLU_MinClickDamageText", "Text", "x+5 yp+3", "on area 1")
+        ClickGroup.AddControl("BGFLU_MinClickDamageText", "Text", "x+5 yp+3", "on the initial zone")
         ClickGroup.AddCheckBox("BGFLU_ClickDamageSpam",, "xs+0", "Spam click damage", true)
         ClickGroup.AddCheckBox("BGFLU_ClickDamageMatchArea",,, "Match highest area")
         ClickGroup.AutoResize(true, "Line")

@@ -97,7 +97,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 }
                 ; Click damage
                 if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-                    g_SF.BGFLU_DoClickDamageSetup(, g_SF.Memory.ReadHighestZone() + 20)
+                    g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
             }
             if (CurrentZone > PreviousZone ) ; needs to be greater than because offline could stacking getting stuck in descending zones.
             {
@@ -222,7 +222,9 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             g_SF.SetFormation(g_BrivUserSettings) ; Switch to E formation if necessary
             Sleep, 30
             ElapsedTime := A_TickCount - StartTime
-            g_SF.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
+            if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
+                g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
+            g_SF.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
         }
         this.DirectedInput(hold := 0,, keyspam*) ; keysup
         remainingTime := timeout - ElapsedTime
@@ -235,7 +237,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             g_SF.DoRushWait()
         ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
         if (currentZone == 1 || g_SharedData.TriggerStart)
-            g_SF.BGFLU_DoClickDamageSetup(, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ], Max(remainingTime, 2000))
+            g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
         g_SF.ToggleAutoProgress( 1, false, true )
     }
 
@@ -449,6 +451,16 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         return target != 0 && g_SF.Memory.ReadChampLvlByID(champID) < target
     }
 
+    ; Returns the target value for click damage level.
+    ; Min click damage value should be 1 after resetting.
+    BGFLU_GetClickDamageTargetLevel()
+    {
+        setting := g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ]
+        if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
+            return Max(setting, g_SF.Memory.ReadHighestZone())
+        return Max(1, setting)
+    }
+
     ; Returns true if stacking Briv is necessary during this run.
     BGFLU_NeedToStack()
     {
@@ -603,7 +615,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             this.ToggleAutoProgress(0)
             this.SetFormation()
             g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            this.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
+            this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
             Sleep, 30
@@ -646,7 +658,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             this.ToggleAutoProgress(0)
             this.SetFormation()
             g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            this.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
+            this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
             Sleep, 30
@@ -661,7 +673,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
         {
             ; Level up click damage once
-            this.BGFLU_DoClickDamageSetup(1, g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ])
+            this.BGFLU_DoClickDamageSetup(1)
             ; turn Fkeys off/on again
             this.DirectedInput(hold := 0,, spam*) ;keysup
             this.DirectedInput(,release := 0, spam*) ;keysdown
@@ -678,10 +690,10 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     ; Depending on the <NoCtrlKeypress> setting, uses either in-game settings or x100.
     ; Params: numClicks:int - Number of clicks on level click damage.
     ;                         If set to 0, levels up to clickLevel.
-    ;         clickLevel:int - If set to higher than 1, click damage is leveled up to this value.
-    ;                          If numClicks is set to 1, will exit after 1 click.
+    ;         clickLevel:int - If set at higher than 0, click damage is leveled up to this value.
+    ;                          If numClicks is set at 1, will exit after 1 click.
     ;         timeout:int - Maximum waiting time.
-    BGFLU_DoClickDamageSetup(numClicks := 0, clickLevel := 1, timeout := 100)
+    BGFLU_DoClickDamageSetup(numClicks := 0, clickLevel := 0, timeout := 100)
     {
         ; Don't level up click damage if the is not enough gold for at least one upgrade.
         maxAmount := g_SF.Memory.BGFLU_ReadClickLevelUpAllowed()

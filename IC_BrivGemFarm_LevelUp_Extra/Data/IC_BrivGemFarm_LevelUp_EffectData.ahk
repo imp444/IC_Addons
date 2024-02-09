@@ -636,6 +636,14 @@ Class IC_BrivGemFarm_LevelUp_EffectData
             repl := this.ValueIfKeyExists(kvps, "default_max_stacks___2")
         else if (param1 == "karlach_rage_reduce_percent")
             repl := this.ValueIfKeyExists(kvps, "default_reduce_percent___2")
+        else if (param1 == "presto_component_scavenger_max")
+        {
+            startTime := "20240131120000"
+            EnvSub, startTime, A_NowUTC, D
+            repl := 2000 + 20 * Abs(startTime)
+        }
+        else if (param1 == "presto_component_scavenger_description")
+            repl := ""
         else if (kvps.HasKey(param1)) ; amount
             repl := kvps[param1]
         return repl

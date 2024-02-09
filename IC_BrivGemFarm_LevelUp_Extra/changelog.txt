@@ -1,3 +1,11 @@
+February 09, 2024 - v1.3.0
+    - Added a setting to deal with low favor that levels up champions ordered by cost of next upgrade, cheapest first.
+    - Fixed an issue with the Thellora handler not being refreshed after Modron reset and Thellora Rush wait being skipped in some occasions.
+    - Click damage level is now an exact match of the highest area achieved when the matching setting is enabled.
+    - The value for Minimum click damage level is now 1, thus matching the in-game value after a reset.
+    - Updated description for Presto's Component Scavenger ability.
+    - Added a fix for a bug in the main script which sometimes skips the wait for Modron reset when an incorrect value for the current zone is being read.
+
 January 11, 2024 - v1.2.4
     - The "Minimum area to reach before leveling Briv" setting now waits until the transition to the highest zone has
       begun, if the current zone is under the target.
@@ -19,7 +27,7 @@ December 14, 2023 - v1.2.2
 
 November 17, 2023 - v1.2.1
     - Click settings fixes:
-        - Fixed "Match highest area" setting temporarily halting the script's execution when there was not enough gold to reach the target level.
+        - Fixed "Match up highest area" setting temporarily halting the script's execution when there was not enough gold to reach the target level.
         - "Spam click damage" does an extra click at x1/100 before starting to spam (vanilla settings).
         - Toggling off "Spam click damage" will stop the spam immediately after settings are saved.
 

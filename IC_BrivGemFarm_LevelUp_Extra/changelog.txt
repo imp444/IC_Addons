@@ -1,6 +1,6 @@
 February 09, 2024 - v1.3.0
     - Added a setting to deal with low favor that levels up champions ordered by cost of next upgrade, cheapest first.
-    - Fixed an issue with the Thellora handler not being refreshed after Modron reset and Thellora Rush wait being skipped in some occasions.
+    - Fixed an issue with the Thellora handler not being refreshed after Modron reset and Thellora Rush wait being skipped on some occasions.
     - Click damage level is now an exact match of the highest area achieved when the matching setting is enabled.
     - The value for Minimum click damage level is now 1, thus matching the in-game value after a reset.
     - Updated description for Presto's Component Scavenger ability.

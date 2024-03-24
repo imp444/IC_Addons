@@ -1,6 +1,5 @@
 #include %A_LineFile%\..\IC_BrivGemFarm_BrivFeatSwap_Functions.ahk
 #include %A_LineFile%\..\IC_BrivGemFarm_BrivFeatSwap_Overrides.ahk
-#include %A_LineFile%\..\..\..\SharedFunctions\IC_UpdateClass_Class.ahk
 #include *i %A_LineFile%\..\..\..\SharedFunctions\SH_UpdateClass.ahk
 if (IsObject(SH_UpdateClass))
 {

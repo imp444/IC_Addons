@@ -1,3 +1,6 @@
+April 02, 2024 - v1.3.2
+    - Added compatibility with ICScriptHub v4.
+
 February 09, 2024 - v1.3.1
     - Fixed compatibility issues with CloseWelcomeBack addon.
 

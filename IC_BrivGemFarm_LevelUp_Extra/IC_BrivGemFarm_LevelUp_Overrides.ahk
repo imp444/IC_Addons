@@ -951,7 +951,8 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class extends IC_BrivSharedFunc
 
     BGFLU_SetOverrideFlag()
     {
-        value := IC_UpdateClass_Class.UpdatedFunctions["IC_BrivSharedFunctions_Class.WaitForModronReset"]
+        class := IsObject(SH_UpdateClass) ? SH_UpdateClass : IC_UpdateClass_Class
+        value := class.UpdatedFunctions["IC_BrivSharedFunctions_Class.WaitForModronReset"]
         IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class.BGFLU_WaitForModronResetOrder := (value == "") ? 1 : 2
     }
 

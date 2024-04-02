@@ -7,8 +7,8 @@
     "Info" : "This Addon will improve the speed of hybrid stacking during gem farming.",
     "Dependencies" : [
         {
-            "Name":"Briv Gem Farm",
-            "Version":"v1.4.4"
+            "Name":"IC Core",
+            "Version":"v0.1.0"
         }
     ]
 }

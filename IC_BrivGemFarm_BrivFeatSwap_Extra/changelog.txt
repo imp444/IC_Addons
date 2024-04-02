@@ -1,3 +1,6 @@
+April 02, 2024 - v1.5.11
+    - Added compatibility with ICScriptHub v4.
+
 Decemeber 10, 2023 - v1.5.10
     - Updated preferred Briv jump zones for 5J/4J, 6J/4J, 7J/4J and 9J/4J TT presets.
 

@@ -5,7 +5,7 @@ if (IsObject(SH_UpdateClass))
 {
     	SH_UpdateClass.UpdateClassFunctions(g_BrivGemFarm, IC_BrivGemFarm_BrivFeatSwap_Class, true)
         SH_UpdateClass.UpdateClassFunctions(g_SF,IC_BrivGemFarm_BrivFeatSwap_Class)
-        SH_UpdateClass_Class.UpdateClassFunctions(g_SharedData, IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class)
+        SH_UpdateClass.UpdateClassFunctions(g_SharedData, IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class)
 }
 else
 {

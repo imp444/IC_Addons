@@ -1,4 +1,4 @@
-#include %A_LineFile%\..\Rigged\IC_BrivGemFarm_HybridTurboStacking_Melf.ahk
+#include %A_LineFile%\..\RNG\IC_BrivGemFarm_HybridTurboStacking_Melf.ahk
 
 ; Functions that are used by this Addon.
 class IC_BrivGemFarm_HybridTurboStacking_Functions

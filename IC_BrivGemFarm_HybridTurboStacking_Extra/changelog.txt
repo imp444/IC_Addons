@@ -1,3 +1,8 @@
+April 03, 2023 - v1.0.5
+    - Requires ICScriptHub v4.
+    - Added an updated LV_Colors version that works only if AHK version 1.1.37.02+ is running,
+      which should fix crashes when scrolling or resizing the Melf forecast window.
+
 December 01, 2023 - v1.0.4
     - Fixed online stacking with Melf ignoring Preferred Briv stack zones and stacking in the first zone in the range.
 

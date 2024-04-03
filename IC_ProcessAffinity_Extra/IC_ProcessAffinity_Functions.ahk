@@ -76,7 +76,8 @@ class IC_ProcessAffinity_Functions
     InverseAffinity(affinity := 0)
     {
         EnvGet, ProcessorCount, NUMBER_OF_PROCESSORS
-        invMask := ProcessorCount == 64 ? -1 : -1 >>> (64 - ProcessorCount)
+        ; -1 >>> (64 - ProcessorCount) only in AHK 1.1.35.00+
+        invMask := ProcessorCount == 64 ? -1 : 0x7FFFFFFFFFFFFFFF >> (63 - ProcessorCount)
         invAffinity := affinity ^ invMask
         invAffinity := !invAffinity ? affinity : invAffinity ; If all cores are selected for IdleDragons.exe, identical mask
         return invAffinity

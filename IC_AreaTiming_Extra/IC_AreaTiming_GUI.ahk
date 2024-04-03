@@ -271,7 +271,7 @@ Class IC_AreaTiming_GUI
     {
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "AreaTimingView")
         cols := LV_GetCount("Col")
-        if (cols == 15 && !all || cols == 10 && all)
+        if (cols == 15 && !all || cols == 8 && all)
             return
         Loop, % cols
             LV_DeleteCol(1)
@@ -301,11 +301,12 @@ Class IC_AreaTiming_GUI
         ; Game speed
         pos := all ? pos : LV_InsertCol(pos + 1, "Float Center", "Game speed")
         ; AvgGame speed
-        pos := LV_InsertCol(pos + 1, "Float Center", "AvgGame speed")
+        align := all ? "Float Left " : "Float Center"
+        pos := LV_InsertCol(pos + 1, align, "AvgGame speed")
         ; HStacks
-        pos := LV_InsertCol(pos + 1, "Integer Center", "HStacks")
+        pos := all ? pos : LV_InsertCol(pos + 1, "Integer Center", "HStacks")
         ; SBStacks
-        pos := LV_InsertCol(pos + 1, "Integer Left", "SBStacks")
+        pos := all ? pos : LV_InsertCol(pos + 1, "Integer Left", "SBStacks")
         Loop % LV_GetCount("Col") ; Resize column headers
             LV_ModifyCol(A_Index, "AutoHdr")
     }

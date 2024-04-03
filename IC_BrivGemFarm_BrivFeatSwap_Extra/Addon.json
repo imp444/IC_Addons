@@ -1,6 +1,6 @@
 {
 	"Name":"BrivGemFarm Briv Feat Swap",
-	"Version": "v1.5.11",
+	"Version": "v1.5.12",
     "Includes" : "IC_BrivGemFarm_BrivFeatSwap_Component.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_BrivFeatSwap_Extra",

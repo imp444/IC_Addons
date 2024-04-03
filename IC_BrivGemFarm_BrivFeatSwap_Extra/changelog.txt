@@ -1,3 +1,6 @@
+April 02, 2024 - v1.5.12
+    - Fixed ICScriptHub v4 class update of SharedFunctions_Class.
+
 April 02, 2024 - v1.5.11
     - Added compatibility with ICScriptHub v4.
 

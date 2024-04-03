@@ -9,7 +9,7 @@ SetBatchLines, -1
 #include %A_LineFile%\..\..\..\ServerCalls\IC_ServerCalls_Class.ahk
 #include %A_LineFile%\..\..\..\SharedFunctions\ObjRegisterActive.ahk
 #include %A_LineFile%\..\..\..\SharedFunctions\json.ahk
-#include %A_LineFile%\..\..\..\SharedFunctions\IC_SharedFunctions_Class.ahk
+#include %A_LineFile%\..\..\IC_Core\IC_SharedFunctions_Class.ahk
 #include %A_LineFile%\..\IC_AreaTiming_TimerScriptWorker.ahk
 #include %A_LineFile%\..\Data\IC_AreaTiming_RunCollection.ahk
 #include %A_LineFile%\..\Data\IC_AreaTiming_SharedData.ahk

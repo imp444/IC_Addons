@@ -1,3 +1,9 @@
+April 03, 2024 - v1.1.0
+    - Requires ICScriptHub v4.
+    - Briv Gem Farm addon is now a dependency to make sure start/stop buttons functions
+      are always overloaded when the "Start/Stop with BrivGemFarm" setting is enabled.
+    - Added recording/display of Briv Haste and Steelbones stacks for every zone.
+
 December 12, 2023 - v1.0.4
     - Fixed an issue that would make ScriptHub crash when trying to reconnect to the timer script.
     - Fixed the behavior of the "Start/Stop along with BrivGemFarm" button.

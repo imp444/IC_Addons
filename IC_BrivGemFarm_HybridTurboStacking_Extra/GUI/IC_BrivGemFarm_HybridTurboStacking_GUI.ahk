@@ -1,4 +1,4 @@
-#include %A_LineFile%\..\IC_BrivGemFarm_HybridTurboStacking_LV_Colors.ahk
+#include %A_LineFile%\..\IC_BrivGemFarm_HybridTurboStacking_Colors.ahk
 
 GUIFunctions.AddTab("BrivGF HybridTurboStacking")
 
@@ -152,6 +152,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
     static LastWinWidth := 0
     static LastWinHeight := 0
     static MaxLVWidth := 0
+    static Colors := IC_BrivGemFarm_HybridTurboStacking_Colors
 
     LV_Colors_Instance := ""
     AllowForecastUpdate := false
@@ -251,6 +252,11 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         GUIFunctions.UseThemeTextColor()
         Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Text, x+5 w150 vBGFHTS_SuccessValueText
         ; LV
+        if (VerCompare(A_AhkVersion, "<1.1.37.02"))
+        {
+            GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
+            Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Text, xs y+5 vBGFHTS_VersionWarning, % "If you ever experience window crashes, try updating AHK to v1.1.37.02+."
+        }
         GUIFunctions.UseThemeTextColor("TableTextColor")
         Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, ListView, xs y+%ySpacing% w2400 R50 AltSubmit NoSortHdr -LV0x10 vBGFHTS_MelfForecast
         GUIFunctions.UseThemeListViewBackgroundColor("BGFHTS_MelfForecast")
@@ -264,9 +270,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
             LV_InsertCol(A_Index + 1, "Integer Center", header)
         }
         ; Colors
-        GuiControlGet, hwnd, IC_BrivGemFarm_HybridTurboStacking_Melf:Hwnd, BGFHTS_MelfForecast
-        this.LV_Colors_Instance := new IC_BrivGemFarm_HybridTurboStacking_LV_Colors(hwnd, true)
-        this.LV_Colors_Instance.Critical := "On"
+        this.LV_Colors_Instance := this.Colors.NewColoredLV("IC_BrivGemFarm_HybridTurboStacking_Melf", "BGFHTS_MelfForecast")
     }
 
     ; Builds mod50 checkboxes for PreferredBrivStackZones.
@@ -351,6 +355,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         Loop, % data.Length()
             LV_Delete(1)
         ; Add rows
+        listview := this.LV_Colors_Instance
         Loop, % data.Length()
         {
             rowData := data[A_Index]
@@ -361,21 +366,21 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
             if (col > 1)
             {
                 ; Highlight first success
-                this.SetColor(row, col)
+                this.Colors.SetLVColor(listview, row, col)
                 finalCol := Ceil(max / 50) + 1
                 Loop, % finalCol - col
                 {
                     effect := rowData[col + A_Index]
                     ; Highlight remaining successes
                     if (effect == 0)
-                        this.SetColor(row, col + A_Index,, true)
+                        this.Colors.SetLVColor(listview, row, col + A_Index,, true)
                 }
             }
             else
             {
                 ; Highlight fail rows
                 Loop, % data.Length()
-                    this.SetColor(row, A_Index, false, true)
+                    this.Colors.SetLVColor(listview, row, A_Index, false, true)
             }
         }
         ; Resize columns
@@ -476,90 +481,5 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
             GuiControl, ICScriptHub:, BGFHTS_BrivStack_Mod_50_%A_Index%, % checked
         }
         Gui, ICScriptHub:Submit, NoHide
-    }
-
-    ; Sets the background and text color of a single ListView row.
-    ; Parameters: - row:int - The index of the row to colorize.
-    ;             - col:int - The index of the column to colorize.
-    ;             - type:int - Type of event (1:Status, 2:Warning)
-    SetColor(row, col, success := true, light := false)
-    {
-        type := success ? "SpecialTextColor2" : "ErrorTextColor"
-        colors := light ? this.GetColorsFromTheme(type, 20) : this.GetColorsFromTheme(type)
-        this.LV_Colors_Instance.Cell(row, col, colors[1], colors[2])
-    }
-
-    ; Returns an array that contains the background and text colors to apply to the Listview row.
-    ; Text color is kept as the default text color. TODO: Improve contrast for some themes
-    ; Parameters: - textType:str - Text type setting (eg:DefaultTextColor).
-    GetColorsFromTheme(textType, opacity := 50)
-    {
-        bgColor := this.GetHexColorFromTheme("TableBackgroundColor")
-        textColor := this.GetHexColorFromTheme(textType)
-        rT := (textColor >>> 16) & 0xFF
-        gT := (textColor >>> 8) & 0xFF
-        bT := textColor & 0xFF
-        rB := (bgColor >>> 16) & 0xFF
-        gB := (bgColor >>> 8) & 0xFF
-        bB := bgColor & 0xFF
-        average := Round((rB + gB+ bB) / 3)
-        rBC := Round(opacity / 100 * rT + (100 - opacity) / 100 * average)
-        gBC := Round(opacity / 100 * gT + (100 - opacity) / 100 * average)
-        bBC := Round(opacity / 100 * bT + (100 - opacity) / 100 * average)
-        bgColorContrast := (rBC << 16) + (gBC << 8) + bBC
-        return [bgColorContrast, ""]
-    }
-
-    ; Returns the color in hex format from the Themes addon settings.
-    ; Parameters: - textType:str - Text type setting (eg:DefaultTextColor).
-    GetHexColorFromTheme(textType)
-    {
-        if ((color := GUIFunctions.CurrentTheme[textType]) * 1 == "")
-        {
-            if (color == "Default")
-                color := "White"
-            return this.ColorNameToHexColor(color)
-        }
-        else
-            return Format("{:#x}", color)
-    }
-
-    ColorNameToHexColor(name)
-    {
-        switch name
-        {
-            case "Black":
-                return 0x000000
-            case "Silver":
-                return 0xC0C0C0
-            case "Gray":
-                return 0x808080
-            case "White":
-                return 0xFFFFFF
-            case "Maroon":
-                return 0x800000
-            case "Red":
-                return 0xFF0000
-            case "Purple":
-                return 0x800080
-            case "Fuchsia":
-                return 0xFF00FF
-            case "Green":
-                return 0x008000
-            case "Lime":
-                return 0x00FF00
-            case "Olive":
-                return 0x808000
-            case "Yellow":
-                return 0xFFFF00
-            case "Navy":
-                return 0x000080
-            case "Blue":
-                return 0x0000FF
-            case "Teal":
-                return 0x008080
-            case "Aqua":
-                return 0x00FFFF
-        }
     }
 }

@@ -120,6 +120,8 @@ Class IC_AreaTiming_TimerScriptWorker
             currentRun := g_AT_SharedData.CurrentSession.NewRun()
             timeObj.Reset()
             timeObj.SetAreaStarted(currentZone)
+            timeObj.SetHStacks(g_SF.Memory.ReadHasteStacks())
+            timeObj.SetSBStacks(g_SF.Memory.ReadSBStacks())
             lastResetCount := g_SF.Memory.ReadResetsCount()
             lastZone := 1
             ; Update formations
@@ -149,6 +151,8 @@ Class IC_AreaTiming_TimerScriptWorker
             }
             timeObj.Reset()
             timeObj.SetAreaStarted(currentZone)
+            timeObj.SetHStacks(g_SF.Memory.ReadHasteStacks())
+            timeObj.SetSBStacks(g_SF.Memory.ReadSBStacks())
             lastZone := currentZone
             areaClearTrigger := false
         }
@@ -170,6 +174,8 @@ Class IC_AreaTiming_TimerScriptWorker
                 currentZone := g_SF.Memory.ReadCurrentZone()
                 stacksTimeObj.Reset()
                 stacksTimeObj.SetAreaStarted(currentZone)
+                stacksTimeObj.SetHStacks(g_SF.Memory.ReadHasteStacks())
+                stacksTimeObj.SetSBStacks(g_SF.Memory.ReadSBStacks())
                 stacksTimeObj.SetAreaComplete()
             }
         }

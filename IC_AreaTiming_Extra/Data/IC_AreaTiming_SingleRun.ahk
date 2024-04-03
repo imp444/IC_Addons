@@ -27,7 +27,7 @@ Class IC_AreaTiming_SingleRun
     {
         this.CurrentZone := obj.EndZone ? obj.EndZone : obj.StartZone
         timeStamp := obj.AreaStartTimeStamp
-        VarSetCapacity(buffer%timeStamp%, 28, 0)
+        VarSetCapacity(buffer%timeStamp%, 36, 0)
         this.ConvertObjToStruct(obj, buffer%timeStamp%)
         this.Items.Push(&buffer%timeStamp%)
         g_AT_SharedData.CurrentSession.UpdateTotals(this, &buffer%timeStamp%)
@@ -39,7 +39,7 @@ Class IC_AreaTiming_SingleRun
     AddStacksItem(ByRef obj)
     {
         timeStamp := obj.AreaStartTimeStamp
-        VarSetCapacity(buffer%timeStamp%, 32, 0)
+        VarSetCapacity(buffer%timeStamp%, 40, 0)
         this.ConvertObjToStruct(obj, buffer%timeStamp%, true)
         this.StackItems.Push(&buffer%timeStamp%)
         g_AT_SharedData.CurrentSession.UpdateTotalsStack(this, &buffer%timeStamp%)
@@ -69,8 +69,10 @@ Class IC_AreaTiming_SingleRun
         NumPut(timestamp[1], buffer, 18, "UInt")
         NumPut(timestamp[2], buffer, 22, "UShort")
         NumPut(obj.GameSpeed, buffer, 24, "Float")
+        NumPut(obj.HStacks, buffer, 28, "UInt")
+        NumPut(obj.SBStacks, buffer, 32, "UInt")
         if (isStackItem)
-            NumPut(obj.Stacks, buffer, 28, "UInt")
+            NumPut(obj.Stacks, buffer, 36, "UInt")
     }
 
     GetItemStartZone(index)
@@ -142,6 +144,16 @@ Class IC_AreaTiming_SingleRun
         return NumGet(this.Items[index], 24, "Float")
     }
 
+    GetItemHStacks(index)
+    {
+        return NumGet(this.Items[index], 28, "UInt")
+    }
+
+    GetItemSBStacks(index)
+    {
+        return NumGet(this.Items[index], 32, "UInt")
+    }
+
     GetStackItemStartZone(index)
     {
         return NumGet(this.StackItems[index], 4, "UShort")
@@ -211,9 +223,19 @@ Class IC_AreaTiming_SingleRun
         return NumGet(this.StackItems[index], 24, "Float")
     }
 
-    GetStackItemStacks(index)
+    GetStackItemHStacks(index)
     {
         return NumGet(this.StackItems[index], 28, "UInt")
+    }
+
+    GetStackItemSBStacks(index)
+    {
+        return NumGet(this.StackItems[index], 32, "UInt")
+    }
+
+    GetStackItemStacks(index)
+    {
+        return NumGet(this.StackItems[index], 36, "UInt")
     }
 
     ; Dispose of all timeObjects.

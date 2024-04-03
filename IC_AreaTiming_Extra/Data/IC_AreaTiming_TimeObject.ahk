@@ -6,6 +6,8 @@ Class IC_AreaTiming_TimeObject
     AreaCompleteTimeStamp := 0
     AreaTransitionedTimeStamp := 0
     GameSpeed := 0
+    HStacks := 0
+    SBStacks := 0
 
     Reset()
     {
@@ -14,6 +16,8 @@ Class IC_AreaTiming_TimeObject
         this.AreaCompleteTimeStamp := 0
         this.AreaTransitionedTimeStamp := 0
         this.GameSpeed := 0
+        this.HStacks := 0
+        this.SBStacks := 0
     }
 
     StartZone
@@ -87,6 +91,16 @@ Class IC_AreaTiming_TimeObject
     SetGameSpeed(gameSpeed)
     {
         this.GameSpeed := gameSpeed
+    }
+
+    SetHStacks(stacks)
+    {
+        this.HStacks := stacks
+    }
+
+    SetSBStacks(stacks)
+    {
+        this.SBStacks := stacks
     }
 
     SetAreaStarted(startZone)

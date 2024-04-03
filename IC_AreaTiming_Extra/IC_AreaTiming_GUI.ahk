@@ -269,7 +269,7 @@ Class IC_AreaTiming_GUI
     {
         restore_gui_on_return := GUIFunctions.LV_Scope("ICScriptHub", "AreaTimingView")
         cols := LV_GetCount("Col")
-        if (cols == 13 && !all || cols == 8 && all)
+        if (cols == 15 && !all || cols == 10 && all)
             return
         Loop, % cols
             LV_DeleteCol(1)
@@ -299,7 +299,11 @@ Class IC_AreaTiming_GUI
         ; Game speed
         pos := all ? pos : LV_InsertCol(pos + 1, "Float Center", "Game speed")
         ; AvgGame speed
-        pos := LV_InsertCol(pos + 1, "Float Left", "AvgGame speed")
+        pos := LV_InsertCol(pos + 1, "Float Center", "AvgGame speed")
+        ; HStacks
+        pos := LV_InsertCol(pos + 1, "Integer Center", "HStacks")
+        ; SBStacks
+        pos := LV_InsertCol(pos + 1, "Integer Left", "SBStacks")
         Loop % LV_GetCount("Col") ; Resize column headers
             LV_ModifyCol(A_Index, "AutoHdr")
     }
@@ -720,7 +724,7 @@ Class IC_AreaTiming_GUI
         if (Errorlevel)
             return "AreaTimingSelectRun"
     }
-
+    
     ; Enable or disable the Start/Stop/Close buttons.
     ; Timerscript: IC_AreaTiming_TimerScript_Run.ahk
     ; 1: Script started = Stop/Close enabled.

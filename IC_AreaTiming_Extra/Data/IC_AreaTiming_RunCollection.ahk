@@ -426,6 +426,16 @@ Class IC_AreaTiming_RunCollection
         return NumGet(ptr+0, 24, "Float")
     }
 
+    GetItemHStacks(ptr)
+    {
+        return NumGet(ptr+0, 28, "UInt")
+    }
+
+    GetItemSBStacks(ptr)
+    {
+        return NumGet(ptr+0, 32, "UInt")
+    }
+
     GetStackItemStartZone(ptr)
     {
         return NumGet(ptr+0, 4, "UShort")
@@ -495,8 +505,18 @@ Class IC_AreaTiming_RunCollection
         return NumGet(ptr+0, 24, "Float")
     }
 
-    GetStackItemStacks(ptr)
+    GetStackItemHStacks(ptr)
     {
         return NumGet(ptr+0, 28, "UInt")
+    }
+
+    GetStackItemSBStacks(ptr)
+    {
+        return NumGet(ptr+0, 32, "UInt")
+    }
+
+    GetStackItemStacks(ptr)
+    {
+        return NumGet(ptr+0, 36, "UInt")
     }
 }

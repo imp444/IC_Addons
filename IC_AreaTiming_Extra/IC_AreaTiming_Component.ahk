@@ -747,6 +747,8 @@ Class IC_AreaTiming_Component
                 runTime += run.GetItemTotalTime(A_Index)
                 runTimeRounded := this.FormatMilliSToS(runTime)
                 gameSpeed := this.FormatGameSpeed(run.GetItemGameSpeed(A_Index))
+                HStacks := run.GetItemHStacks(A_Index)
+                SBStacks := run.GetItemSBStacks(A_Index)
                 ; Average
                 total := items[A_Index]
                 count := total[1]
@@ -755,7 +757,7 @@ Class IC_AreaTiming_Component
                 avgTime := this.FormatMilliSToS(total[4] / count)
                 avgRunTime := this.FormatMilliSToS(total[5] / count)
                 avgGameSpeed := this.FormatGameSpeed(total[6] / count)
-                data.Push([area, next, areaTime, transitionTime, time, avgAreaTime, avgTransitionTime, avgTime, runTimeRounded, avgRunTime, count, gameSpeed, avgGameSpeed])
+                data.Push([area, next, areaTime, transitionTime, time, avgAreaTime, avgTransitionTime, avgTime, runTimeRounded, avgRunTime, count, gameSpeed, avgGameSpeed, HStacks, SBStacks])
             }
         }
         g_AreaTimingGui.UpdateListView("AreaTimingView", data, isAll)

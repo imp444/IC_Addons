@@ -1,4 +1,4 @@
-April 03, 2023 - v1.0.5
+April 03, 2024 - v1.0.5
     - Requires ICScriptHub v4.
     - Added an updated LV_Colors version that works only if AHK version 1.1.37.02+ is running,
       which should fix crashes when scrolling or resizing the Melf forecast window.

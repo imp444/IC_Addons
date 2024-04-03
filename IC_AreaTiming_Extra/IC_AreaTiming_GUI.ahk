@@ -69,8 +69,10 @@ Gui, ICScriptHub:Add, ListView, AltSubmit R2 xs+%xAlign% y+10 w475 vStacksAreaTi
 GUIFunctions.UseThemeListViewBackgroundColor("StacksAreaTimingView")
 
 ; Resize events
-OnMessage(WM_ENTERSIZEMOVE, Func("AreaTiming_CheckResizeEvent").Bind(WM_ENTERSIZEMOVE))
-OnMessage(WM_EXITSIZEMOVE, Func("AreaTiming_CheckResizeEvent").Bind(WM_EXITSIZEMOVE))
+; WM_ENTERSIZEMOVE := 0x0231
+; WM_EXITSIZEMOVE := 0x0232
+OnMessage(0x0231, Func("AreaTiming_CheckResizeEvent").Bind(0x0231))
+OnMessage(0x0232, Func("AreaTiming_CheckResizeEvent").Bind(0x0232))
 
 AreaTiming_CheckResizeEvent(WM)
 {
@@ -482,9 +484,9 @@ Class IC_AreaTiming_GUI
     {
         global
         GuiControlGet, currentTab, ICScriptHub:, ModronTabControl, Tab
-        if (WM == WM_ENTERSIZEMOVE AND currentTab == "Area Timing")
+        if (WM == 0x0231 AND currentTab == "Area Timing")
             SetTimer, AreaTiming_DoResizeEvent, 200
-        else if (WM == WM_EXITSIZEMOVE)
+        else if (WM == 0x0232)
         {
             SetTimer, AreaTiming_DoResizeEvent, Delete
             this.DoResizeEvent()

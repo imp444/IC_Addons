@@ -4,7 +4,7 @@ Class IC_BrivGemFarm_LevelUp_HeroData
     ID := ""
     Name := ""
     Seat_id := ""
-    Allow_time_gate := ""
+    Last_rework_date := ""
     Upgrades := ""
     LastUpgradeLevel := ""
     UpgradesList := ""

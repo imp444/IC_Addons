@@ -287,8 +287,9 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
             if (RegExMatch(v.name, "Y\d+E\d+") OR ErrorLevel != 0) ; skip placeholder
                 continue
             obj := {name:v.name, seat_id:v.seat_id, ultimate_attack_id:v.ultimate_attack_id}
-            if (v.properties.allow_time_gate != "" AND v.properties.allow_time_gate != -1)
-                obj.allow_time_gate := v.properties.allow_time_gate
+            for k1, v1 in ["is_available", "last_rework_date"]
+                if (v.HasKey(v1) AND v[v1] != "")
+                    obj[v1] := v[v1]
             hero_defines[v.id] := obj
         }
         this.HeroDefines.hero_defines := hero_defines

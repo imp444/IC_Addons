@@ -799,7 +799,7 @@ Class IC_BrivGemFarm_LevelUp_Component
                     {
                         heroData := g_HeroDefines.HeroDataByID[k2]
                         showSpoilers := this.GetSetting("ShowSpoilers")
-                        if (!showSpoilers AND IC_BrivGemFarm_LevelUp_Seat.IsSpoiler(heroData.allow_time_gate))
+                        if (!showSpoilers AND IC_BrivGemFarm_LevelUp_Seat.IsSpoiler(heroData))
                             continue
                         heroName := heroData.name
                         minMaxFormat := k1 == "minLevels" ? "MinLevel " : k1 == "maxLevels" ? "MaxLevel" : k1
@@ -832,7 +832,9 @@ Class IC_BrivGemFarm_LevelUp_Seat
     UpdateHasSpoilers(data)
     {
         if (!this.HasSpoiler)
-            this.HasSpoiler := this.IsSpoiler(data.allow_time_gate)
+        {
+            this.HasSpoiler := this.IsSpoiler(data)
+        }
     }
 
     ; Deletes min/max upgrade list and sets this seat's fields to empty values
@@ -913,14 +915,14 @@ Class IC_BrivGemFarm_LevelUp_Seat
             MsgBox, 16,, % "Failed to resize BGFLU_MaxLevel_" . seat
     }
 
-    ; Updates the list of champions names for this lot
+    ; Updates the list of champions names for this seat.
     UpdateNames(showSpoilers := false)
     {
         seat := this.ID
         names := "|"
         for ID, heroData in g_HeroDefines.HeroDataBySeat[seat]
         {
-            if (showSpoilers OR !this.IsSpoiler(heroData.allow_time_gate))
+            if (showSpoilers OR !this.IsSpoiler(heroData))
                 names .= heroData.name . "|"
         }
         GuiControl, ICScriptHub:, BGFLU_DDL_Name_%seat%, % names
@@ -949,20 +951,23 @@ Class IC_BrivGemFarm_LevelUp_Seat
 
     ; Static methods
 
-    /*  IsSpoiler -    Find if a champion is part of spoilers
-        Parameters:    allow_time_gate: string - A time string that shows when the champion's Time Gate will be available (UTC)
+    /*  IsSpoiler -    Find if a champion is part of spoilers.
+        Parameters:    heroData: Object - Data class for a specific hero.
 
-        Returns:       bool - True if the champion's Time Gate is available in 12 days or less (when the event starts)
+        Returns:       bool - True if a champion is_available, or current date is past last_rework_date.
     */
-    IsSpoiler(allow_time_gate := "")
+    IsSpoiler(heroData := "")
     {
-        if (allow_time_gate == "")
+        available := heroData.is_available
+        if(available == "-1" || available == "true")
+            return false
+        last_rework_date := heroData.last_rework_date
+        if (last_rework_date == "")
             return false
         dt := ""
-        Loop, Parse, allow_time_gate, :%A_Space%-
+        Loop, Parse, last_rework_date, :%A_Space%-
             dt .= A_LoopField
         EnvAdd, dt, 7, H
-        EnvAdd, dt, -12, D
         EnvSub, dt, A_NowUTC, S
         return dt > 0
     }

@@ -46,8 +46,12 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         OnExit(ObjBindMethod(this, "ComObjectRevoke"))
         languageID := g_BrivGemFarm_LevelUp.GetSetting("DefinitionsLanguage")
         ; Save args passed to the script to a file
-        args := {GUID:guid, LanguageID:languageID}
-        g_SF.WriteObjectToJSON(this.LastGUIDPath, args)
+        loaderSettings := g_SF.LoadObjectFromJSON(this.LastGUIDPath)
+        if (!IsObject(loaderSettings))
+            loaderSettings := {}
+        loaderSettings.GUID := guid
+        loaderSettings.LanguageID := languageID
+        g_SF.WriteObjectToJSON(this.LastGUIDPath, loaderSettings)
         ; Start worker
         Run, %scriptLocation% %languageID% %guid%
         ; Update loop

@@ -1,9 +1,12 @@
 #include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_ServerCalls_Class.ahk
+#include %A_LineFile%\..\..\..\..\..\SharedFunctions\SH_VersionHelper.ahk
 
 global g_ServerCall := new IC_BrivGemFarm_LevelUp_ServerCalls_Class
 
 Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
 {
+    ; Parser version
+    static Version := "1.3.3"
     ; File locations
     static HeroDefsPath := A_LineFile . "\..\..\HeroDefines.json"
     static LastGUIDPath := A_LineFile . "\..\LastGUID_BrivGemFarm_LevelUp.json"
@@ -36,6 +39,7 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
     HeroDefines := ""
     LastTableChecksums := ""
     CurrentState := 0
+    IsNewLoaderVersion := false
 
     Start(languageID := 1)
     {
@@ -50,7 +54,8 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
         this.UpdateLoaderState(this.CHECK_TABLECHECKSUMS)
         this.LastTableChecksums := this.GetLastTableChecksums()
         isNewDefs := this.CheckForNewdefs(languageID, this.LastTableChecksums)
-        if (isNewDefs || !FileExist(this.HeroDefsPath))
+        isNewVersion := this.CheckIfNewParserVersion()
+        if (isNewVersion || isNewDefs || !FileExist(this.HeroDefsPath))
         {
             ; Get filtered defs
             defs := g_ServerCall.CallGetHeroDefs(languageID, this.Filter)
@@ -67,10 +72,33 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
             ; Save new checksums
             this.FileWrite(this.LoaderTempPath, this.LastTableChecksums)
             this.CurrentState := isNewDefs ? this.HERO_DATA_FINISHED : this.HERO_DATA_FINISHED_NOUPDATE
+            ; Save new version
+            if (this.IsNewLoaderVersion)
+                this.UpdateParserVersion()
         }
         else
             this.CurrentState := this.HERO_DATA_FINISHED_NOUPDATE
         this.DoCallBack(10)
+    }
+
+    ; Returns true if the parser has been updated since last execution.
+    CheckIfNewParserVersion()
+    {
+        loaderSettings := this.LoadObjectFromJSON(this.LastGUIDPath)
+        oldVersion := loaderSettings.Version
+        isNew := oldVersion == "" || SH_VersionHelper.IsVersionNewer(this.Version, oldVersion)
+        this.IsNewLoaderVersion := isNew
+        return isNew
+    }
+
+    ; Update parser version.
+    UpdateParserVersion()
+    {
+        loaderSettings := this.LoadObjectFromJSON(this.LastGUIDPath)
+        if (!IsObject(loaderSettings))
+            loaderSettings := {}
+        loaderSettings.Version := this.Version
+        this.WriteObjectToJSON(this.LastGUIDPath, loaderSettings)
     }
 
     ; Returns table_checksums for args
@@ -193,7 +221,7 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
     }
 
     ; Update args from the file written by ICScriptHub.
-    ; g_LanguageID could be incorecctly passed by ICScriptHub.
+    ; g_LanguageID could be incorrectly passed by ICScriptHub.
     ; g_GUID is updated if ICScriptHub has been closed before the final callback.
     UpdateArgsFromFile()
     {

@@ -1,11 +1,11 @@
 BGFLU_CheckResizeEvent(WM)
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_CheckResizeEvent(WM)
+    IC_BrivGemFarm_LevelUp_GUI_Events.CheckResizeEvent(WM)
 }
 
 BGFLU_DoResizeEvent()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_DoResizeEvent()
+    IC_BrivGemFarm_LevelUp_GUI_Events.DoResizeEvent()
 }
 
 BGFLU_CheckMouseEvent(W)
@@ -15,77 +15,77 @@ BGFLU_CheckMouseEvent(W)
 
 BGFLU_CheckBoxEvent()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_CheckBoxEvent()
+    IC_BrivGemFarm_LevelUp_GUI_Events.CheckBoxEvent()
 }
 
 BGFLU_Mod50CheckBoxEvent()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_Mod50CheckBoxEvent()
+    IC_BrivGemFarm_LevelUp_GUI_Events.Mod50CheckBoxEvent()
 }
 
 BGFLU_EditEvent()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_EditEvent()
+    IC_BrivGemFarm_LevelUp_GUI_Events.EditEvent()
 }
 
 BGFLU_LB_Section()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_LB_Section()
+    IC_BrivGemFarm_LevelUp_GUI_Events.LB_SectionClicked()
 }
 
 BGFLU_Name()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_Name()
+    IC_BrivGemFarm_LevelUp_GUI_Events.NameClicked()
 }
 
 BGFLU_MinMax_Clamp()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_MinMax_Clamp()
+    IC_BrivGemFarm_LevelUp_GUI_Events.MinMax_Clamp()
 }
 
 BGFLU_LoadFormation()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_LoadFormation()
+    IC_BrivGemFarm_LevelUp_GUI_Events.LoadFormationEvent()
 }
 
 BGFLU_Default()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_Default()
+    IC_BrivGemFarm_LevelUp_GUI_Events.DefaultClicked()
 }
 
 BGFLU_Save()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_Save()
+    IC_BrivGemFarm_LevelUp_GUI_Events.SaveClicked()
 }
 
 BGFLU_Changes()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_Changes()
+    IC_BrivGemFarm_LevelUp_GUI_Events.ChangesClicked()
 }
 
 BGFLU_Undo()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_Undo()
+    IC_BrivGemFarm_LevelUp_GUI_Events.UndoClicked()
 }
 
 BGFLU_MinDefault()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_MinDefault()
+    IC_BrivGemFarm_LevelUp_GUI_Events.MinDefaultClicked()
 }
 
 BGFLU_MaxDefault()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_MaxDefault()
+    IC_BrivGemFarm_LevelUp_GUI_Events.MaxDefaultClicked()
 }
 
 BGFLU_SelectLanguage()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_SelectLanguage()
+    IC_BrivGemFarm_LevelUp_GUI_Events.SelectLanguageClicked()
 }
 
 BGFLU_LoadDefinitions()
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_LoadDefinitions()
+    IC_BrivGemFarm_LevelUp_GUI_Events.LoadDefinitionsClicked()
 }
 
 Class IC_BrivGemFarm_LevelUp_GUI_Events
@@ -93,7 +93,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     static LoadDefinitionsTrigger := false
 
     ; Checked/ unchecked
-    BGFLU_CheckBoxEvent()
+    CheckBoxEvent()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
@@ -105,7 +105,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Checked/ unchecked (mod50)
-    BGFLU_Mod50CheckBoxEvent()
+    Mod50CheckBoxEvent()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
@@ -122,7 +122,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Keyboard or c/p input
-    BGFLU_EditEvent()
+    EditEvent()
     {
         global
         local beforeSubmit := % %A_GuiControl%
@@ -192,7 +192,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Jump to section
-    BGFLU_LB_Section()
+    LB_SectionClicked()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
@@ -201,7 +201,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Switch names
-    BGFLU_Name()
+    NameClicked()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
@@ -211,7 +211,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Input upgrade level when selected from DDL, then verify that min/max level inputs are in 0-999999 range
-    BGFLU_MinMax_Clamp()
+    MinMax_Clamp()
     {
         global
         local beforeSubmit := % %A_GuiControl%
@@ -257,7 +257,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Load formation to the GUI
-    BGFLU_LoadFormation()
+    LoadFormationEvent()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
@@ -268,7 +268,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Default settings button
-    BGFLU_Default()
+    DefaultClicked()
     {
         global
         this.SetupMoveMsgBox("BGFLU_Default")
@@ -283,7 +283,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Save settings button
-    BGFLU_Save()
+    SaveClicked()
     {
         global
         this.SetupMoveMsgBox("BGFLU_Save")
@@ -297,8 +297,8 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         g_BrivGemFarm_LevelUp.SaveSettings(true)
     }
 
-    ; TempsSettings changes
-    BGFLU_Changes()
+    ; TempSettings changes
+    ChangesClicked()
     {
         global
         g_BrivGemFarm_LevelUp.TempSettings.ReloadTempSettingsDisplay()
@@ -312,7 +312,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Undo temp settings button
-    BGFLU_Undo()
+    UndoClicked()
     {
         global
         this.SetupMoveMsgBox("BGFLU_Undo")
@@ -326,7 +326,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Default min values for champions without default parameters.
-    BGFLU_MinDefault()
+    MinDefaultClicked()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
@@ -336,7 +336,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Default max values for champions without default parameters.
-    BGFLU_MaxDefault()
+    MaxDefaultClicked()
     {
         global
         Gui, ICScriptHub:Submit, NoHide
@@ -347,7 +347,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
 
     ; Select language used for defintions.
     ; Doesn't save to temp settings, loads a new language immediately.
-    BGFLU_SelectLanguage()
+    SelectLanguageClicked()
     {
         global
         local beforeSubmit := % %A_GuiControl%
@@ -356,12 +356,12 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         if (value != beforeSubmit)
         {
             g_BrivGemFarm_LevelUp.SetSetting("DefinitionsLanguage", BGFLU_SelectLanguage)
-            this.BGFLU_LoadDefinitions()
+            this.LoadDefinitionsClicked()
         }
     }
 
     ; Load new definitions
-    BGFLU_LoadDefinitions()
+    LoadDefinitionsClicked()
     {
         global
         GuiControl, ICScriptHub:Disable, BGFLU_SelectLanguage
@@ -370,7 +370,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     }
 
     ; Checks performed on GUI resize event
-    BGFLU_CheckResizeEvent(WM)
+    CheckResizeEvent(WM)
     {
         global
         if (WM == WM_ENTERSIZEMOVE AND this.IsCurrentTabLevelUp())
@@ -378,12 +378,12 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         else if (WM == WM_EXITSIZEMOVE)
         {
             SetTimer, BGFLU_DoResizeEvent, Delete
-            this.BGFLU_DoResizeEvent()
+            this.DoResizeEvent()
         }
     }
 
     ; Action performed on GUI resize event
-    BGFLU_DoResizeEvent()
+    DoResizeEvent()
     {
         global
         IC_BrivGemFarm_LevelUp_GUI.ShowSection(BGFLU_LB_Section + 1)
@@ -399,11 +399,11 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
             SetTimer, %func%, -100
         }
         else
-            this.BGFLU_CheckComboStatus(W)
+            this.CheckComboStatus(W)
     }
 
     ; Checks performed on combo mouseover / selection cancel
-    BGFLU_CheckComboStatus(W)
+    CheckComboStatus(W)
     {
         global
         local arr := this.GetCurrentlyDroppedCombo()

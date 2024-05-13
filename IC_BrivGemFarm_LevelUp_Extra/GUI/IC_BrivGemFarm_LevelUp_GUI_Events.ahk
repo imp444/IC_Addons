@@ -48,6 +48,11 @@ BGFLU_LoadFormation()
     IC_BrivGemFarm_LevelUp_GUI_Events.LoadFormationEvent()
 }
 
+BGFLU_FavoriteFormationZ1()
+{
+    IC_BrivGemFarm_LevelUp_GUI_Events.FavoriteFormationZ1Selected()
+}
+
 BGFLU_Default()
 {
     IC_BrivGemFarm_LevelUp_GUI_Events.DefaultClicked()
@@ -265,6 +270,17 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         Sleep, 20
         g_BrivGemFarm_LevelUp.LoadFormation(%A_GuiControl%)
         GuiControl, ICScriptHub:Enable, BGFLU_LoadFormation
+    }
+
+    ; Favorite formation on z1 button
+    FavoriteFormationZ1Selected()
+    {
+        global
+        local beforeSubmit := % %A_GuiControl%
+        Gui, ICScriptHub:Submit, NoHide
+        local value := % %A_GuiControl%
+        if (value != beforeSubmit)
+            g_BrivGemFarm_LevelUp.TempSettings.AddSetting("FavoriteFormationZ1", BGFLU_FavoriteFormationZ1)
     }
 
     ; Default settings button

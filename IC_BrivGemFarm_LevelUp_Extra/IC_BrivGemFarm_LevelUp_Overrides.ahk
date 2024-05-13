@@ -175,12 +175,12 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (forceBrivShandie || currentZone == 1)
             g_SF.ToggleAutoProgress( 0, false, true )
         g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
-        ; Q without empty slots
-        formation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(1), true)
+        formation := g_SF.BGFLU_GetDefaultFormation()
         ; If low favor mode is active, cheapeast upgrade first
         lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
-        g_SF.DirectedInput(,, "{q}") ; switch to Briv in slot 5
+        ; Set formation
+        g_SF.BGFLU_LoadZ1Formation()
         if (!lowFavorMode)
             keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
         StartTime := A_TickCount, ElapsedTime := 0
@@ -219,7 +219,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                     }
                 }
             }
-            g_SF.SetFormation(g_BrivUserSettings) ; Switch to E formation if necessary
+            ; Set formation
+            g_SF.BGFLU_LoadZ1Formation()
             Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
             ElapsedTime := A_TickCount - StartTime
             if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
@@ -341,8 +342,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 levelBriv := false
         }
         if (!formation)
-            ; Q without empty slots
-            formation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(1), true)
+            formation := g_SF.BGFLU_GetDefaultFormation()
         else
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         ; Speed champions are leveled up first (without Briv)
@@ -390,8 +390,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     BGFLU_DoPartySetupFailedConversion(formation := "")
     {
         if (!formation)
-            ; Q without empty slots
-            formation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(1), true)
+            formation := g_SF.BGFLU_GetDefaultFormation()
         else
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
@@ -571,6 +570,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     }
 }
 
+; Overrides IC_BrivSharedFunctions_Class.WaitForFirstGold()
 ; Overrides IC_BrivSharedFunctions_Class.DoDashWait()
 ; Overrides IC_BrivSharedFunctions_Class.DoRushWait()
 ; Overrides IC_BrivSharedFunctions_Class.InitZone()
@@ -578,23 +578,84 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
 {
 ;    BGFLU_LastUpgradeLevelByID := ""
 
-    ;================================
-    ;Functions mostly for gem farming
-    ;================================
-    /*  DoDashWait - A function that will wait for Dash ability to activate by reading the current time scale multiplier.
+    BGFLU_GetDefaultFormationKey()
+    {
+        z1Formation := g_BrivUserSettingsFromAddons[ "BGFLU_FavoriteFormationZ1" ]
+        if (z1Formation == "")
+            z1Formation := "q"
+        StringLower, z1Formation, z1Formation
+        return z1Formation
+    }
 
-        Parameters:
-        DashWaitMaxZone ;Maximum zone to attempt to Dash wait.
+    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
+    BGFLU_LoadZ1Formation()
+    {
+        if (this.Memory.ReadCurrentZone() == 1)
+            this.DirectedInput(,, "{" . this.BGFLU_GetDefaultFormationKey() . "}")
+        else ; Switch to E formation if necessary
+            this.SetFormation(g_BrivUserSettings)
+    }
 
-        Returns: nothing
-    */
+    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
+    BGFLU_GetDefaultFormation()
+    {
+        currentZone := this.Memory.ReadCurrentZone()
+        if (currentZone == 1)
+        {
+            Switch this.BGFLU_GetDefaultFormationKey()
+            {
+                case "q":
+                    slot := 1
+                case "w":
+                    slot := 2
+                case "e":
+                    slot := 3
+                default:
+                    slot := 1
+            }
+        }
+        else
+        {
+            settings := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
+            mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)
+            slot := settings[mod50Index] ? 1 : 3
+        }
+        ; Without empty slots
+        return this.Memory.GetFormationSaveBySlot(this.Memory.GetSavedFormationSlotByFavorite(slot), true)
+    }
+
+    WaitForFirstGold( maxLoopTime := 30000 )
+    {
+        g_SharedData.LoopString := "Waiting for first gold"
+        StartTime := A_TickCount
+        ElapsedTime := 0
+        counter := 0
+        sleepTime := 33
+        this.BGFLU_LoadZ1Formation()
+        gold := this.ConvQuadToDouble( this.Memory.ReadGoldFirst8Bytes(), this.Memory.ReadGoldSecond8Bytes() )
+        while ( gold == 0 AND ElapsedTime < maxLoopTime )
+        {
+            ElapsedTime := A_TickCount - StartTime
+            if( ElapsedTime > (counter * sleepTime)) ; input limiter..
+            {
+                this.BGFLU_LoadZ1Formation()
+                counter++
+            }
+            gold := this.ConvQuadToDouble( this.Memory.ReadGoldFirst8Bytes(), this.Memory.ReadGoldSecond8Bytes() )
+            Sleep, 20
+        }
+        return gold
+    }
+
     DoDashWait( DashWaitMaxZone := 2000 )
     {
         if (this.IsDashActive())
             return
         this.ToggleAutoProgress( 0, false, true )
-        if(this.Memory.ReadChampLvlByID(47) < 120)
-            this.LevelChampByID( 47, 120, 7000, "{q}") ; level shandie
+        this.BGFLU_LoadZ1Formation()
+        ; Level shandie
+        if (this.Memory.ReadChampLvlByID(47) < 120)
+            this.LevelChampByID(47, 120, 7000, "")
         ; Make sure the ability handler has the correct base address.
         ; It can change on game restarts or modron resets.
         this.Memory.ActiveEffectKeyHandler.Refresh()
@@ -612,7 +673,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         while ( ElapsedTime < timeout AND this.Memory.ReadCurrentZone() < DashWaitMaxZone AND !this.IsDashActive() )
         {
             this.ToggleAutoProgress(0)
-            this.SetFormation()
+            this.BGFLU_LoadZ1Formation()
             g_BrivGemFarm.BGFLU_DoPartySetupMax()
             this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
             ElapsedTime := A_TickCount - StartTime
@@ -655,7 +716,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         while (ElapsedTime < timeout && this.ShouldRushWait())
         {
             this.ToggleAutoProgress(0)
-            this.SetFormation()
+            this.BGFLU_LoadZ1Formation()
             g_BrivGemFarm.BGFLU_DoPartySetupMax()
             this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
             ElapsedTime := A_TickCount - StartTime
@@ -815,6 +876,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ] := settings.MaxSimultaneousInputs
         g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ] := settings.MinLevelInputDelay
         g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ] := settings.MinLevelTimeout
+        g_BrivUserSettingsFromAddons[ "BGFLU_FavoriteFormationZ1" ] := settings.FavoriteFormationZ1
         g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ] := settings.LowFavorMode
         g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ] := settings.MinClickDamage
         g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ] := settings.ClickDamageMatchArea

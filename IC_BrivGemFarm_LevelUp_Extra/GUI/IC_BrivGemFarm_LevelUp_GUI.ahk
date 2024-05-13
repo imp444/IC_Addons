@@ -147,12 +147,19 @@ Class IC_BrivGemFarm_LevelUp_GUI
         group.AddCheckBox("BGFLU_SkipMinDashWait",,, "Skip DashWait after Min Leveling")
         ; Maximum number of simultaneous F keys inputs during BGFLU_DoPartySetupMin()
         group.AddEdit("BGFLU_MaxSimultaneousInputs",, "w50 Limit2",, true)
-        group.AddControl("BGFLU_MaxSimultaneousInputsText", "Text", "x+5 yp+4", "Maximum simultaneous F keys inputs during MinLevel")
+        group.AddControl("BGFLU_MaxSimultaneousInputsText", "Text", "x+5 yp+4", "Max simultaneous F keys inputs during MinLevel")
         group.AddEdit("BGFLU_MinLevelInputDelay",, "yp-4 w50 Limit3")
         group.AddControl("BGFLU_MinLevelInputDelayText", "Text", "x+5 yp+4", "Delay (ms)")
         ; Timeout during BGFLU_DoPartySetupMin()
         group.AddEdit("BGFLU_MinLevelTimeout",, "w50 Limit5",, true)
         group.AddControl("BGFLU_MinLevelTimeoutText", "Text", "x+5 yp+4", "MinLevel timeout (ms)")
+        ; Z1 formation
+        group.AddControl("BGFLU_FavoriteFormationZ1", "DropDownList", "yp-5 w35 hwndBGFLU_FavoriteFormationZ1 gBGFLU_FavoriteFormationZ1", "Q||W|E")
+        SendMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BGFLU_FavoriteFormationZ1%
+        if (ErrorLevel)
+            MsgBox, 16,, Failed to resize BGFLU_FavoriteFormationZ1.
+        group.AddControl("BGFLU_FavoriteFormationZ1Text", "Text", "x+5 yp+4", "z1 formation")
+        ; Low favor mode
         group.AddCheckBox("BGFLU_LowFavorMode",,, "Low favor mode", true)
         ; Click damage settings
         local ClickGroup := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_ClickGroup", "Click damage", "BGFLU_GeneralSettingsGroup", false,, "BGFLU_LowFavorMode")

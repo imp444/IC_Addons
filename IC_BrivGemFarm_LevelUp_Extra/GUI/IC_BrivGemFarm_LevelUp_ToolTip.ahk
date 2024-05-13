@@ -22,6 +22,8 @@ Class IC_BrivGemFarm_LevelUp_ToolTip
         GUIFunctions.AddToolTip("BGFLU_MinLevelInputDelayText", "Delay between two sets of inputs.")
         GUIFunctions.AddToolTip("BGFLU_MinLevelTimeout", "Timeout before stopping the initial champion leveling. If set at 0, minimum leveling will be skipped.")
         GUIFunctions.AddToolTip("BGFLU_MinLevelTimeoutText", "Timeout before stopping the initial champion leveling. If set at 0, minimum leveling will be skipped.")
+        GUIFunctions.AddToolTip("BGFLU_FavoriteFormationZ1", "Override formation loaded on z1.")
+        GUIFunctions.AddToolTip("BGFLU_FavoriteFormationZ1Text", "Override formation loaded on z1.")
         GUIFunctions.AddToolTip("BGFLU_LowFavorMode", "Prioritize leveling up champions ordered by cheapest upgrade first.")
         GUIFunctions.AddToolTip("BGFLU_MinClickDamage", "Minimum level click damage will be leveled to after leveling champs to MinLevel.")
         GUIFunctions.AddToolTip("BGFLU_MinClickDamageText", "Minimum level click damage will be leveled to after leveling champs to MinLevel.")

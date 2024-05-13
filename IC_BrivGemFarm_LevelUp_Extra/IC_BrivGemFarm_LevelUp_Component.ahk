@@ -46,6 +46,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelInputDelay, % this.Settings.MinLevelInputDelay
         GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:Choose, BGFLU_FavoriteFormationZ1, % this.Settings.FavoriteFormationZ1
         GuiControl, ICScriptHub:, BGFLU_LowFavorMode, % this.Settings.LowFavorMode
         GuiControl, ICScriptHub:, BGFLU_MinClickDamage, % this.Settings.MinClickDamage
         GuiControl, ICScriptHub:, BGFLU_ClickDamageMatchArea, % this.Settings.ClickDamageMatchArea
@@ -254,6 +255,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
             GuiControl, ICScriptHub:, BGFLU_MinLevelInputDelay, % defaultSettings.MinLevelInputDelay
             GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % defaultSettings.MinLevelTimeout
+            GuiControl, ICScriptHub:Choose, BGFLU_FavoriteFormationZ1, % defaultSettings.FavoriteFormationZ1
             GuiControl, ICScriptHub:, BGFLU_LowFavorMode, % defaultSettings.LowFavorMode
             GuiControl, ICScriptHub:, BGFLU_MinClickDamage, % defaultSettings.MinClickDamage
             GuiControl, ICScriptHub:, BGFLU_ClickDamageMatchArea, % defaultSettings.ClickDamageMatchArea
@@ -285,6 +287,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.MaxSimultaneousInputs := 4
         settings.MinLevelInputDelay := 60
         settings.MinLevelTimeout := 5000
+        settings.FavoriteFormationZ1 := "Q"
         settings.LowFavorMode := false
         settings.MinClickDamage := 1
         settings.ClickDamageMatchArea := true
@@ -379,6 +382,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelInputDelay, % this.Settings.MinLevelInputDelay
         GuiControl, ICScriptHub:, BGFLU_MinLevelTimeout, % this.Settings.MinLevelTimeout
+        GuiControl, ICScriptHub:Choose, BGFLU_FavoriteFormationZ1, % this.Settings.FavoriteFormationZ1
         GuiControl, ICScriptHub:, BGFLU_LowFavorMode, % this.Settings.LowFavorMode
         GuiControl, ICScriptHub:, BGFLU_MinClickDamage, % this.Settings.MinClickDamage
         GuiControl, ICScriptHub:, BGFLU_ClickDamageMatchArea, % this.Settings.ClickDamageMatchArea

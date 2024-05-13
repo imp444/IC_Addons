@@ -18,6 +18,8 @@ Class IC_BrivGemFarm_LevelUp_ToolTip
         GUIFunctions.AddToolTip("BGFLU_SkipMinDashWait", "Skip waiting for Shandie's dash being active after leveling champions to MinLevel. Useful if stacking really early in the run.")
         GUIFunctions.AddToolTip("BGFLU_MaxSimultaneousInputs", "Maximum number of champions being leveled during the intial leveling to minLevel.")
         GUIFunctions.AddToolTip("BGFLU_MaxSimultaneousInputsText", "Maximum number of champions being leveled during the intial leveling to minLevel.")
+        GUIFunctions.AddToolTip("BGFLU_MinLevelInputDelay", "Delay between two sets of inputs.")
+        GUIFunctions.AddToolTip("BGFLU_MinLevelInputDelayText", "Delay between two sets of inputs.")
         GUIFunctions.AddToolTip("BGFLU_MinLevelTimeout", "Timeout before stopping the initial champion leveling. If set at 0, minimum leveling will be skipped.")
         GUIFunctions.AddToolTip("BGFLU_MinLevelTimeoutText", "Timeout before stopping the initial champion leveling. If set at 0, minimum leveling will be skipped.")
         GUIFunctions.AddToolTip("BGFLU_LowFavorMode", "Prioritize leveling up champions ordered by cheapest upgrade first.")

@@ -148,6 +148,8 @@ Class IC_BrivGemFarm_LevelUp_GUI
         ; Maximum number of simultaneous F keys inputs during BGFLU_DoPartySetupMin()
         group.AddEdit("BGFLU_MaxSimultaneousInputs",, "w50 Limit2",, true)
         group.AddControl("BGFLU_MaxSimultaneousInputsText", "Text", "x+5 yp+4", "Maximum simultaneous F keys inputs during MinLevel")
+        group.AddEdit("BGFLU_MinLevelInputDelay",, "yp-4 w50 Limit3")
+        group.AddControl("BGFLU_MinLevelInputDelayText", "Text", "x+5 yp+4", "Delay (ms)")
         ; Timeout during BGFLU_DoPartySetupMin()
         group.AddEdit("BGFLU_MinLevelTimeout",, "w50 Limit5",, true)
         group.AddControl("BGFLU_MinLevelTimeoutText", "Text", "x+5 yp+4", "MinLevel timeout (ms)")

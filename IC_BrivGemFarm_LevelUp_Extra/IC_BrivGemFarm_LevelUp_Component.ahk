@@ -60,6 +60,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         g_DefinesLoader.Start()
         this.CreateTimedFunctions()
         this.Start()
+        this.UndoTempSettings()
     }
 
     ; Adds timed functions to be run when briv gem farm is started
@@ -168,19 +169,15 @@ Class IC_BrivGemFarm_LevelUp_Component
     }
 
     ; Performs additional functions after definitions have been fully loaded
-    OnHeroDefinesFinished()
+    OnHeroDefinesFinished(success := true)
     {
-        this.UpdateBrivMinLevelStackingLists()
-        this.UndoTempSettings()
+        if (success)
+        {
+            this.UpdateBrivMinLevelStackingLists()
+            this.RefreshFormation()
+        }
         GuiControl, ICScriptHub:Enable, BGFLU_LoadFormation
         GuiControl, ICScriptHub:Enable, BGFLU_Default
-        GuiControl, ICScriptHub:Enable, BGFLU_SelectLanguage
-        GuiControl, ICScriptHub:Enable, BGFLU_LoadDefinitions
-    }
-
-    ; Allows to click on the button to manually load hero definitions
-    OnHeroDefinesFailed()
-    {
         GuiControl, ICScriptHub:Enable, BGFLU_SelectLanguage
         GuiControl, ICScriptHub:Enable, BGFLU_LoadDefinitions
     }
@@ -265,7 +262,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             g_BrivGemFarm_LevelUpGui.LoadMod50("BrivLevelingZones", defaultSettings.BrivLevelingZones)
             GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
             GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % defaultSettings.LevelToSoftCapFailedConversionBriv
-            this.LoadFormation(this.GetFormationFromGUI())
+            this.RefreshFormation()
         }
         if (save)
             this.SaveSettings()
@@ -360,7 +357,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         }
         settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
         this.TempSettings.AddSetting("", settings)
-        this.LoadFormation(this.GetFormationFromGUI())
+        this.RefreshFormation()
     }
 
     ; Restore last saved settings
@@ -471,6 +468,11 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:Text, BGFLU_NoFormationText, % text
         else
             GuiControl, ICScriptHub:Text, BGFLU_NoFormationText,
+    }
+
+    RefreshFormation()
+    {
+        this.LoadFormation(this.GetFormationFromGUI())
     }
 
     ; Loads formation from champIDs into the GUI, defaults to Q formation
@@ -982,10 +984,13 @@ Class IC_BrivGemFarm_LevelUp_Seat
     }
 
     ; Performs additional functions after definitions have been fully loaded
-    OnHeroDefinesFinished()
+    OnHeroDefinesFinished(success := true)
     {
-        for seatID, seat in IC_BrivGemFarm_LevelUp_Seat.Seats
-            seat.UpdateNames(g_BrivGemFarm_LevelUp.Settings.ShowSpoilers)
-        g_BrivGemFarm_LevelUp.OnHeroDefinesFinished()
+        if (success)
+        {
+            for seatID, seat in IC_BrivGemFarm_LevelUp_Seat.Seats
+                seat.UpdateNames(g_BrivGemFarm_LevelUp.Settings.ShowSpoilers)
+        }
+        g_BrivGemFarm_LevelUp.OnHeroDefinesFinished(success)
     }
 }

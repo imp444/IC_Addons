@@ -8,9 +8,9 @@ BGFLU_DoResizeEvent()
     IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_DoResizeEvent()
 }
 
-BGFLU_CheckComboStatus(W)
+BGFLU_CheckMouseEvent(W)
 {
-    IC_BrivGemFarm_LevelUp_GUI_Events.BGFLU_CheckComboStatus(W)
+    IC_BrivGemFarm_LevelUp_GUI_Events.CheckMouseEvent(W)
 }
 
 BGFLU_CheckBoxEvent()
@@ -90,6 +90,8 @@ BGFLU_LoadDefinitions()
 
 Class IC_BrivGemFarm_LevelUp_GUI_Events
 {
+    static LoadDefinitionsTrigger := false
+
     ; Checked/ unchecked
     BGFLU_CheckBoxEvent()
     {
@@ -371,8 +373,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     BGFLU_CheckResizeEvent(WM)
     {
         global
-        GuiControlGet, currentTab,, ModronTabControl, Tab
-        if (WM == WM_ENTERSIZEMOVE AND currentTab == "BrivGF LevelUp")
+        if (WM == WM_ENTERSIZEMOVE AND this.IsCurrentTabLevelUp())
             SetTimer, BGFLU_DoResizeEvent, 200
         else if (WM == WM_EXITSIZEMOVE)
         {
@@ -386,6 +387,19 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     {
         global
         IC_BrivGemFarm_LevelUp_GUI.ShowSection(BGFLU_LB_Section + 1)
+    }
+
+    CheckMouseEvent(W)
+    {
+        ; Startup
+        if (this.IsCurrentTabLevelUp() && !this.LoadDefinitionsTrigger)
+        {
+            this.LoadDefinitionsTrigger := true
+            func := ObjBindMethod(g_DefinesLoader, "LoadDefinitions")
+            SetTimer, %func%, -100
+        }
+        else
+            this.BGFLU_CheckComboStatus(W)
     }
 
     ; Checks performed on combo mouseover / selection cancel
@@ -414,7 +428,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
             else if (this.MouseOverComboBoxList(ctrlH := arr[2])) ; Show current selection as tooltip
             {
                 OnMessage(0x200, "CheckControlForToolTip",0)
-                local func := ObjBindMethod(this, "RemoveToolTip")
+                func := ObjBindMethod(this, "RemoveToolTip")
                 SetTimer, %func%, -500
                 SendMessage, CB_GETCURSEL, 0, 0,, ahk_id %ctrlH%
                 local currentSel := ErrorLevel ; 0 based
@@ -440,8 +454,7 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
     GetCurrentlyDroppedCombo()
     {
         global
-        GuiControlGet, CurrentTab,, ModronTabControl, Tab
-        if (CurrentTab != "BrivGF LevelUp")
+        if (!this.IsCurrentTabLevelUp())
             return
         Loop, 12
         {
@@ -497,5 +510,12 @@ Class IC_BrivGemFarm_LevelUp_GUI_Events
         MouseGetPos, xPos, yPos
         CoordMode, Mouse, Client
         return (xMin <= xPos) AND (xPos <= xMax) AND (yMin <= yPos) AND (yPos <= yMax)
+    }
+
+    IsCurrentTabLevelUp()
+    {
+        global
+        GuiControlGet, CurrentTab,, ModronTabControl, Tab
+        return CurrentTab == "BrivGF LevelUp"
     }
 }

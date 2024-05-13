@@ -29,8 +29,8 @@ Gui IC_BrivGemFarm_LevelUp_TempSettings:Add, ListView, w330 h310 NoSortHdr vBGFL
 GUIFunctions.UseThemeListViewBackgroundColor("BGFLU_TempSettings")
 GUIFunctions.LoadTheme()
 
-OnMessage(WM_COMMAND, "BGFLU_CheckComboStatus")
-OnMessage(0x200, Func("BGFLU_CheckComboStatus"))
+OnMessage(WM_COMMAND, "BGFLU_CheckMouseEvent")
+OnMessage(0x200, Func("BGFLU_CheckMouseEvent"))
 OnMessage(WM_ENTERSIZEMOVE, Func("BGFLU_CheckResizeEvent").Bind(WM_ENTERSIZEMOVE))
 OnMessage(WM_EXITSIZEMOVE, Func("BGFLU_CheckResizeEvent").Bind(WM_EXITSIZEMOVE))
 

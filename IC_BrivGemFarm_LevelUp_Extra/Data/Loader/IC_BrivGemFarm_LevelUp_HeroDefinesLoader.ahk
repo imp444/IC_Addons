@@ -90,18 +90,10 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
         if (state >= this.HERO_DATA_FINISHED)
         {
             this.Stop()
-            if (state == this.HERO_DATA_FINISHED || this.HeroDefines == "")
-            {
-                this.HeroDefines := g_SF.LoadObjectFromJSON(this.HeroDefsPath)
-                g_HeroDefines.Init(this.HeroDefines)
-            }
-            if (state >= this.SERVER_TIMEOUT)
-                g_BrivGemFarm_LevelUp.OnHeroDefinesFailed()
+            if (state == this.HERO_DATA_FINISHED)
+                this.LoadDefinitions()
             else
-                IC_BrivGemFarm_LevelUp_Seat.OnHeroDefinesFinished()
-            IC_BrivGemFarm_LevelUp_ToolTip.UpdateDefsCNETime(this.HeroDefines.current_time)
-            ; Clear memory bloat
-            IC_BrivGemFarm_LevelUp_Functions.EmptyMem()
+                IC_BrivGemFarm_LevelUp_Seat.OnHeroDefinesFinished(state < this.SERVER_TIMEOUT)
         }
     }
 
@@ -110,5 +102,24 @@ class IC_BrivGemFarm_LevelUp_HeroDefinesLoader
     {
         this.CurrentState := state
         return true
+    }
+
+    ; Load definitions from file.
+    ; The server timestamp is shown as a tooltip.
+    ; LoadObjectFromJSON() is memory intensive and needs cleanup afterwards.
+    LoadDefinitions()
+    {
+        defs := g_SF.LoadObjectFromJSON(this.HeroDefsPath)
+        if (defs)
+        {
+            this.HeroDefines := defs
+            g_HeroDefines.Init(defs)
+            IC_BrivGemFarm_LevelUp_ToolTip.UpdateDefsCNETime(this.HeroDefines.current_time)
+            IC_BrivGemFarm_LevelUp_Seat.OnHeroDefinesFinished()
+            ; Clear memory bloat
+            IC_BrivGemFarm_LevelUp_Functions.EmptyMem()
+        }
+        else
+            IC_BrivGemFarm_LevelUp_Seat.OnHeroDefinesFinished(false)
     }
 }

@@ -55,7 +55,8 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
         this.LastTableChecksums := this.GetLastTableChecksums()
         isNewDefs := this.CheckForNewdefs(languageID, this.LastTableChecksums)
         isNewVersion := this.CheckIfNewParserVersion()
-        if (isNewVersion || isNewDefs || !FileExist(this.HeroDefsPath))
+        fileExists := FileExist(this.HeroDefsPath)
+        if (isNewVersion || isNewDefs || !fileExists)
         {
             ; Get filtered defs
             defs := g_ServerCall.CallGetHeroDefs(languageID, this.Filter)
@@ -71,10 +72,10 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
             this.WriteObjectToJSON(this.HeroDefsPath, this.HeroDefines)
             ; Save new checksums
             this.FileWrite(this.LoaderTempPath, this.LastTableChecksums)
-            this.CurrentState := isNewDefs ? this.HERO_DATA_FINISHED : this.HERO_DATA_FINISHED_NOUPDATE
             ; Save new version
             if (this.IsNewLoaderVersion)
                 this.UpdateParserVersion()
+            this.CurrentState := this.HERO_DATA_FINISHED
         }
         else
             this.CurrentState := this.HERO_DATA_FINISHED_NOUPDATE

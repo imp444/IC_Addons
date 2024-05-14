@@ -188,37 +188,27 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             timeout := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ]
         timeout := timeout == "" ? 5000 : timeout
         index := 0
-        maxInputs := g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ]
         while(keyspam.Length() != 0 AND ElapsedTime < timeout)
         {
+            ; Update formation on zone change
+            if (currentZone < g_SF.Memory.ReadCurrentZone())
+            {
+                currentZone := g_SF.Memory.ReadCurrentZone()
+                formation := g_SF.BGFLU_GetDefaultFormation()
+            }
             if (lowFavorMode)
             {
                 formationInOrder := this.BGFLU_OrderByCheapeastUpgrade(formation)
                 keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivShandie)
             }
+            else
+                keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
             ; Maximum number of champions leveled up every loop
             maxKeyspam := []
-            Loop % Min(maxInputs, keyspam.Length())
+            Loop % Min(g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ], keyspam.Length())
                 maxKeyspam.Push(keyspam[A_Index])
             ; Level up speed champions once
             g_SF.DirectedInput(,, maxKeyspam*)
-            ; Remove keyspam
-            for k, champID in formation
-            {
-                targetLevel := this.BGFLU_GetTargetLevel(champID, "Min")
-                fKey := this.BGFLU_GetFKey(champID)
-                if (!this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
-                {
-                    for k1, v in keyspam
-                    {
-                        if (v == fKey)
-                        {
-                            keyspam.RemoveAt(k1)
-                            break
-                        }
-                    }
-                }
-            }
             ; Set formation
             g_SF.BGFLU_LoadZ1Formation()
             Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
@@ -578,7 +568,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
 {
 ;    BGFLU_LastUpgradeLevelByID := ""
 
-    BGFLU_GetDefaultFormationKey()
+    BGFLU_GetZ1FormationKey()
     {
         z1Formation := g_BrivUserSettingsFromAddons[ "BGFLU_FavoriteFormationZ1" ]
         if (z1Formation == "")
@@ -591,7 +581,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     BGFLU_LoadZ1Formation()
     {
         if (this.Memory.ReadCurrentZone() == 1)
-            this.DirectedInput(,, "{" . this.BGFLU_GetDefaultFormationKey() . "}")
+            this.DirectedInput(,, "{" . this.BGFLU_GetZ1FormationKey() . "}")
         else ; Switch to E formation if necessary
             this.SetFormation(g_BrivUserSettings)
     }
@@ -602,7 +592,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         currentZone := this.Memory.ReadCurrentZone()
         if (currentZone == 1)
         {
-            Switch this.BGFLU_GetDefaultFormationKey()
+            Switch this.BGFLU_GetZ1FormationKey()
             {
                 case "q":
                     slot := 1

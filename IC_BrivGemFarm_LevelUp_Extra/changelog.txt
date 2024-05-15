@@ -1,3 +1,14 @@
+May 15, 2024 - v1.3.3
+    - Added a setting for loading a different formation from the default Q for z1.
+    - Added a setting for delay between two sets of inputs during Min leveling.
+    - Added default min/max level settings for Diana.
+    - Updated default max settings for Hew Maan (360 -> 220 and Widdle (350 - > 310).
+    - Added descriptions for Gromma, Diana and Strongheart abilities that were missing.
+    - Champion names and upgrade lists are populated only once when the LevelUp tab has been clicked on for the first time on reload.
+    - Added version to definitions parser.
+    - Fixes:
+        Leveling priority for Briv and Shandie is updated when Thellora skips.
+
 April 02, 2024 - v1.3.2
     - Added compatibility with ICScriptHub v4.
 

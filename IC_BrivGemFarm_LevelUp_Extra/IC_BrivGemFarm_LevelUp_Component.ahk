@@ -305,10 +305,10 @@ Class IC_BrivGemFarm_LevelUp_Component
         ; Speed champions
         minLevels[58] := 170, maxLevels[58] := 1300 ; Briv
         minLevels[47] := 120, maxLevels[47] := 120 ; Shandie
-        minLevels[91] := 260, maxLevels[91] := 350 ; Widdle 260 310 350
+        minLevels[91] := 260, maxLevels[91] := 310 ; Widdle 260 310 350
         minLevels[128] := 100, maxLevels[128] := 170 ; Lae'Zel
         minLevels[28] := 90, maxLevels[28] := 200 ; Deekin 90 200
-        minLevels[75] := 220, maxLevels[75] := 360 ; Hew Maan 40 200 220 360
+        minLevels[75] := 220, maxLevels[75] := 220 ; Hew Maan 40 200 220 360
         minLevels[102] := 90, maxLevels[102] := 250 ; Nahara
         minLevels[125] := 1, maxLevels[125] := 370 ; BBEG
         minLevels[52] := 80, maxLevels[52] := 280 ; Sentry

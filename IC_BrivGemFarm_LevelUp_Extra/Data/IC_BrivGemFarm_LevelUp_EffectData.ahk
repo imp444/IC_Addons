@@ -659,6 +659,8 @@ Class IC_BrivGemFarm_LevelUp_EffectData
         }
         else if (param1 == "strongheart_event_token_scavenger_description")
             repl := ""
+        else if (param1 == "gromma_circle_of_the_mountain_target")
+            repl := "Neutral (feat:Good)"
         else if (kvps.HasKey(param1)) ; amount
             repl := kvps[param1]
         return repl

@@ -238,6 +238,13 @@ Class IC_BrivGemFarm_LevelUp_EffectData
         param1 := params[1], param2 := params[2], param3 := params[3]
         if (param1 == "active_upgrade_value_with_bonuses")
             repl := IC_BrivGemFarm_LevelUp_TextData.GetData("unknown", "Unknown")
+        else if (param1 == "current_scavenge_cap" && param2 == "diana_electrum_scavenger")
+        {
+            startTime := RegExReplace(kvps.start_date, "[:-\s]")
+            EnvAdd, startTime, 7, H
+            EnvSub, startTime, A_NowUTC, D
+            repl := Floor(kvps.initial_cap + kvps.cap_increase_per_day * Abs(startTime))
+        }
         else if (kvps[param2] != "")
             repl := kvps[param2]
         else if (kvps.HasKey(param1))

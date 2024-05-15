@@ -242,7 +242,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (forceBrivShandie)
             champIDs := [58, 47]
         else
-            champIDs := [58, 47, 91, 128, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139] ; speed champs
+            champIDs := [58, 47, 91, 128, 28, 75, 59, 148, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139] ; speed champs
         ; Need to walk while Briv is in all formations
         if (!this.BGFLU_AllowBrivLeveling())
             champIDs.RemoveAt(1)
@@ -321,7 +321,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     BGFLU_DoPartySetupMax(formation := "")
     {
         ; Speed champions without Briv
-        static champIDs := [47, 91, 128, 28, 75, 59, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139]
+        static champIDs := [47, 91, 128, 28, 75, 59, 148, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139]
 
         levelBriv := true ; Return value
         if (this.BGFLU_ChampUnderTargetLevel(58, this.BGFLU_GetTargetLevel(58, "Min")))

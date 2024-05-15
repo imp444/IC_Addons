@@ -313,7 +313,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[125] := 1, maxLevels[125] := 370 ; BBEG
         minLevels[52] := 80, maxLevels[52] := 280 ; Sentry
         minLevels[59] := 70, maxLevels[59] := 100 ; Melf
-        minLevels[148] := 100, maxLevels[148] := 100 ; Diana
+        minLevels[148] := 100, maxLevels[148] := 200 ; Diana
         minLevels[115] := 100, maxLevels[115] := 100 ; Virgil
         minLevels[89] := 1, maxLevels[89] := 1 ; D'hani
         minLevels[114] := 1, maxLevels[114] := 1 ; Kent

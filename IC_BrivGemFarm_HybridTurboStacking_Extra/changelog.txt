@@ -1,3 +1,6 @@
+May 15, 2024 - v1.0.6
+    - Added sanity checks to PreferredBrivStackZones settings to avoid online stacking in boss zones.
+
 April 03, 2024 - v1.0.5
     - Requires ICScriptHub v4.
     - Added an updated LV_Colors version that works only if AHK version 1.1.37.02+ is running,

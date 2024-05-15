@@ -287,17 +287,17 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
                 yLoc += 20
             }
             ; Disable stacking in a boss zone.
-            disabled := Mod(A_Index, 5) == 0
-            this.AddControlCheckbox(xLoc, yLoc, A_Index, disabled)
+            enabled := Mod(A_Index, 5) != 0
+            this.AddControlCheckbox(xLoc, yLoc, A_Index, enabled)
         }
     }
 
     ; Adds a single checkBox for PreferredBrivStackZones.
-    AddControlCheckbox(xLoc, yLoc, loopCount, disabled)
+    AddControlCheckbox(xLoc, yLoc, loopCount, enabled)
     {
         global
-        local options := "vBGFHTS_BrivStack_Mod_50_" . loopCount . " Checked x" . xLoc . " y" . yLoc . " gBGFHTS_Mod50CheckBoxes"
-        if (disabled)
+        local options := "vBGFHTS_BrivStack_Mod_50_" . loopCount . " Checked" . enabled . " x" . xLoc . " y" . yLoc . " gBGFHTS_Mod50CheckBoxes"
+        if (!enabled)
             options .= " Disabled"
         Gui, ICScriptHub:Add, Checkbox, %options%, % loopCount
     }

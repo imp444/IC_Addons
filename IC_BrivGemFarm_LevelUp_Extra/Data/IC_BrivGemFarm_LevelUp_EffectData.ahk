@@ -644,6 +644,14 @@ Class IC_BrivGemFarm_LevelUp_EffectData
         }
         else if (param1 == "presto_component_scavenger_description")
             repl := ""
+        else if (param1 == "strongheart_token_scavenger_max")
+        {
+            startTime := "20230628120000"
+            EnvSub, startTime, A_NowUTC, D
+            repl := 50000 + 300 * Abs(startTime)
+        }
+        else if (param1 == "strongheart_event_token_scavenger_description")
+            repl := ""
         else if (kvps.HasKey(param1)) ; amount
             repl := kvps[param1]
         return repl

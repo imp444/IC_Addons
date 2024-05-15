@@ -477,7 +477,11 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
     {
         Loop, 50
         {
-            checked := (value & (2 ** (A_Index - 1))) != 0
+            ; Disable stacking in a boss zone.
+            if (Mod(A_Index, 5) == 0)
+                checked := false
+            else
+                checked := (value & (2 ** (A_Index - 1))) != 0
             GuiControl, ICScriptHub:, BGFHTS_BrivStack_Mod_50_%A_Index%, % checked
         }
         Gui, ICScriptHub:Submit, NoHide

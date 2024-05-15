@@ -220,7 +220,11 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         value := 0
         Loop, 50
         {
-            GuiControlGet, isChecked, ICScriptHub:, %rootControlID%%A_Index%
+            ; Disable stacking in a boss zone.
+            if (Mod(A_Index, 5) == 0)
+                isChecked := false
+            else
+                GuiControlGet, isChecked, ICScriptHub:, %rootControlID%%A_Index%
             array.Push(isChecked)
             if (isChecked)
                 value += 2 ** (A_Index - 1)

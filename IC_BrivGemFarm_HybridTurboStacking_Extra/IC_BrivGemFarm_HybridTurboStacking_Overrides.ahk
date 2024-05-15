@@ -232,7 +232,7 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] := settings.100Melf
         g_BrivUserSettingsFromAddons[ "BGFHTS_MelfMinStackZone" ] := settings.MelfMinStackZone
         g_BrivUserSettingsFromAddons[ "BGFHTS_MelfMaxStackZone" ] := settings.MelfMaxStackZone
-        mod50Zones := IC_BrivGemFarm_HybridTurboStacking_Functions.ConvertBitfieldToArray(settings.PreferredBrivStackZones)
+        mod50Zones := IC_BrivGemFarm_HybridTurboStacking_Functions.GetPreferredBrivStackZones(settings.PreferredBrivStackZones)
         g_BrivUserSettingsFromAddons[ "BGFHTS_PreferredBrivStackZones" ] := mod50Zones
         ; Melf
         ; Disabled until this works properly

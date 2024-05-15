@@ -29,6 +29,15 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         return array
     }
 
+    GetPreferredBrivStackZones(value)
+    {
+        array := this.ConvertBitfieldToArray(value)
+        ; Disable stacking in a boss zone.
+        Loop, 10
+            array[5 * A_Index] := 0
+        return array
+    }
+
     GetHighestBrivSkipAmount()
     {
         BrivID := IC_BrivGemFarm_HybridTurboStacking_Functions.BRIV_ID

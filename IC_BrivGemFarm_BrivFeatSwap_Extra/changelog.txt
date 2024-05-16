@@ -1,3 +1,6 @@
+May 16, 2024 - v1.5.13
+    - Updated mouse click instructions with the addition of Diana.
+
 April 02, 2024 - v1.5.12
     - Fixed ICScriptHub v4 class update of SharedFunctions_Class.
 

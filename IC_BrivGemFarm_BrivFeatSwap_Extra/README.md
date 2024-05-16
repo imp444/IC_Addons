@@ -71,8 +71,9 @@ You can fill the slots in W with feats such as HP or overwhelm to boost offline 
 #### Mouse click option 
 
 Routes with 100%QT won't have Briv's jump animation during transitions.  
-For the routes that aren't 100%QT, you can use the option below to have the script click on the "Clear formation" button to cancel Briv's jump animation.
-**This is extremely disruptive and will steal mouse focus every few seconds.**
+For the routes that aren't 100%QT, you can use the option below to have the script click on the "Clear formation" button to cancel Briv's jump animation.  
+**This is extremely disruptive and will steal mouse focus every few seconds.**  
+**This should not be used with Diana or Shandie or her abilites will never work.**
 
 ![mouseclick](Images/mouseclick_setting.png)   
 
@@ -138,7 +139,7 @@ to the level that matches the next 🔁 zone you will encounter (or 5 zones befo
 
 >For 8J/4J, the second option can be used as an alternative when not using Thellora.
 
-| **9J/4J TT**                                |
+| **9J/4J TT** (if not using Diana)           |
 |:--------------------------------------------|
 | **Path:** **1**, 11, 21, 31, 36, 46, **51** |
 | 🔁 1, 11, 21, 31, 36, 46                    |

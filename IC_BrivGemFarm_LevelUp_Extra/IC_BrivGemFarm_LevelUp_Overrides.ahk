@@ -811,6 +811,9 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     {
         if (champID == "" || champID < 1)
             return 0
+        ; Look for value in cache.
+        ; The actual value could change because of definitions being updated
+        ; when a new event starts, balance patch or level cap increase.
         cachedLevels := this.BGFLU_LastUpgradeLevelByID
         if !IsObject(cachedLevels)
             this.BGFLU_LastUpgradeLevelByID := cachedLevels := {}
@@ -829,6 +832,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
                 maxUpgradeLevel := Max(requiredLevel, maxUpgradeLevel)
         }
         cachedLevels[champID] := maxUpgradeLevel
+        return maxUpgradeLevel
     }
 }
 

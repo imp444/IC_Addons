@@ -16,15 +16,3 @@ else
     IC_UpdateClass_Class.UpdateClassFunctions(g_SharedData, IC_BrivGemFarm_LevelUp_IC_SharedData_Class)
     IC_UpdateClass_Class.UpdateClassFunctions(g_SF.Memory, IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Class)
 }
-
-; CloseWelcomeBack addon check
-closeWelcomeBackEnabled := IsObject(IC_BrivCloseWelcomeBack_SharedFunctions_Class)
-if (closeWelcomeBackEnabled)
-{
-    IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class.BGFLU_SetOverrideFlag()
-    IC_BrivCloseWelcomeBack_SharedFunctions_Class.base := IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class
-}
-if (IsObject(SH_UpdateClass))
-    SH_UpdateClass.UpdateClassFunctions(g_SF, IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class, closeWelcomeBackEnabled)
-else
-    IC_UpdateClass_Class.UpdateClassFunctions(g_SF, IC_BrivGemFarm_LevelUp_SharedFunctions_Fix_Class, closeWelcomeBackEnabled)

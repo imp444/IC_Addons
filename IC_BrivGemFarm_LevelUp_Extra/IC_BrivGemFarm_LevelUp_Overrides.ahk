@@ -816,8 +816,13 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             this.BGFLU_LastUpgradeLevelByID := cachedLevels := {}
         if (cachedLevels.HasKey(champID) && cachedLevels[champID] != "")
             return cachedLevels[champID]
+        ; Loop upgrades until the upgrade with the highest level is found.
+        size := this.Memory.ReadHeroUpgradesSize(champID)
+        ; Sanity check
+        if (size < 1 || size > 1000)
+            return 0
         maxUpgradeLevel := 0
-        Loop, % this.Memory.ReadHeroUpgradesSize(champID)
+        Loop, %size%
         {
             requiredLevel := this.Memory.ReadHeroUpgradeRequiredLevel(champID, A_Index - 1)
             if (requiredLevel != 9999)

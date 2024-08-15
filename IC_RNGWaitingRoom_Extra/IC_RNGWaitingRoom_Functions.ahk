@@ -12,6 +12,13 @@ class IC_RNGWaitingRoom_Functions
         FileAppend, %addonLoc%, %g_BrivFarmModLoc%
     }
 
+    ; Returns the text to append for values not equal to 1.
+    ; Parameters: - value:int - Value of anything countable.
+    Plural(value)
+    {
+        return value == 1 ? "" : "s"
+    }
+
     ReadResets()
     {
         return g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.StatHandler.Resets.Read()
@@ -26,27 +33,28 @@ class IC_RNGWaitingRoom_Functions
         ElapsedTime := 0
         StartTime := A_TickCount
         timeout := 300000
-        while (this.GetNumCardsOfType() < gemCardsNeeded && ElapsedTime < timeout) ; && !this.IsPercentEnough(gemPercentNeeded))
+        ; Wait for 5 cards drawn before checking if there are enough gem cards
+        while (((numCards := this.GetNumCards()) < 5 || this.GetNumGemCards() < gemCardsNeeded) && ElapsedTime < timeout) ; && !this.IsPercentEnough(gemPercentNeeded))
         {
-            numCards := this.GetNumCards()
+            redrawsLeft := maxRedraws - redraws
             if (numCards < 5)
             {
                 str := "Waiting for card # " . (numCards + 1)
-                str .= " - " . (maxRedraws - redraws) . " redraws left"
-                g_SharedData.RNGWR_SetStatus("Waiting for card # " . (numCards + 1))
+                str .= " - " . redrawsLeft . " redraw" . this.Plural(redrawsLeft) . " left"
+                g_SharedData.RNGWR_SetStatus(str)
                 cardDrawn := this.WaitForNextCard()
             }
             else
                 cardDrawn := true
             if (cardDrawn && this.GetNumCards() == 5)
             {
-                ;if (this.GetNumCardsOfType() < gemCardsNeeded && !this.IsPercentEnough(gemPercentNeeded) && redraws < maxRedraws)
-                if (this.GetNumCardsOfType() < gemCardsNeeded && redraws < maxRedraws)
+                ;if (this.GetNumGemCards() < gemCardsNeeded && !this.IsPercentEnough(gemPercentNeeded) && redraws < maxRedraws)
+                if (this.GetNumGemCards() < gemCardsNeeded && redrawsLeft)
                 {
                     if(this.UseEllywickUlt())
                         ++redraws
                 }
-                else ; FAIL
+                else if (this.GetNumGemCards() < gemCardsNeeded) ; FAIL
                 {
                     success := false
                     break
@@ -55,7 +63,7 @@ class IC_RNGWaitingRoom_Functions
             ElapsedTime := A_TickCount - StartTime
         }
         str := success ? "Success" : "Failure"
-        str .= " - Used " . redraws . " redraws"
+        str .= " - Used " . redraws . " redraw" . this.Plural(redraws)
         g_SharedData.RNGWR_SetStatus(str)
     }
 
@@ -79,16 +87,21 @@ class IC_RNGWaitingRoom_Functions
         return size == "" ? 0 : size
     }
 
+    GetNumGemCards()
+    {
+        return this.GetNumCardsOfType(3)
+    }
+
     GetNumCardsOfType(cardType := 3)
     {
-        gemCards := 0
+        numCards := 0
         cards := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadCardsInHand()
         for _, cardTypeInHand in cards
         {
             if (cardTypeInHand == cardType)
-                ++gemCards
+                ++numCards
         }
-        return gemCards
+        return numCards
     }
 
     IsPercentEnough(percent)

@@ -134,6 +134,8 @@ Class IC_RNGWaitingRoom_Component
                 status := SharedRunData.RNGWR_Status
                 str := "Running" . (status != "" ? " - " . status : "")
                 GuiControl, ICScriptHub:Text, RNGWR_StatusText, % str
+                stats := SharedRunData.RNGWR_GetStats()
+                g_RNGWaitingRoomGui.UpdateGUI(stats)
             }
             else
                 GuiControl, ICScriptHub:Text, RNGWR_StatusText, Disabled

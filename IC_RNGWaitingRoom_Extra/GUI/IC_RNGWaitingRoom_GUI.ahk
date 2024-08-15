@@ -84,6 +84,11 @@ Class IC_RNGWaitingRoom_GUI
         Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit3 vRNGWR_EllywickGFGemMaxRedraws gRNGWR_EllywickGFGemMaxRedraws
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemMaxRedrawsText, Max redraws
+        ; Stats
+        Gui, ICScriptHub:Add, Text, xs y+%ySpacing% h%ctrlH% 0x200 vRNGWR_AvgBonusGemsText, Avg. gem bonus:
+        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vRNGWR_AvgBonusGems
+        Gui, ICScriptHub:Add, Text, xs h%ctrlH% 0x200 vRNGWR_AvgRedrawsText, Avg. redraws:
+        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vRNGWR_AvgRedraws
     }
 
     UpdateGUISettings(data)
@@ -92,5 +97,14 @@ Class IC_RNGWaitingRoom_GUI
         GuiControl, ICScriptHub:, RNGWR_EllywickGFGemCards, % data.EllywickGFGemCards
 ;        GuiControl, ICScriptHub:, RNGWR_EllywickGFGemPercent, % data.EllywickGFGemPercent
         GuiControl, ICScriptHub:, RNGWR_EllywickGFGemMaxRedraws, % data.EllywickGFGemMaxRedraws
+    }
+
+    UpdateGUI(data)
+    {
+        runs := data[3]
+        avgBonusGemsStr := Round(data[1] / runs, 2) . "%"
+        avgRerollsStr := Round(data[2] / runs, 2)
+        GuiControl, ICScriptHub:Text, RNGWR_AvgBonusGems, % avgBonusGemsStr
+        GuiControl, ICScriptHub:Text, RNGWR_AvgRedraws, % avgRerollsStr
     }
 }

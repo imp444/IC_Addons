@@ -65,6 +65,7 @@ class IC_RNGWaitingRoom_Functions
         str := success ? "Success" : "Failure"
         str .= " - Used " . redraws . " redraw" . this.Plural(redraws)
         g_SharedData.RNGWR_SetStatus(str)
+        return redraws
     }
 
     WaitForNextCard(timeout := 65000)

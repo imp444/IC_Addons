@@ -227,8 +227,10 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
             }
             gemCardsNeeded := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ]
             percentBonus := g_BrivUserSettingsFromAddons[ "EllywickGFGemPercent" ]
-            Redraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
-            IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, Redraws)
+            redraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
+            result := IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, redraws)
+            bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
+            g_SharedData.RNGWR_UpdateStats(bonusGems, result)
 
 ;            ; Thellora
 ;            isThelloraInFormation := g_SF.IsChampInFormation( 139, formationFavorite1 )
@@ -243,6 +245,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
 class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
 {
 ;    RNGWR_Status := ""
+;    RNGWR_Stats := ""
 
     ; Return true if the class has been updated by the addon
     RNGWR_Running()
@@ -258,7 +261,25 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
     ; Load settings after "Start Gem Farm" has been clicked.
     RNGWR_Init()
     {
+        stats := {}
+        stats.BonusGemsSum := 0
+        stats.RerollsSum := 0
+        stats.Runs := 0
+        this.Stats := stats
         this.RNGWR_UpdateSettingsFromFile()
+    }
+
+    RNGWR_UpdateStats(bonusGems := 0, rerolls := 0)
+    {
+        this.Stats["BonusGemsSum"] += bonusGems
+        this.Stats["RerollsSum"] += rerolls
+        this.Stats["Runs"] += 1
+    }
+
+    RNGWR_GetStats()
+    {
+        stats := this.Stats
+        return [stats.BonusGemsSum, stats.RerollsSum, stats.Runs]
     }
 
     ; Load settings from the GUI settings file

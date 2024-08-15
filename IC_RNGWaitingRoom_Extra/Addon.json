@@ -1,6 +1,6 @@
 {
 	"Name":"RNG Waiting Room",
-	"Version": "v0.0.2",
+	"Version": "v0.0.3",
     "Includes" : "IC_RNGWaitingRoom_Includes.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/imp444/IC_Addons/tree/main/IC_RNGWaitingRoom_Extra",
@@ -9,6 +9,10 @@
         {
             "Name":"IC Core",
             "Version":"v0.1.0"
+        },
+        {
+            "Name":"BrivGemFarm LevelUp",
+            "Version":"v1.3.4"
         }
     ]
 }

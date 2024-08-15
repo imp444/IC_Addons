@@ -228,7 +228,10 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
             gemCardsNeeded := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ]
             percentBonus := g_BrivUserSettingsFromAddons[ "EllywickGFGemPercent" ]
             redraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
-            result := IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, redraws)
+            if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemWaitFor5Draws" ])
+                result := IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, redraws)
+            else
+                result := IC_RNGWaitingRoom_Functions.WaitForEllywickCardsNoWait(gemCardsNeeded, percentBonus, redraws)
             bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
             g_SharedData.RNGWR_UpdateStats(bonusGems, result)
 
@@ -294,5 +297,6 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ] := settings.EllywickGFGemCards
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemPercent" ] := settings.EllywickGFGemPercent
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ] := settings.EllywickGFGemMaxRedraws
+        g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemWaitFor5Draws" ] := settings.EllywickGFGemWaitFor5Draws
     }
 }

@@ -68,6 +68,47 @@ class IC_RNGWaitingRoom_Functions
         return redraws
     }
 
+    WaitForEllywickCardsNoWait(gemCardsNeeded := 1, gemPercentNeeded := 10, maxRedraws := 1)
+    {
+        redraws := 0
+        success := true
+        ElapsedTime := 0
+        StartTime := A_TickCount
+        timeout := 300000
+        while (this.GetNumGemCards() < gemCardsNeeded && ElapsedTime < timeout) ; && !this.IsPercentEnough(gemPercentNeeded))
+        {
+            numCards := this.GetNumCards()
+            if (numCards < 5)
+            {
+                str := "Waiting for card # " . (numCards + 1)
+                str .= " - " . redrawsLeft . " redraw" . this.Plural(redrawsLeft) . " left"
+                g_SharedData.RNGWR_SetStatus(str)
+                cardDrawn := this.WaitForNextCard()
+            }
+            else
+                cardDrawn := true
+            if (cardDrawn && this.GetNumCards() == 5)
+            {
+                ;if (this.GetNumGemCards() < gemCardsNeeded && !this.IsPercentEnough(gemPercentNeeded) && redraws < maxRedraws)
+                if (this.GetNumGemCards() < gemCardsNeeded && redraws < maxRedraws)
+                {
+                    if(this.UseEllywickUlt())
+                        ++redraws
+                }
+                else ; FAIL
+                {
+                    success := false
+                    break
+                }
+            }
+            ElapsedTime := A_TickCount - StartTime
+        }
+        str := success ? "Success" : "Failure"
+        str .= " - Used " . redraws . " redraw" . this.Plural(redraws)
+        g_SharedData.RNGWR_SetStatus(str)
+        return redraws
+    }
+
     WaitForNextCard(timeout := 65000)
     {
         g_SF.Memory.ActiveEffectKeyHandler.Refresh()

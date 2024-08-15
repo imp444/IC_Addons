@@ -51,6 +51,14 @@ RNGWR_EllywickGFGemMaxRedraws()
     g_RNGWaitingRoom.UpdateSetting("EllywickGFGemMaxRedraws", value)
 }
 
+RNGWR_EllywickGFGemWaitFor5Draws()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    local value := % %A_GuiControl%
+    g_RNGWaitingRoom.UpdateSetting("EllywickGFGemWaitFor5Draws", value)
+}
+
 Class IC_RNGWaitingRoom_GUI
 {
     LastMaxTabHeight := 0
@@ -66,7 +74,7 @@ Class IC_RNGWaitingRoom_GUI
         local ySpacing := 10
         local ctrlH:= 21
         Gui, ICScriptHub:Add, Button, xs y+%yTitleSpacing% vRNGWR_Save gRNGWR_Save, Save
-        ; Ellywick (femfarm)
+        ; Ellywick (gemfarm)
         center := ySpacing + 4
         Gui, ICScriptHub:Add, CheckBox, xs y+%center% vRNGWR_EllywickGFEnabled gRNGWR_EllywickGFEnabled, Gem farm mode (Ellywick)
         ; Gem cards
@@ -84,8 +92,9 @@ Class IC_RNGWaitingRoom_GUI
         Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit3 vRNGWR_EllywickGFGemMaxRedraws gRNGWR_EllywickGFGemMaxRedraws
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemMaxRedrawsText, Max redraws
+        Gui, ICScriptHub:Add, CheckBox, xs y+%center% vRNGWR_EllywickGFGemWaitFor5Draws gRNGWR_EllywickGFGemWaitFor5Draws, Always wait for 5 draws (except last redraw)
         ; Stats
-        Gui, ICScriptHub:Add, Text, xs y+%ySpacing% h%ctrlH% 0x200 vRNGWR_AvgBonusGemsText, Avg. gem bonus:
+        Gui, ICScriptHub:Add, Text, xs y+%ySpacing% h%ctrlH% 0x200 vRNGWR_AvgBonusGemsText, Avg. gem bonus (z1):
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vRNGWR_AvgBonusGems
         Gui, ICScriptHub:Add, Text, xs h%ctrlH% 0x200 vRNGWR_AvgRedrawsText, Avg. redraws:
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vRNGWR_AvgRedraws
@@ -97,6 +106,7 @@ Class IC_RNGWaitingRoom_GUI
         GuiControl, ICScriptHub:, RNGWR_EllywickGFGemCards, % data.EllywickGFGemCards
 ;        GuiControl, ICScriptHub:, RNGWR_EllywickGFGemPercent, % data.EllywickGFGemPercent
         GuiControl, ICScriptHub:, RNGWR_EllywickGFGemMaxRedraws, % data.EllywickGFGemMaxRedraws
+        GuiControl, ICScriptHub:, RNGWR_EllywickGFGemWaitFor5Draws, % data.EllywickGFGemWaitFor5Draws
     }
 
     UpdateGUI(data)

@@ -1,51 +1,6 @@
-; Overrides IC_BrivGemFarm_Class.DoPartySetup()
-class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
+; Overrides IC_BrivGemFarm_LevelUp_Class.GemFarm()
+class IC_RNGWaitingRoom_Class  extends IC_BrivGemFarm_Class
 {
-    DoPartySetup()
-    {
-        g_SharedData.LoopString := "Leveling champions"
-        formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
-        ; Ellywick
-        waitForEllywickCards := false
-        isEllywickInFormation := g_SF.IsChampInFormation( 83, formationFavorite1 )
-        if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && isEllywickInFormation)
-        {
-            waitForEllywickCards := true
-            g_SF.LevelChampByID( 83, 200, 7000, "{q}") ; level Ellywick
-        }
-        isShandieInFormation := g_SF.IsChampInFormation( 47, formationFavorite1 )
-        g_SF.LevelChampByID( 58, 170, 7000, "{q}") ; level briv
-        if (isShandieInFormation)
-            g_SF.LevelChampByID( 47, 230, 7000, "{q}") ; level shandie
-        isHavilarInFormation := g_SF.IsChampInFormation( 56, formationFavorite1 )
-        if (isHavilarInFormation)
-            g_SF.LevelChampByID( 56, 15, 7000, "{q}") ; level havi
-        ; Ellywick
-        if (waitForEllywickCards)
-        {
-            gemCardsNeeded := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ]
-            percentBonus := g_BrivUserSettingsFromAddons[ "EllywickGFGemPercent" ]
-            Redraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
-            IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, Redraws)
-            ; Thellora
-            isThelloraInFormation := g_SF.IsChampInFormation( 139, formationFavorite1 )
-            if (isThelloraInFormation)
-                g_SF.LevelChampByID( 139, 1, 7000, "{q}") ; level Thellora
-        }
-        if (g_BrivUserSettings[ "Fkeys" ])
-        {
-            keyspam := g_SF.GetFormationFKeys(g_SF.Memory.GetActiveModronFormation()) ; level other formation champions
-            keyspam.Push("{ClickDmg}")
-            g_SF.DirectedInput(,release :=0, keyspam*) ;keysdown
-        }
-        g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
-        if (g_SF.ShouldRushWait())
-            g_SF.DoRushWait()
-        if (g_SF.ShouldDashWait())
-            g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
-        g_SF.ToggleAutoProgress( 1, false, true )
-    }
-
     GemFarm()
     {
         static lastResetCount := 0

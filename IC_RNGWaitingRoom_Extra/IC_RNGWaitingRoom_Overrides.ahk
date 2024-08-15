@@ -25,8 +25,8 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
         {
             gemCardsNeeded := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ]
             percentBonus := g_BrivUserSettingsFromAddons[ "EllywickGFGemPercent" ]
-            rerolls := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRerolls" ]
-            IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, rerolls)
+            Redraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
+            IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, Redraws)
             ; Thellora
             isThelloraInFormation := g_SF.IsChampInFormation( 139, formationFavorite1 )
             if (isThelloraInFormation)
@@ -227,8 +227,9 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
             }
             gemCardsNeeded := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ]
             percentBonus := g_BrivUserSettingsFromAddons[ "EllywickGFGemPercent" ]
-            rerolls := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRerolls" ]
-            IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, rerolls)
+            Redraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
+            IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, Redraws)
+
 ;            ; Thellora
 ;            isThelloraInFormation := g_SF.IsChampInFormation( 139, formationFavorite1 )
 ;            if (isThelloraInFormation)
@@ -251,7 +252,7 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
 
     RNGWR_SetStatus(text := "")
     {
-        this.BGFLU_Status := text
+        this.RNGWR_Status := text
     }
 
     ; Load settings after "Start Gem Farm" has been clicked.
@@ -261,7 +262,7 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
     }
 
     ; Load settings from the GUI settings file
-    RNGWR_UpdateSettingsFromFile(updateMaxLevels := false, fileName := "")
+    RNGWR_UpdateSettingsFromFile(fileName := "")
     {
         if (fileName == "")
             fileName := IC_RNGWaitingRoom_Functions.SettingsPath
@@ -271,6 +272,6 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] := settings.EllywickGFEnabled
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ] := settings.EllywickGFGemCards
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemPercent" ] := settings.EllywickGFGemPercent
-        g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRerolls" ] := settings.EllywickGFGemMaxRerolls
+        g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ] := settings.EllywickGFGemMaxRedraws
     }
 }

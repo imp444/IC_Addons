@@ -19,25 +19,44 @@ class IC_RNGWaitingRoom_Functions
 
     ; Ellywick
 
-    WaitForEllywickCards(gemCardsNeeded := 1, gemPercentNeeded := 10, maxRerolls := 1)
+    WaitForEllywickCards(gemCardsNeeded := 1, gemPercentNeeded := 10, maxRedraws := 1)
     {
-        rerolls := 0
-        while (this.GetNumCardsOfType() < gemCardsNeeded) ; && !this.IsPercentEnough(gemPercentNeeded))
+        redraws := 0
+        success := true
+        ElapsedTime := 0
+        StartTime := A_TickCount
+        timeout := 300000
+        while (this.GetNumCardsOfType() < gemCardsNeeded && ElapsedTime < timeout) ; && !this.IsPercentEnough(gemPercentNeeded))
         {
-            if (this.GetNumCards() < 5)
+            numCards := this.GetNumCards()
+            if (numCards < 5)
+            {
+                str := "Waiting for card # " . (numCards + 1)
+                str .= " - " . (maxRedraws - redraws) . " redraws left"
+                g_SharedData.RNGWR_SetStatus("Waiting for card # " . (numCards + 1))
                 cardDrawn := this.WaitForNextCard()
+            }
             else
                 cardDrawn := true
             if (cardDrawn && this.GetNumCards() == 5)
             {
-                ;if (this.GetNumCardsOfType() < gemCardsNeeded && !this.IsPercentEnough(gemPercentNeeded) && rerolls < maxRerolls)
-                if (this.GetNumCardsOfType() < gemCardsNeeded && rerolls < maxRerolls)
+                ;if (this.GetNumCardsOfType() < gemCardsNeeded && !this.IsPercentEnough(gemPercentNeeded) && redraws < maxRedraws)
+                if (this.GetNumCardsOfType() < gemCardsNeeded && redraws < maxRedraws)
                 {
-                    this.UseEllywickUlt()
-                    ++rerolls
+                    if(this.UseEllywickUlt())
+                        ++redraws
+                }
+                else ; FAIL
+                {
+                    success := false
+                    break
                 }
             }
+            ElapsedTime := A_TickCount - StartTime
         }
+        str := success ? "Success" : "Failure"
+        str .= " - Used " . redraws . " redraws"
+        g_SharedData.RNGWR_SetStatus(str)
     }
 
     WaitForNextCard(timeout := 65000)
@@ -56,7 +75,8 @@ class IC_RNGWaitingRoom_Functions
 
     GetNumCards()
     {
-        return ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadNumCardsInHand()
+        size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
+        return size == "" ? 0 : size
     }
 
     GetNumCardsOfType(cardType := 3)
@@ -80,15 +100,22 @@ class IC_RNGWaitingRoom_Functions
     UseEllywickUlt(timeout := 1000)
     {
         heroID := ActiveEffectKeySharedFunctions.Ellywick.HeroID
+        ultReady := this.IsEllywickUltReady()
         ElapsedTime := 0
         StartTime := A_TickCount
-        while (this.IsEllywickUltReady() && ElapsedTime < timeout)
+        ; Try to use ult until it is on cooldown
+        if (ultReady)
         {
-            g_SF.DirectedInput(,, "{" . g_SF.GetUltimateButtonByChampID(heroID) . "}")
-            Sleep, 50
-            ElapsedTime := A_TickCount - StartTime
+            while (this.IsEllywickUltReady() && ElapsedTime < timeout)
+            {
+                g_SharedData.RNGWR_SetStatus("Using Ellywick's ultimate to redraw")
+                g_SF.DirectedInput(,, "{" . g_SF.GetUltimateButtonByChampID(heroID) . "}")
+                Sleep, 50
+                ElapsedTime := A_TickCount - StartTime
+            }
+            return !this.IsEllywickUltReady()
         }
-        return !this.IsEllywickUltReady()
+        return false
     }
 
     WaitForEllywickUlt()

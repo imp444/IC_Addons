@@ -35,20 +35,20 @@ RNGWR_EllywickGFGemCards()
     g_RNGWaitingRoom.UpdateSetting("EllywickGFGemCards", value)
 }
 
-RNGWR_EllywickGFGemPercent()
-{
-    global
-    Gui, ICScriptHub:Submit, NoHide
-    local value := % %A_GuiControl%
-    g_RNGWaitingRoom.UpdateSetting("EllywickGFGemPercent", value)
-}
+;RNGWR_EllywickGFGemPercent()
+;{
+;    global
+;    Gui, ICScriptHub:Submit, NoHide
+;    local value := % %A_GuiControl%
+;    g_RNGWaitingRoom.UpdateSetting("EllywickGFGemPercent", value)
+;}
 
-RNGWR_EllywickGFGemMaxRerolls()
+RNGWR_EllywickGFGemMaxRedraws()
 {
     global
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
-    g_RNGWaitingRoom.UpdateSetting("EllywickGFGemMaxRerolls", value)
+    g_RNGWaitingRoom.UpdateSetting("EllywickGFGemMaxRedraws", value)
 }
 
 Class IC_RNGWaitingRoom_GUI
@@ -74,23 +74,23 @@ Class IC_RNGWaitingRoom_GUI
         Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit4 vRNGWR_EllywickGFGemCards gRNGWR_EllywickGFGemCards
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemCardsText, Number of gem cards
-        ; Gem percent
+;        ; Gem percent
+;        GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+;        Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit3 vRNGWR_EllywickGFGemPercent gRNGWR_EllywickGFGemPercent
+;        GUIFunctions.UseThemeTextColor()
+;        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemPercentText, Percent bonus
+        ; Redraws with ult
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-        Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit3 vRNGWR_EllywickGFGemPercent gRNGWR_EllywickGFGemPercent
+        Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit3 vRNGWR_EllywickGFGemMaxRedraws gRNGWR_EllywickGFGemMaxRedraws
         GUIFunctions.UseThemeTextColor()
-        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemPercentText, Percent bonus
-        ; Rerolls with ult
-        GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-        Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit3 vRNGWR_EllywickGFGemMaxRerolls gRNGWR_EllywickGFGemMaxRerolls
-        GUIFunctions.UseThemeTextColor()
-        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemMaxRerollsText, Max rerolls
+        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemMaxRedrawsText, Max redraws
     }
 
     UpdateGUISettings(data)
     {
         GuiControl, ICScriptHub:, RNGWR_EllywickGFEnabled, % data.EllywickGFEnabled
         GuiControl, ICScriptHub:, RNGWR_EllywickGFGemCards, % data.EllywickGFGemCards
-        GuiControl, ICScriptHub:, RNGWR_EllywickGFGemPercent, % data.EllywickGFGemPercent
-        GuiControl, ICScriptHub:, RNGWR_EllywickGFGemMaxRerolls, % data.EllywickGFGemMaxRerolls
+;        GuiControl, ICScriptHub:, RNGWR_EllywickGFGemPercent, % data.EllywickGFGemPercent
+        GuiControl, ICScriptHub:, RNGWR_EllywickGFGemMaxRedraws, % data.EllywickGFGemMaxRedraws
     }
 }

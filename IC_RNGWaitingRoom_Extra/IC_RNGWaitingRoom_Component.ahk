@@ -80,7 +80,7 @@ Class IC_RNGWaitingRoom_Component
         settings.EllywickGFEnabled := true
         settings.EllywickGFGemCards := 1
         settings.EllywickGFGemPercent := 10
-        settings.EllywickGFGemMaxRerolls := 2
+        settings.EllywickGFGemMaxRedraws := 2
         return settings
     }
 
@@ -122,9 +122,25 @@ Class IC_RNGWaitingRoom_Component
     ; GUI update loop.
     UpdateStatus()
     {
-        resets := this.Functions.ReadResets()
-        if (resets == "")
-            return
-        g_RNGWaitingRoomGui.UpdateResets(resets)
+        try ; avoid thrown errors when comobject is not available.
+        {
+            SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
+            if (SharedRunData.RNGWR_Running == "")
+            {
+                this.Stop()
+            }
+            else if (SharedRunData.RNGWR_Running)
+            {
+                status := SharedRunData.RNGWR_Status
+                str := "Running" . (status != "" ? " - " . status : "")
+                GuiControl, ICScriptHub:Text, RNGWR_StatusText, % str
+            }
+            else
+                GuiControl, ICScriptHub:Text, RNGWR_StatusText, Disabled
+        }
+        catch
+        {
+            GuiControl, ICScriptHub:Text, RNGWR_StatusText, Waiting for Gem Farm to start
+        }
     }
 }

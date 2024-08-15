@@ -1,6 +1,7 @@
 August 15, 2024 - v0.0.4
     - Added stats (average gem bonus on z1, average number of redraws).
     - Added setting to wait for 5 card draws before progressing (currently doesn't work after the last redraw)
+    - The default value for the "Max redraws" setting is now 1.
     Fixes:
         - Attempt to prevent Thellora from being put on z1 before Ellywick cards are drawn.
 

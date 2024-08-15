@@ -53,13 +53,13 @@ class IC_RNGWaitingRoom_Functions
 
     GetNumCards()
     {
-        return ActiveEffectKeySharedFunctions.Ellywick.EllywickDeckOfManyThingsHandler.ReadNumCardsInHand()
+        return ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadNumCardsInHand()
     }
 
     GetNumCardsOfType(cardType := 3)
     {
         gemCards := 0
-        cards := ActiveEffectKeySharedFunctions.Ellywick.EllywickDeckOfManyThingsHandler.ReadCardsInHand()
+        cards := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadCardsInHand()
         for _, cardTypeInHand in cards
         {
             if (cardTypeInHand == cardType)
@@ -70,7 +70,7 @@ class IC_RNGWaitingRoom_Functions
 
     IsPercentEnough(percent)
     {
-        gemMult := ActiveEffectKeySharedFunctions.Ellywick.EllywickDeckOfManyThingsHandler.ReadGemMult()
+        gemMult := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
         return 100 * (gemMult - 1) >= percent
     }
 

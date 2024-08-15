@@ -28,21 +28,22 @@ class IC_RNGWaitingRoom_Class  extends IC_BrivGemFarm_Class
         g_SharedData.StackFail := 0
         g_SF.BGFLU_CalcLastUpgradeLevels()
         g_SharedData.BGFLU_UpdateSettingsFromFile(true)
-        firstLoop := true
+        ; Ellywick + Thellora
+        g_SharedData.RNGWR_WaitedForEllywickThisRun := g_SF.ShouldRushWait()
         loop
         {
             g_SharedData.LoopString := "Main Loop"
             CurrentZone := g_SF.Memory.ReadCurrentZone()
             if (CurrentZone == "" AND !g_SF.SafetyCheck() ) ; Check for game closed
                 g_SF.ToggleAutoProgress( 1, false, true ) ; Turn on autoprogress after a restart
-            if(firstLoop)
-                firstLoop := false
-            else
+            ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
+            if (g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > lastResetCount)
+                g_SharedData.RNGWR_WaitedForEllywickThisRun := false
+            if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SharedData.RNGWR_WaitedForEllywickThisRun)
                 g_SF.SetFormation(g_BrivUserSettings)
-            if (g_SF.Memory.ReadResetting())
-                this.ModronResetCheck()
             if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
             {
+                g_SharedData.RNGWR_WaitedForEllywickThisRun := false
                 g_SF.ToggleAutoProgress( 0, false, true )
                 g_SharedData.BGFLU_SetStatus()
                 g_SharedData.BGFLU_SaveFormations()
@@ -189,7 +190,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
                 result := IC_RNGWaitingRoom_Functions.WaitForEllywickCardsNoWait(gemCardsNeeded, percentBonus, redraws)
             bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
             g_SharedData.RNGWR_UpdateStats(bonusGems, result)
-
+            g_SharedData.RNGWR_WaitedForEllywickThisRun := true
 ;            ; Thellora
 ;            isThelloraInFormation := g_SF.IsChampInFormation( 139, formationFavorite1 )
 ;            if (isThelloraInFormation)
@@ -204,6 +205,7 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
 {
 ;    RNGWR_Status := ""
 ;    RNGWR_Stats := ""
+;    RNGWR_WaitedForEllywickThisRun := false
 
     ; Return true if the class has been updated by the addon
     RNGWR_Running()

@@ -47,7 +47,10 @@ class IC_RNGWaitingRoom_Functions
         ElapsedTime := 0
         StartTime := A_TickCount
         while (this.GetNumCards() <= numCards && ElapsedTime < timeout)
+        {
             Sleep, 20
+            ElapsedTime := A_TickCount - StartTime
+        }
         return ElapsedTime < timeout
     }
 
@@ -83,6 +86,7 @@ class IC_RNGWaitingRoom_Functions
         {
             g_SF.DirectedInput(,, "{" . g_SF.GetUltimateButtonByChampID(heroID) . "}")
             Sleep, 50
+            ElapsedTime := A_TickCount - StartTime
         }
         return !this.IsEllywickUltReady()
     }

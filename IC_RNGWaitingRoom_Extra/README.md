@@ -15,8 +15,4 @@ ___
 ## How to use:
 This addon requires ICScripthub v4.0 and the LevelUpAddon.  
 
-Copy and paste the **AddOns/IC_RNGWaitingRoom_Extra/MemoryRead** folder into **AddOns/IC_Core** in the Scripthub folder.
-
 Thellora needs to be removed from the Modron formation if you to stack Ellywick on z1.
-
-Currently, the percent bonus option doesn't work.

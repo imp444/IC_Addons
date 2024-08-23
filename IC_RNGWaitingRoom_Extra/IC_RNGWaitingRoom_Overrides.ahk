@@ -1,5 +1,5 @@
 ; Overrides IC_BrivGemFarm_LevelUp_Class.GemFarm()
-class IC_RNGWaitingRoom_Class  extends IC_BrivGemFarm_Class
+class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
 {
     GemFarm()
     {
@@ -29,7 +29,6 @@ class IC_RNGWaitingRoom_Class  extends IC_BrivGemFarm_Class
         g_SF.BGFLU_CalcLastUpgradeLevels()
         g_SharedData.BGFLU_UpdateSettingsFromFile(true)
         ; Ellywick + Thellora
-        g_SharedData.RNGWR_WaitedForEllywickThisRun := g_SF.ShouldRushWait()
         loop
         {
             g_SharedData.LoopString := "Main Loop"
@@ -38,12 +37,12 @@ class IC_RNGWaitingRoom_Class  extends IC_BrivGemFarm_Class
                 g_SF.ToggleAutoProgress( 1, false, true ) ; Turn on autoprogress after a restart
             ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
             if (g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > lastResetCount)
-                g_SharedData.RNGWR_WaitedForEllywickThisRun := false
-            if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SharedData.RNGWR_WaitedForEllywickThisRun)
+                g_SharedData.RNGWR_Elly.Reset()
+            if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun)
                 g_SF.SetFormation(g_BrivUserSettings)
             if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
             {
-                g_SharedData.RNGWR_WaitedForEllywickThisRun := false
+                g_SharedData.RNGWR_Elly.Reset()
                 g_SF.ToggleAutoProgress( 0, false, true )
                 g_SharedData.BGFLU_SetStatus()
                 g_SharedData.BGFLU_SaveFormations()
@@ -132,71 +131,163 @@ class IC_RNGWaitingRoom_Class  extends IC_BrivGemFarm_Class
     }
 }
 
-; Overrides IC_BrivSharedFunctions_Class.WaitForFirstGold()
+; Overrides IC_BrivSharedFunctions_Class.RestartAdventure()
+; Overrides IC_BrivSharedFunctions_Class.DirectedInput()
+; Overrides IC_BrivGemFarm_LevelUp_Class.DoRushWait()
 class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
 {
-    WaitForFirstGold( maxLoopTime := 30000 )
+    RestartAdventure( reason := "" )
     {
-        g_SharedData.LoopString := "Waiting for first gold"
+            g_SharedData.LoopString := "ServerCall: Restarting adventure"
+            this.CloseIC( reason )
+            g_SharedData.RNGWR_Elly.Reset()
+            if (this.sprint != "" AND this.steelbones != "" AND (this.sprint + this.steelbones) < 190000)
+            {
+                response := g_serverCall.CallPreventStackFail(this.sprint + this.steelbones)
+            }
+            else if (this.sprint != "" AND this.steelbones != "")
+            {
+                response := g_serverCall.CallPreventStackFail(this.sprint + this.steelbones)
+                g_SharedData.LoopString := "ServerCall: Restarting with >190k stacks, some stacks lost."
+            }
+            else
+            {
+                g_SharedData.LoopString := "ServerCall: Restarting adventure (no manual stack conv.)"
+            }
+            response := g_ServerCall.CallEndAdventure()
+            response := g_ServerCall.CallLoadAdventure( this.CurrentAdventure )
+            g_SharedData.TriggerStart := true
+    }
+
+    DirectedInput(hold := 1, release := 1, s* )
+    {
+        Critical, On
+        ; TestVar := {}
+        ; for k,v in g_KeyPresses
+        ; {
+        ;     TestVar[k] := v
+        ; }
+        timeout := 5000
+        directedInputStart := A_TickCount
+        hwnd := this.Hwnd
+        ControlFocus,, ahk_id %hwnd%
+        ;while (ErrorLevel AND A_TickCount - directedInputStart < timeout * 10)  ; testing reliability
+        ; if ErrorLevel
+        ;     ControlFocus,, ahk_id %hwnd%
+        values := s
+        ; Remove Thellora
+        if (hold && !g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun)
+            values := IC_RNGWaitingRoom_Functions.RemoveThelloraKeyFromInputValues(values)
+        if(IsObject(values))
+        {
+            if(hold)
+            {
+                for k, v in values
+                {
+                    g_InputsSent++
+                    ; if TestVar[v] == ""
+                    ;     TestVar[v] := 0
+                    ; TestVar[v] += 1
+                    key := g_KeyMap[v]
+                    sc := g_SCKeyMap[v]
+                    sc := sc << 16
+                    lparam := Format("0x{:X}", 0x0 | sc)
+                    SendMessage, 0x0100, %key%, %lparam%,, ahk_id %hwnd%,,,,%timeout%
+                    if ErrorLevel
+                        this.ErrorKeyDown++
+                    ;     PostMessage, 0x0100, %key%, 0,, ahk_id %hwnd%,
+                }
+            }
+            if(release)
+            {
+                for k, v in values
+                {
+                    key := g_KeyMap[v]
+                    sc := g_SCKeyMap[v]
+                    sc := sc << 16
+                    lparam := Format("0x{:X}", 0xC0000001 | sc)
+                    SendMessage, 0x0101, %key%, %lparam%,, ahk_id %hwnd%,,,,%timeout%
+                    if ErrorLevel
+                        this.ErrorKeyUp++
+                    ;     PostMessage, 0x0101, %key%, 0xC0000001,, ahk_id %hwnd%,
+                }
+            }
+        }
+        else
+        {
+            key := g_KeyMap[values]
+            sc := g_SCKeyMap[values] << 16
+            if(hold)
+            {
+                g_InputsSent++
+                ; if TestVar[v] == ""
+                ;     TestVar[v] := 0
+                ; TestVar[v] += 1
+
+                lparam := Format("0x{:X}", 0x0 | sc)
+                SendMessage, 0x0100, %key%, %lparam%,, ahk_id %hwnd%,,,,%timeout%
+                if ErrorLevel
+                    this.ErrorKeyDown++
+            }
+            if(release)
+            {
+                lparam := Format("0x{:X}", 0xC0000001 | sc)
+                SendMessage, 0x0101, %key%, %lparam%,, ahk_id %hwnd%,,,,%timeout%
+            }
+            if ErrorLevel
+                this.ErrorKeyUp++
+            ;     PostMessage, 0x0101, %key%, 0xC0000001,, ahk_id %hwnd%,
+        }
+        Critical, Off
+        ; g_KeyPresses := TestVar
+    }
+
+    DoRushWait()
+    {
+        ; Make sure the ability handler has the correct base address.
+        ; It can change on game restarts or modron resets.
+        this.Memory.ActiveEffectKeyHandler.Refresh()
+        this.RNGWR_DoEllyWait()
+        if (!this.ShouldRushWait())
+            return
+        this.ToggleAutoProgress( 0, false, true )
         StartTime := A_TickCount
         ElapsedTime := 0
-        counter := 0
-        sleepTime := 33
-        ; this.BGFLU_LoadZ1Formation()
-        gold := this.ConvQuadToDouble( this.Memory.ReadGoldFirst8Bytes(), this.Memory.ReadGoldSecond8Bytes() )
-        while ( gold == 0 AND ElapsedTime < maxLoopTime )
+        timeScale := this.Memory.ReadTimeScaleMultiplier()
+        timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
+        timeout := 8000 ; 8s seconds
+        estimate := (timeout / timeScale)
+        ; Loop escape conditions:
+        ;   does full timeout duration
+        ;   past highest accepted rushwait triggering area
+        ;   rush is active
+        while (ElapsedTime < timeout && this.ShouldRushWait())
         {
+            this.ToggleAutoProgress(0)
+            this.BGFLU_LoadZ1Formation()
+            g_BrivGemFarm.BGFLU_DoPartySetupMax()
+            this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
             ElapsedTime := A_TickCount - StartTime
-;            if( ElapsedTime > (counter * sleepTime)) ; input limiter..
-;            {
-;                this.BGFLU_LoadZ1Formation()
-;                counter++
-;            }
-            gold := this.ConvQuadToDouble( this.Memory.ReadGoldFirst8Bytes(), this.Memory.ReadGoldSecond8Bytes() )
-            Sleep, 20
+            g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
+            Sleep, 30
         }
-        ; Ellywick
-        formationFavorite1 := g_SF.Memory.GetFormationByFavorite( 1 )
-        isEllywickInFormation := g_SF.IsChampInFormation( 83, formationFavorite1 )
-        isWiddleInFormation := g_SF.IsChampInFormation( 91, formationFavorite1 )
-        isBrivInFormation := g_SF.IsChampInFormation( 58, formationFavorite1 )
-        if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && isEllywickInFormation)
+        g_PreviousZoneStartTime := A_TickCount
+    }
+
+    RNGWR_DoEllyWait()
+    {
+        timeout := 60000
+        ElapsedTime := 0
+        StartTime := A_TickCount
+        while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
         {
-            if (this.Memory.ReadChampLvlByID(83) < 200)
-                g_SF.LevelChampByID( 83, 200, 5000, "{}") ; level Ellywick
-            this.DirectedInput(hold := 0,, "{F10}") ; keysup
-            isShandieInFormation := g_SF.IsChampInFormation( 47, formationFavorite1 )
-            if (isShandieInFormation && this.Memory.ReadChampLvlByID(47) < 120)
-            {
-                this.LevelChampByID(47, 120, 7000, "{}") ; level Shandie
-                this.DirectedInput(hold := 0,, "{F6}") ; keysup
-            }
-            if (isBrivInFormation && g_BrivGemFarm.BGFLU_AllowBrivLeveling())
-            {
-                this.LevelChampByID( 58, 80, 5000, "{}") ; level Briv
-                this.DirectedInput(hold := 0,, "{F5}") ; keysup
-            }
-            if (isWiddleInFormation && this.Memory.ReadChampLvlByID(91) < 260)
-            {
-                this.LevelChampByID( 91, 260, 5000, "{}") ; level Widdle
-                this.DirectedInput(hold := 0,, "{F2}") ; keysup
-            }
-            gemCardsNeeded := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ]
-            percentBonus := g_BrivUserSettingsFromAddons[ "EllywickGFGemPercent" ]
-            redraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
-            if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemWaitFor5Draws" ])
-                result := IC_RNGWaitingRoom_Functions.WaitForEllywickCards(gemCardsNeeded, percentBonus, redraws)
-            else
-                result := IC_RNGWaitingRoom_Functions.WaitForEllywickCardsNoWait(gemCardsNeeded, percentBonus, redraws)
-            bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
-            g_SharedData.RNGWR_UpdateStats(bonusGems, result)
-            g_SharedData.RNGWR_WaitedForEllywickThisRun := true
-;            ; Thellora
-;            isThelloraInFormation := g_SF.IsChampInFormation( 139, formationFavorite1 )
-;            if (isThelloraInFormation)
-;                g_SF.LevelChampByID( 139, 1, 7000, "{q}") ; level Thellora
+            g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
+            this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
+            Sleep, 30
+            ElapsedTime := A_TickCount - StartTime
         }
-        return gold
+        if (ElapsedTime >= timeout)
+            g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
     }
 }
 
@@ -205,7 +296,7 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
 {
 ;    RNGWR_Status := ""
 ;    RNGWR_Stats := ""
-;    RNGWR_WaitedForEllywickThisRun := false
+;    RNGWR_Elly := ""
 
     ; Return true if the class has been updated by the addon
     RNGWR_Running()
@@ -226,7 +317,9 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
         stats.RerollsSum := 0
         stats.Runs := 0
         this.Stats := stats
+        this.RNGWR_Elly := new IC_RNGWaitingRoom_Functions.EllywickHandlerHandler
         this.RNGWR_UpdateSettingsFromFile()
+        this.RNGWR_Elly.Start()
     }
 
     RNGWR_UpdateStats(bonusGems := 0, rerolls := 0)
@@ -252,8 +345,8 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
             return false
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] := settings.EllywickGFEnabled
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ] := settings.EllywickGFGemCards
-        g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemPercent" ] := settings.EllywickGFGemPercent
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ] := settings.EllywickGFGemMaxRedraws
         g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemWaitFor5Draws" ] := settings.EllywickGFGemWaitFor5Draws
+        this.RNGWR_Elly.UpdateGlobalSettings()
     }
 }

@@ -26,164 +26,234 @@ class IC_RNGWaitingRoom_Functions
 
     ; Ellywick
 
-    WaitForEllywickCards(gemCardsNeeded := 1, gemPercentNeeded := 10, maxRedraws := 1)
+    class EllywickHandlerHandler
     {
-        redraws := 0
-        success := true
-        ElapsedTime := 0
-        StartTime := A_TickCount
-        timeout := 300000
-        ; Wait for 5 cards drawn before checking if there are enough gem cards
-        while (((numCards := this.GetNumCards()) < 5 || this.GetNumGemCards() < gemCardsNeeded) && ElapsedTime < timeout) ; && !this.IsPercentEnough(gemPercentNeeded))
+        LoopTimer := ObjBindMethod(this, "MainLoop")
+        GemCardsNeeded := 0
+        MaxRedraws := 0
+        WaitForAllCards := false
+        WaitedForEllywickThisRun := false
+        Redraws := 0
+        UltimateTimer := ObjBindMethod(this, "CheckUltimateUsed")
+        UsedUlt := false
+
+        __New(gemCardsNeeded := 1, maxRedraws := 1, wait := false)
         {
-            redrawsLeft := maxRedraws - redraws
-            if (numCards < 5)
+            this.GemCardsNeeded := gemCardsNeeded
+            this.MaxRedraws := maxRedraws
+            this.WaitForAllCards := wait
+            this.WaitedForEllywickThisRun := false
+        }
+
+        UpdateGlobalSettings()
+        {
+            this.GemCardsNeeded := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ]
+            this.MaxRedraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
+            this.WaitForAllCards := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemWaitFor5Draws" ]
+        }
+
+        Start()
+        {
+            fncToCallOnTimer := this.LoopTimer
+            SetTimer, %fncToCallOnTimer%, 20, 0
+            this.MainLoop()
+        }
+
+        Stop()
+        {
+            fncToCallOnTimer := this.LoopTimer
+            SetTimer, %fncToCallOnTimer%, Off
+            this.Reset()
+        }
+
+        Reset()
+        {
+            this.WaitedForEllywickThisRun := false
+            this.Redraws := 0
+            fncToCallOnTimer := this.UltimateTimer
+            SetTimer, %fncToCallOnTimer%, Off
+            this.UsedUlt := false
+        }
+
+        MainLoop()
+        {
+            if (g_SF.Memory.ReadResetting() || g_SF.Memory.ReadCurrentZone() == "")
+                return
+            if (this.WaitedForEllywickThisRun)
             {
-                str := "Waiting for card # " . (numCards + 1)
-                str .= " - " . redrawsLeft . " redraw" . this.Plural(redrawsLeft) . " left"
-                g_SharedData.RNGWR_SetStatus(str)
-                cardDrawn := this.WaitForNextCard()
+                ; Use ultimate to redraw cards if Ellywick doesn't have any gem cards.
+                if (this.GetNumGemCards() == 0 && !this.UsedUlt && this.GetNumCards() == 5 && this.IsEllywickUltReady())
+                    this.UseEllywickUlt()
+            }
+            else if (this.ShouldDrawMoreCards())
+            {
+                numCards := this.GetNumCards()
+                ; Use ultimate if it's not on cooldown and there are redraws left.
+                if (this.RedrawsLeft)
+                {
+                    shouldRedraw := this.ShouldRedraw()
+                    if (!this.UsedUlt && shouldRedraw && this.IsEllywickUltReady())
+                        this.UseEllywickUlt()
+                    if (!shouldRedraw)
+                        g_SharedData.RNGWR_SetStatus("Waiting for card #" . (numCards + 1))
+                }
+                else if (!this.WaitForAllCards && numCards == 5 && this.Redraws == 0 || !this.WaitForAllCards && this.Redraws || this.WaitForAllCards && numCards == 5 && !this.RedrawsLeft)
+                {
+                    this.WaitedForEllywickThisRun := true
+                    g_SharedData.RNGWR_SetStatus(this.GetResultString())
+                    bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
+                    g_SharedData.RNGWR_UpdateStats(bonusGems, this.Redraws)
+                }
+                else if (numCards < 5)
+                    g_SharedData.RNGWR_SetStatus("Waiting for card #" . (numCards + 1))
             }
             else
-                cardDrawn := true
-            if (cardDrawn && this.GetNumCards() == 5)
             {
-                ;if (this.GetNumGemCards() < gemCardsNeeded && !this.IsPercentEnough(gemPercentNeeded) && redraws < maxRedraws)
-                if (this.GetNumGemCards() < gemCardsNeeded && redrawsLeft)
-                {
-                    if(this.UseEllywickUlt())
-                        ++redraws
-                }
-                else if (this.GetNumGemCards() < gemCardsNeeded) ; FAIL
-                {
-                    success := false
-                    break
-                }
+                this.WaitedForEllywickThisRun := true
+                g_SharedData.RNGWR_SetStatus(this.GetResultString())
+                bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
+                g_SharedData.RNGWR_UpdateStats(bonusGems, this.Redraws)
             }
-            ElapsedTime := A_TickCount - StartTime
         }
-        str := success ? "Success" : "Failure"
-        str .= " - Used " . redraws . " redraw" . this.Plural(redraws)
-        g_SharedData.RNGWR_SetStatus(str)
-        return redraws
-    }
 
-    WaitForEllywickCardsNoWait(gemCardsNeeded := 1, gemPercentNeeded := 10, maxRedraws := 1)
-    {
-        redraws := 0
-        success := true
-        ElapsedTime := 0
-        StartTime := A_TickCount
-        timeout := 300000
-        while (this.GetNumGemCards() < gemCardsNeeded && ElapsedTime < timeout) ; && !this.IsPercentEnough(gemPercentNeeded))
+        DrawsLeft
+        {
+            get
+            {
+                return 5 - this.GetNumCards()
+            }
+        }
+
+        RedrawsLeft
+        {
+            get
+            {
+                return this.MaxRedraws - this.Redraws
+            }
+        }
+
+        ShouldDrawMoreCards()
+        {
+            return this.GetNumGemCards() < this.GemCardsNeeded
+        }
+
+        ShouldRedraw()
         {
             numCards := this.GetNumCards()
-            if (numCards < 5)
+            if (numCards == 5)
+                return true
+            else if (numCards == 0)
+                return false
+            return this.DrawsLeft < this.GemCardsNeeded - this.GetNumGemCards()
+        }
+
+        GetResultString()
+        {
+            success := this.GetNumGemCards() >= this.GemCardsNeeded
+            redraws := this.Redraws
+            str := success ? "Success" : "Failure"
+            str .= " - Used " . redraws . " redraw" . IC_RNGWaitingRoom_Functions.Plural(redraws)
+            return str
+        }
+
+        GetNumCards()
+        {
+            size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
+            return size == "" ? 0 : size
+        }
+
+        GetNumGemCards()
+        {
+            return this.GetNumCardsOfType(3)
+        }
+
+        GetNumCardsOfType(cardType := 3)
+        {
+            numCards := 0
+            cards := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadCardsInHand()
+            for _, cardTypeInHand in cards
             {
-                str := "Waiting for card # " . (numCards + 1)
-                str .= " - " . redrawsLeft . " redraw" . this.Plural(redrawsLeft) . " left"
-                g_SharedData.RNGWR_SetStatus(str)
-                cardDrawn := this.WaitForNextCard()
+                if (cardTypeInHand == cardType)
+                    ++numCards
             }
-            else
-                cardDrawn := true
-            if (cardDrawn && this.GetNumCards() == 5)
+            return numCards
+        }
+
+        UseEllywickUlt()
+        {
+            heroID := ActiveEffectKeySharedFunctions.Ellywick.HeroID
+            if (this.IsEllywickUltReady())
             {
-                ;if (this.GetNumGemCards() < gemCardsNeeded && !this.IsPercentEnough(gemPercentNeeded) && redraws < maxRedraws)
-                if (this.GetNumGemCards() < gemCardsNeeded && redraws < maxRedraws)
-                {
-                    if(this.UseEllywickUlt())
-                        ++redraws
-                }
-                else ; FAIL
-                {
-                    success := false
-                    break
-                }
-            }
-            ElapsedTime := A_TickCount - StartTime
-        }
-        str := success ? "Success" : "Failure"
-        str .= " - Used " . redraws . " redraw" . this.Plural(redraws)
-        g_SharedData.RNGWR_SetStatus(str)
-        return redraws
-    }
-
-    WaitForNextCard(timeout := 65000)
-    {
-        g_SF.Memory.ActiveEffectKeyHandler.Refresh()
-        numCards := this.GetNumCards()
-        ElapsedTime := 0
-        StartTime := A_TickCount
-        while (this.GetNumCards() <= numCards && ElapsedTime < timeout)
-        {
-            Sleep, 20
-            ElapsedTime := A_TickCount - StartTime
-        }
-        return ElapsedTime < timeout
-    }
-
-    GetNumCards()
-    {
-        size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
-        return size == "" ? 0 : size
-    }
-
-    GetNumGemCards()
-    {
-        return this.GetNumCardsOfType(3)
-    }
-
-    GetNumCardsOfType(cardType := 3)
-    {
-        numCards := 0
-        cards := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadCardsInHand()
-        for _, cardTypeInHand in cards
-        {
-            if (cardTypeInHand == cardType)
-                ++numCards
-        }
-        return numCards
-    }
-
-    IsPercentEnough(percent)
-    {
-        gemMult := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
-        return 100 * (gemMult - 1) >= percent
-    }
-
-    UseEllywickUlt(timeout := 1000)
-    {
-        heroID := ActiveEffectKeySharedFunctions.Ellywick.HeroID
-        ultReady := this.IsEllywickUltReady()
-        ElapsedTime := 0
-        StartTime := A_TickCount
-        ; Try to use ult until it is on cooldown
-        if (ultReady)
-        {
-            while (this.IsEllywickUltReady() && ElapsedTime < timeout)
-            {
-                g_SharedData.RNGWR_SetStatus("Using Ellywick's ultimate to redraw")
+                g_SharedData.RNGWR_SetStatus("Using Ellywick's ultimate to redraw cards")
                 g_SF.DirectedInput(,, "{" . g_SF.GetUltimateButtonByChampID(heroID) . "}")
-                Sleep, 50
-                ElapsedTime := A_TickCount - StartTime
+                ; Check if the ultimate is on cooldown one second later.
+                fncToCallOnTimer := this.UltimateTimer
+                SetTimer, %fncToCallOnTimer%, -1000, 0
+                this.UsedUlt := true
             }
-            return !this.IsEllywickUltReady()
         }
-        return false
+
+        IsEllywickUltReady()
+        {
+            heroID := ActiveEffectKeySharedFunctions.Ellywick.HeroID
+            ultButton := g_SF.GetUltimateButtonByChampID(heroID)
+            ultCd := g_SF.Memory.ReadUltimateCooldownByItem(ultButton - 1)
+            return ultCd <= 0 ; any <= 0 means it's not on cd
+        }
+
+        CheckUltimateUsed()
+        {
+            if (!this.IsEllywickUltReady())
+                this.Redraws += 1
+            this.UsedUlt := false
+        }
     }
 
-    WaitForEllywickUlt()
+    RemoveThelloraKeyFromInputValues(values)
     {
-        isActive := ActiveEffectKeySharedFunctions.Ellywick.EllywickDeckOfManyThingsHandler.ReadUltimateActive()
-        return isActive
+        if (IsObject(values))
+        {
+            newValues := []
+            for k, v in values
+            {
+                slot := this.GetFavoriteFormationSlot(v)
+                if (!slot || !this.IsThelloraInFavoriteFormation(slot))
+                    newValues.Push(v)
+            }
+            return newValues
+        }
+        else
+        {
+            slot := this.GetFavoriteFormationSlot(values)
+            if (slot && this.IsThelloraInFavoriteFormation(slot))
+                values := ""
+            return values
+        }
     }
 
-    IsEllywickUltReady()
+    GetFavoriteFormationSlot(key)
     {
-        heroID := ActiveEffectKeySharedFunctions.Ellywick.HeroID
-        ultButton := g_SF.GetUltimateButtonByChampID(heroID)
-        ultCd := g_SF.Memory.ReadUltimateCooldownByItem(ultButton - 1)
-        return ultCd <= 0 ; any <= 0 means it's not on cd
+        key := Trim(key, "{}")
+        StringLower, key, key
+        Switch key
+        {
+            case "q":
+                slot := 1
+            case "w":
+                slot := 2
+            case "e":
+                slot := 3
+            default:
+                slot := 0
+        }
+        return slot
+    }
+
+    ; Checks if Thellora is in Q/W/E formation
+    IsThelloraInFavoriteFormation(favorite := 1)
+    {
+        formationFavorite := g_SF.Memory.GetFormationByFavorite(favorite)
+        heroID := ActiveEffectKeySharedFunctions.Thellora.HeroID
+        return g_SF.IsChampInFormation(heroID, formationFavorite)
     }
 }

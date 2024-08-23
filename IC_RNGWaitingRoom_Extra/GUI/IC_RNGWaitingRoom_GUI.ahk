@@ -35,14 +35,6 @@ RNGWR_EllywickGFGemCards()
     g_RNGWaitingRoom.UpdateSetting("EllywickGFGemCards", value)
 }
 
-;RNGWR_EllywickGFGemPercent()
-;{
-;    global
-;    Gui, ICScriptHub:Submit, NoHide
-;    local value := % %A_GuiControl%
-;    g_RNGWaitingRoom.UpdateSetting("EllywickGFGemPercent", value)
-;}
-
 RNGWR_EllywickGFGemMaxRedraws()
 {
     global
@@ -81,18 +73,13 @@ Class IC_RNGWaitingRoom_GUI
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
         Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit4 vRNGWR_EllywickGFGemCards gRNGWR_EllywickGFGemCards
         GUIFunctions.UseThemeTextColor()
-        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemCardsText, Number of gem cards
-;        ; Gem percent
-;        GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-;        Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit3 vRNGWR_EllywickGFGemPercent gRNGWR_EllywickGFGemPercent
-;        GUIFunctions.UseThemeTextColor()
-;        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemPercentText, Percent bonus
+        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemCardsText, Number of gem cards (z1)
         ; Redraws with ult
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
         Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit3 vRNGWR_EllywickGFGemMaxRedraws gRNGWR_EllywickGFGemMaxRedraws
         GUIFunctions.UseThemeTextColor()
-        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemMaxRedrawsText, Max redraws
-        Gui, ICScriptHub:Add, CheckBox, xs y+%center% vRNGWR_EllywickGFGemWaitFor5Draws gRNGWR_EllywickGFGemWaitFor5Draws, Always wait for 5 draws (except last redraw)
+        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemMaxRedrawsText, Max redraws (z1)
+        Gui, ICScriptHub:Add, CheckBox, xs y+%center% vRNGWR_EllywickGFGemWaitFor5Draws gRNGWR_EllywickGFGemWaitFor5Draws, Always wait for 5 draws
         ; Stats
         Gui, ICScriptHub:Add, Text, xs y+%ySpacing% h%ctrlH% 0x200 vRNGWR_AvgBonusGemsText, Avg. gem bonus (z1):
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vRNGWR_AvgBonusGems
@@ -104,7 +91,6 @@ Class IC_RNGWaitingRoom_GUI
     {
         GuiControl, ICScriptHub:, RNGWR_EllywickGFEnabled, % data.EllywickGFEnabled
         GuiControl, ICScriptHub:, RNGWR_EllywickGFGemCards, % data.EllywickGFGemCards
-;        GuiControl, ICScriptHub:, RNGWR_EllywickGFGemPercent, % data.EllywickGFGemPercent
         GuiControl, ICScriptHub:, RNGWR_EllywickGFGemMaxRedraws, % data.EllywickGFGemMaxRedraws
         GuiControl, ICScriptHub:, RNGWR_EllywickGFGemWaitFor5Draws, % data.EllywickGFGemWaitFor5Draws
     }

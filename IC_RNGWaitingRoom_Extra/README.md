@@ -31,4 +31,3 @@ Number of times to redraw cards using Ellywick's ultimate.
 
 * **Always wait for 5 draws** (default: True)  
 Wait for 5 cards to be drawn before progressing.
-Currently, it won't work on the final draw (bug).

@@ -130,6 +130,71 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
             Sleep, 20 ; here to keep the script responsive.
         }
     }
+
+    BGFLU_DoPartySetupMin(forceBrivShandie := false, timeout := "")
+    {
+        currentZone := g_SF.Memory.ReadCurrentZone()
+        if (forceBrivShandie || currentZone == 1)
+            g_SF.ToggleAutoProgress( 0, false, true )
+        g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
+        formation := g_SF.BGFLU_GetDefaultFormation()
+        ; If low favor mode is active, cheapeast upgrade first
+        lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
+        ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
+        ; Set formation
+        g_SF.BGFLU_LoadZ1Formation()
+        if (!lowFavorMode)
+            keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
+        StartTime := A_TickCount, ElapsedTime := 0
+        if (timeout == "")
+            timeout := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ]
+        timeout := timeout == "" ? 5000 : timeout
+        index := 0
+        while(keyspam.Length() != 0 AND ElapsedTime < timeout)
+        {
+            ; Update formation on zone change
+            if (currentZone < g_SF.Memory.ReadCurrentZone())
+            {
+                currentZone := g_SF.Memory.ReadCurrentZone()
+                formation := g_SF.BGFLU_GetDefaultFormation()
+            }
+            if (lowFavorMode)
+            {
+                formationInOrder := this.BGFLU_OrderByCheapeastUpgrade(formation)
+                keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivShandie)
+            }
+            else
+                keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
+            ; Maximum number of champions leveled up every loop
+            maxKeyspam := []
+            Loop % Min(g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ], keyspam.Length())
+                maxKeyspam.Push(keyspam[A_Index])
+            ; Level up speed champions once
+            g_SF.DirectedInput(,, maxKeyspam*)
+            ; Set formation
+            g_SF.BGFLU_LoadZ1Formation()
+            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
+            ElapsedTime := A_TickCount - StartTime
+            if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
+                g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
+            g_SF.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
+        }
+        this.DirectedInput(hold := 0,, keyspam*) ; keysup
+        remainingTime := timeout - ElapsedTime
+        if (forceBrivShandie AND remainingTime > 0)
+            return this.BGFLU_DoPartySetupMin(false, remainingTime)
+        g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
+        if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())
+            g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
+        if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Ellywick.HeroID, formation))
+            g_SF.RNGWR_DoEllyWait()
+        if (g_SF.IsChampInFormation(139, formation))
+            g_SF.DoRushWait()
+        ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
+        if (currentZone == 1 || g_SharedData.TriggerStart)
+            g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
+        g_SF.ToggleAutoProgress( 1, false, true )
+    }
 }
 
 ; Overrides IC_BrivSharedFunctions_Class.RestartAdventure()
@@ -243,41 +308,9 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
         ; g_KeyPresses := TestVar
     }
 
-    DoRushWait()
-    {
-        ; Make sure the ability handler has the correct base address.
-        ; It can change on game restarts or modron resets.
-        this.Memory.ActiveEffectKeyHandler.Refresh()
-        if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ])
-            this.RNGWR_DoEllyWait()
-        if (!this.ShouldRushWait())
-            return
-        this.ToggleAutoProgress( 0, false, true )
-        StartTime := A_TickCount
-        ElapsedTime := 0
-        timeScale := this.Memory.ReadTimeScaleMultiplier()
-        timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
-        timeout := 8000 ; 8s seconds
-        estimate := (timeout / timeScale)
-        ; Loop escape conditions:
-        ;   does full timeout duration
-        ;   past highest accepted rushwait triggering area
-        ;   rush is active
-        while (ElapsedTime < timeout && this.ShouldRushWait())
-        {
-            this.ToggleAutoProgress(0)
-            this.BGFLU_LoadZ1Formation()
-            g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
-            ElapsedTime := A_TickCount - StartTime
-            g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
-            Sleep, 30
-        }
-        g_PreviousZoneStartTime := A_TickCount
-    }
-
     RNGWR_DoEllyWait()
     {
+        this.Memory.ActiveEffectKeyHandler.Refresh()
         timeout := 60000
         ElapsedTime := 0
         StartTime := A_TickCount

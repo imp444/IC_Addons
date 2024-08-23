@@ -266,7 +266,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
             this.ToggleAutoProgress(0)
             this.BGFLU_LoadZ1Formation()
             g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
+            this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
             Sleep, 30
@@ -282,7 +282,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
         while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
         {
             g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
-            this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
+            this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
             Sleep, 30
             ElapsedTime := A_TickCount - StartTime
         }

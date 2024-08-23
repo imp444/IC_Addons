@@ -51,6 +51,11 @@ RNGWR_EllywickGFGemWaitFor5Draws()
     g_RNGWaitingRoom.UpdateSetting("EllywickGFGemWaitFor5Draws", value)
 }
 
+RNGWR_ResetStats()
+{
+    g_RNGWaitingRoom.ResetStats()
+}
+
 Class IC_RNGWaitingRoom_GUI
 {
     LastMaxTabHeight := 0
@@ -85,6 +90,7 @@ Class IC_RNGWaitingRoom_GUI
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vRNGWR_AvgBonusGems
         Gui, ICScriptHub:Add, Text, xs h%ctrlH% 0x200 vRNGWR_AvgRedrawsText, Avg. redraws:
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vRNGWR_AvgRedraws
+        Gui, ICScriptHub:Add, Button, xs y+%ySpacing% vRNGWR_ResetStats gRNGWR_ResetStats, Reset stats
     }
 
     UpdateGUISettings(data)

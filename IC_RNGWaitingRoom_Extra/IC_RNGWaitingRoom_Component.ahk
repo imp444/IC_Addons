@@ -145,4 +145,13 @@ Class IC_RNGWaitingRoom_Component
             GuiControl, ICScriptHub:Text, RNGWR_StatusText, Waiting for Gem Farm to start
         }
     }
+
+    ResetStats()
+    {
+        try ; avoid thrown errors when comobject is not available.
+        {
+            SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
+            SharedRunData.RNGWR_ResetStats()
+        }
+    }
 }

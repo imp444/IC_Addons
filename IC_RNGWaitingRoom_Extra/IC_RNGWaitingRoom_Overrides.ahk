@@ -312,11 +312,7 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
     ; Load settings after "Start Gem Farm" has been clicked.
     RNGWR_Init()
     {
-        stats := {}
-        stats.BonusGemsSum := 0
-        stats.RedrawsSum := 0
-        stats.Runs := 0
-        this.Stats := stats
+        this.RNGWR_ResetStats()
         this.RNGWR_Elly := new IC_RNGWaitingRoom_Functions.EllywickHandlerHandler
         this.RNGWR_UpdateSettingsFromFile()
         this.RNGWR_Elly.Start()
@@ -333,6 +329,15 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
     {
         stats := this.Stats
         return [stats.BonusGemsSum, stats.RedrawsSum, stats.Runs]
+    }
+
+    RNGWR_ResetStats()
+    {
+        stats := {}
+        stats.BonusGemsSum := 0
+        stats.RedrawsSum := 0
+        stats.Runs := 0
+        this.Stats := stats
     }
 
     ; Load settings from the GUI settings file

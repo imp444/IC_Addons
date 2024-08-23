@@ -314,7 +314,7 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
     {
         stats := {}
         stats.BonusGemsSum := 0
-        stats.RerollsSum := 0
+        stats.RedrawsSum := 0
         stats.Runs := 0
         this.Stats := stats
         this.RNGWR_Elly := new IC_RNGWaitingRoom_Functions.EllywickHandlerHandler
@@ -322,17 +322,17 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
         this.RNGWR_Elly.Start()
     }
 
-    RNGWR_UpdateStats(bonusGems := 0, rerolls := 0)
+    RNGWR_UpdateStats(bonusGems := 0, redraws := 0)
     {
         this.Stats["BonusGemsSum"] += bonusGems
-        this.Stats["RerollsSum"] += rerolls
+        this.Stats["RedrawsSum"] += redraws
         this.Stats["Runs"] += 1
     }
 
     RNGWR_GetStats()
     {
         stats := this.Stats
-        return [stats.BonusGemsSum, stats.RerollsSum, stats.Runs]
+        return [stats.BonusGemsSum, stats.RedrawsSum, stats.Runs]
     }
 
     ; Load settings from the GUI settings file

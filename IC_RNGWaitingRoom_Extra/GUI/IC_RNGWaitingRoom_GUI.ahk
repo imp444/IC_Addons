@@ -99,8 +99,8 @@ Class IC_RNGWaitingRoom_GUI
     {
         runs := data[3]
         avgBonusGemsStr := Round(data[1] / runs, 2) . "%"
-        avgRerollsStr := Round(data[2] / runs, 2)
+        avgRedrawsStr := Round(data[2] / runs, 2)
         GuiControl, ICScriptHub:Text, RNGWR_AvgBonusGems, % avgBonusGemsStr
-        GuiControl, ICScriptHub:Text, RNGWR_AvgRedraws, % avgRerollsStr
+        GuiControl, ICScriptHub:Text, RNGWR_AvgRedraws, % avgRedrawsStr
     }
 }

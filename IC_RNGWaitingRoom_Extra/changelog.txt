@@ -1,3 +1,12 @@
+August 23, 2024 - v0.1.0
+    - Added a reset button for stats.
+    - Ellywick will use her ultimate early on z1 if there are redraws left and the number of gem cards cannot be achieved without redrawing.
+    - Fixes:
+        - Disabling "Gem farm mode" doesn't prevent formation switching anymore.
+        - LevelUp settings work as intended, and use the "MinLevel" settings while waiting for Ellywick's cards (except Thellora).
+        - Thellora doesn't get placed on the field after a forced client restart.
+        - The "Always wait for 5 card draws" setting works on the last redraw.
+
 August 15, 2024 - v0.0.4
     - Added stats (average gem bonus on z1, average number of redraws).
     - Added setting to wait for 5 card draws before progressing (currently doesn't work after the last redraw)

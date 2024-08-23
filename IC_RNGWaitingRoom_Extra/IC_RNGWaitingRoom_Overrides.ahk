@@ -36,9 +36,10 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
             if (CurrentZone == "" AND !g_SF.SafetyCheck() ) ; Check for game closed
                 g_SF.ToggleAutoProgress( 1, false, true ) ; Turn on autoprogress after a restart
             ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
-            if (g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > lastResetCount)
+            EllywickEnabled := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ]
+            if (EllywickEnabled && g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > lastResetCount)
                 g_SharedData.RNGWR_Elly.Reset()
-            if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun)
+            if (!EllywickEnabled || g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun)
                 g_SF.SetFormation(g_BrivUserSettings)
             if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
             {
@@ -176,7 +177,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
         ;     ControlFocus,, ahk_id %hwnd%
         values := s
         ; Remove Thellora
-        if (hold && !g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun)
+        if (hold && g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && !g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun)
             values := IC_RNGWaitingRoom_Functions.RemoveThelloraKeyFromInputValues(values)
         if(IsObject(values))
         {
@@ -247,7 +248,8 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
         ; Make sure the ability handler has the correct base address.
         ; It can change on game restarts or modron resets.
         this.Memory.ActiveEffectKeyHandler.Refresh()
-        this.RNGWR_DoEllyWait()
+        if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ])
+            this.RNGWR_DoEllyWait()
         if (!this.ShouldRushWait())
             return
         this.ToggleAutoProgress( 0, false, true )
@@ -302,6 +304,11 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
     RNGWR_Running()
     {
         return true
+    }
+
+    RNGWR_GemFarmEnabled()
+    {
+        return g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ]
     }
 
     RNGWR_SetStatus(text := "")

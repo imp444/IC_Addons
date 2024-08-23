@@ -50,6 +50,10 @@ class IC_RNGWaitingRoom_Functions
             this.GemCardsNeeded := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ]
             this.MaxRedraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
             this.WaitForAllCards := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemWaitFor5Draws" ]
+            if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ])
+                this.Start()
+            else
+                this.Stop()
         }
 
         Start()

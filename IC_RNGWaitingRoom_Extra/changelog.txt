@@ -1,3 +1,7 @@
+August 23, 2024 - v0.1.1
+    - The addon now waits for Ellywick on z1 even if Thellora is not in the Q or E formation.
+    - Fixed "Always wait for 5 card draws" setting being ignored.
+
 August 23, 2024 - v0.1.0
     - Added a reset button for stats.
     - Ellywick will use her ultimate early on z1 if there are redraws left and the number of gem cards cannot be achieved without redrawing.

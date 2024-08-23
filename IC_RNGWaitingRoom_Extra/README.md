@@ -47,3 +47,8 @@ Always waits for 5 cards to be drawn before progressing, even the target number 
 > 
 > Example: If Ellywick currently has **1** Gem card, **1** Moon card, and **Number of gem cards** is set to **5**, then her
 > ultimate will be used early when there is at least 1 redraw left and her ultimate is off cooldown.
+> 
+
+>Note:  
+> This addon disables formation switching to prevent Thellora from being loaded on z1.
+> You will have to switch formations manually if Ellywick is not on the field before pressing the **Stat Gem Farm** button.

@@ -138,6 +138,8 @@ class IC_RNGWaitingRoom_Functions
 
         ShouldDrawMoreCards()
         {
+            if (this.DrawsLeft && this.WaitForAllCards)
+                return true
             return this.GetNumGemCards() < this.GemCardsNeeded
         }
 

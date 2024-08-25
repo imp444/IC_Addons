@@ -23,6 +23,7 @@ Class IC_RNGWaitingRoom_Component
         g_RNGWaitingRoomGui.Init()
         ; Read settings
         this.LoadSettings()
+        this.CompareActiveEffectHandlerVersion()
         ; Update loop
         this.Start()
     }
@@ -159,5 +160,21 @@ Class IC_RNGWaitingRoom_Component
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
             SharedRunData.RNGWR_ResetStats()
         }
+    }
+
+    CompareActiveEffectHandlerVersion()
+    {
+        if(isFunc(IC_ActiveEffectKeyHandler_Class.GetVersion))
+        {
+            RegExMatch(IC_ActiveEffectKeyHandler_Class.GetVersion(), "v\d+.\d+.\d+", version)
+            required := this.RequiredVersion()
+            if (SH_VersionHelper.IsVersionNewer(this.RequiredVersion(), version))
+                MsgBox, % "Requires EffectKeyHandler Memory " . required . "+"
+        }
+    }
+
+    RequiredVersion()
+    {
+        return "v2.5.0"
     }
 }

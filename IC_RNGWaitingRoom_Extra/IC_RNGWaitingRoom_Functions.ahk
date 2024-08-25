@@ -165,6 +165,11 @@ class IC_RNGWaitingRoom_Functions
         GetNumCards()
         {
             size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
+            if (size == "")
+            {
+                g_SF.Memory.ActiveEffectKeyHandler.Refresh()
+                size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
+            }
             return size == "" ? 0 : size
         }
 

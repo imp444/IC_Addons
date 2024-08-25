@@ -369,6 +369,8 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
 
     RNGWR_UpdateStats(bonusGems := 0, redraws := 0)
     {
+        if (this.RNGWR_FirstRun)
+            return
         this.Stats["BonusGemsSum"] += bonusGems
         this.Stats["RedrawsSum"] += redraws
         this.Stats["Runs"] += 1

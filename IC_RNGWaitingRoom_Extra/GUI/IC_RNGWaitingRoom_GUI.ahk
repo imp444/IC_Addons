@@ -86,11 +86,24 @@ Class IC_RNGWaitingRoom_GUI
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickGFGemMaxRedrawsText, Max redraws (z1)
         Gui, ICScriptHub:Add, CheckBox, xs y+%center% vRNGWR_EllywickGFGemWaitFor5Draws gRNGWR_EllywickGFGemWaitFor5Draws, Always wait for 5 draws
         ; Stats
-        Gui, ICScriptHub:Add, Text, xs y+%ySpacing% h%ctrlH% 0x200 vRNGWR_AvgBonusGemsText, Avg. gem bonus (z1):
-        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vRNGWR_AvgBonusGems
-        Gui, ICScriptHub:Add, Text, xs h%ctrlH% 0x200 vRNGWR_AvgRedrawsText, Avg. redraws:
-        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vRNGWR_AvgRedraws
-        Gui, ICScriptHub:Add, Button, xs y+%ySpacing% vRNGWR_ResetStats gRNGWR_ResetStats, Reset stats
+        GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
+        Gui, ICScriptHub:Add, Groupbox, Section xs y+%ySpacing% vRNGWR_StatsGroup, Stats
+        GUIFunctions.UseThemeTextColor()
+        Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%yTitleSpacing% vRNGWR_RunsText, Runs:
+        Gui, ICScriptHub:Add, Text, x+5 w220 vRNGWR_Runs
+        Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vRNGWR_AvgBonusGemsText, Avg. gem bonus (z1):
+        Gui, ICScriptHub:Add, Text, x+5 w220 vRNGWR_AvgBonusGems
+        Gui, ICScriptHub:Add, Text, xs+%xSection% vRNGWR_AvgRedrawsText, Avg. redraws:
+        Gui, ICScriptHub:Add, Text, x+5 w220 vRNGWR_AvgRedraws
+        Gui, ICScriptHub:Add, Button, xs+%xSection% y+%ySpacing% vRNGWR_ResetStats gRNGWR_ResetStats, Reset stats
+        ; Resize Stats group box
+        maxX := 500
+        GuiControlGet, pos, ICScriptHub:Pos, RNGWR_ResetStats
+        maxY := posY + posH + ySpacing
+        GuiControlGet, pos, ICScriptHub:Pos, RNGWR_StatsGroup
+        newW := maxX - posX
+        newH := maxY - posY
+        GuiControl, ICScriptHub:MoveDraw, RNGWR_StatsGroup, w%newW% h%newH%
     }
 
     UpdateGUISettings(data)
@@ -106,6 +119,7 @@ Class IC_RNGWaitingRoom_GUI
         runs := data[3]
         avgBonusGemsStr := Round(data[1] / runs, 2) . "%"
         avgRedrawsStr := Round(data[2] / runs, 2)
+        GuiControl, ICScriptHub:Text, RNGWR_Runs, % runs
         GuiControl, ICScriptHub:Text, RNGWR_AvgBonusGems, % avgBonusGemsStr
         GuiControl, ICScriptHub:Text, RNGWR_AvgRedraws, % avgRedrawsStr
     }

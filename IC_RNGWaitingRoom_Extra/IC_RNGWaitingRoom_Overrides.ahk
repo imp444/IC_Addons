@@ -28,7 +28,6 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
         g_SharedData.StackFail := 0
         g_SF.BGFLU_CalcLastUpgradeLevels()
         g_SharedData.BGFLU_UpdateSettingsFromFile(true)
-        ; Ellywick + Thellora
         loop
         {
             g_SharedData.LoopString := "Main Loop"
@@ -43,6 +42,8 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
                 g_SF.SetFormation(g_BrivUserSettings)
             if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
             {
+                ; Allow formation switch on startup
+                g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun ; Allow formation switch on startup
                 g_SharedData.RNGWR_Elly.Reset()
                 g_SF.ToggleAutoProgress( 0, false, true )
                 g_SharedData.BGFLU_SetStatus()
@@ -242,7 +243,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
         ;     ControlFocus,, ahk_id %hwnd%
         values := s
         ; Remove Thellora
-        if (hold && g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && !g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun)
+        if (hold && g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SharedData.RNGWR_LockFormationSwitch)
             values := IC_RNGWaitingRoom_Functions.RemoveThelloraKeyFromInputValues(values)
         if(IsObject(values))
         {
@@ -316,6 +317,8 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
         StartTime := A_TickCount
         while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
         {
+            if (!g_SharedData.RNGWR_LockFormationSwitch)
+                g_SF.BGFLU_LoadZ1Formation()
             g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
             this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
             Sleep, 30
@@ -323,6 +326,9 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
         }
         if (ElapsedTime >= timeout)
             g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
+        ; Unlock formation switch
+        g_SharedData.RNGWR_FirstRun := false
+        g_SharedData.RNGWR_LockFormationSwitch := false
     }
 }
 
@@ -332,6 +338,8 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
 ;    RNGWR_Status := ""
 ;    RNGWR_Stats := ""
 ;    RNGWR_Elly := ""
+;    RNGWR_FirstRun := ""
+;    RNGWR_LockFormationSwitch := ""
 
     ; Return true if the class has been updated by the addon
     RNGWR_Running()
@@ -352,6 +360,7 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
     ; Load settings after "Start Gem Farm" has been clicked.
     RNGWR_Init()
     {
+        this.RNGWR_FirstRun := true
         this.RNGWR_ResetStats()
         this.RNGWR_Elly := new IC_RNGWaitingRoom_Functions.EllywickHandlerHandler
         this.RNGWR_UpdateSettingsFromFile()

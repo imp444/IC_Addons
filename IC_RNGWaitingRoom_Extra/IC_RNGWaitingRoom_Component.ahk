@@ -169,7 +169,7 @@ Class IC_RNGWaitingRoom_Component
             RegExMatch(IC_ActiveEffectKeyHandler_Class.GetVersion(), "v\d+.\d+.\d+", version)
             required := this.RequiredVersion()
             if (SH_VersionHelper.IsVersionNewer(this.RequiredVersion(), version))
-                MsgBox, % "Requires EffectKeyHandler Memory " . required . "+"
+                MsgBox, % "RNG Waiting Room addon requires ICScriptHub's EffectKeyHandler Memory " . required . "+."
         }
     }
 

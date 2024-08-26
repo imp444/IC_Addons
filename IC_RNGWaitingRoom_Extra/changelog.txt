@@ -1,3 +1,10 @@
+August 26, 2024 - v0.1.2
+    - Added number of runs and success rate in stats.
+    - Stats are not updated anymore during the first partial run.
+    - An error message box will show up if Scripthub's EffectKeyHandler Memory version is too old.
+    - Fixed Ellywick cards not being read correctly after starting the gem farm when she is not on the field.
+    - Formation can be switched automatically from the stack formation after clicking the start button and clicking another zone.
+
 August 23, 2024 - v0.1.1
     - The addon now waits for Ellywick on z1 even if Thellora is not in the Q or E formation.
     - Fixed "Always wait for 5 card draws" setting being ignored.

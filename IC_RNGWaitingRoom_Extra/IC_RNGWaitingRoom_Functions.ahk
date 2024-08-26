@@ -86,7 +86,7 @@ class IC_RNGWaitingRoom_Functions
             if (this.WaitedForEllywickThisRun)
             {
                 ; Use ultimate to redraw cards if Ellywick doesn't have any gem cards.
-                if (this.GetNumGemCards() == 0 && !this.UsedUlt && this.GetNumCards() == 5 && this.IsEllywickUltReady())
+                if (this.CanUseEllyWickUlt() && this.GetNumGemCards() == 0 && !this.UsedUlt && this.GetNumCards() == 5)
                     this.UseEllywickUlt()
             }
             else if (this.ShouldDrawMoreCards())
@@ -96,7 +96,7 @@ class IC_RNGWaitingRoom_Functions
                 if (this.RedrawsLeft)
                 {
                     shouldRedraw := this.ShouldRedraw()
-                    if (!this.UsedUlt && shouldRedraw && this.IsEllywickUltReady())
+                    if (!this.UsedUlt && shouldRedraw && this.CanUseEllyWickUlt())
                         this.UseEllywickUlt()
                     if (!shouldRedraw)
                         g_SharedData.RNGWR_SetStatus("Waiting for card #" . (numCards + 1))
@@ -199,7 +199,7 @@ class IC_RNGWaitingRoom_Functions
         UseEllywickUlt()
         {
             heroID := ActiveEffectKeySharedFunctions.Ellywick.HeroID
-            if (this.IsEllywickUltReady())
+            if (this.CanUseEllyWickUlt())
             {
                 g_SharedData.RNGWR_SetStatus("Using Ellywick's ultimate to redraw cards")
                 g_SF.DirectedInput(,, "{" . g_SF.GetUltimateButtonByChampID(heroID) . "}")
@@ -216,6 +216,12 @@ class IC_RNGWaitingRoom_Functions
             ultButton := g_SF.GetUltimateButtonByChampID(heroID)
             ultCd := g_SF.Memory.ReadUltimateCooldownByItem(ultButton - 1)
             return ultCd <= 0 ; any <= 0 means it's not on cd
+        }
+
+        CanUseEllyWickUlt()
+        {
+            inFormation := g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Ellywick.HeroID, g_SF.Memory.GetCurrentFormation())
+            return inFormation && this.IsEllywickUltReady()
         }
 
         CheckUltimateUsed()

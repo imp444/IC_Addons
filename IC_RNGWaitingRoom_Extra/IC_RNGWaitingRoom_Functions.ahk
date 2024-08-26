@@ -104,9 +104,10 @@ class IC_RNGWaitingRoom_Functions
                 else if (!this.WaitForAllCards && numCards == 5 && this.Redraws == 0 || !this.WaitForAllCards && this.Redraws || this.WaitForAllCards && numCards == 5 && !this.RedrawsLeft)
                 {
                     this.WaitedForEllywickThisRun := true
-                    g_SharedData.RNGWR_SetStatus(this.GetResultString())
+                    success := this.IsSuccess()
+                    g_SharedData.RNGWR_SetStatus(this.GetResultString(success))
                     bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
-                    g_SharedData.RNGWR_UpdateStats(bonusGems, this.Redraws)
+                    g_SharedData.RNGWR_UpdateStats(bonusGems, this.Redraws, success)
                 }
                 else if (numCards < 5)
                     g_SharedData.RNGWR_SetStatus("Waiting for card #" . (numCards + 1))
@@ -114,9 +115,10 @@ class IC_RNGWaitingRoom_Functions
             else
             {
                 this.WaitedForEllywickThisRun := true
-                g_SharedData.RNGWR_SetStatus(this.GetResultString())
+                success := this.IsSuccess()
+                g_SharedData.RNGWR_SetStatus(this.GetResultString(success))
                 bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
-                g_SharedData.RNGWR_UpdateStats(bonusGems, this.Redraws)
+                g_SharedData.RNGWR_UpdateStats(bonusGems, this.Redraws, success)
             }
         }
 
@@ -153,9 +155,13 @@ class IC_RNGWaitingRoom_Functions
             return this.DrawsLeft < this.GemCardsNeeded - this.GetNumGemCards()
         }
 
-        GetResultString()
+        IsSuccess()
         {
-            success := this.GetNumGemCards() >= this.GemCardsNeeded
+            return this.GetNumGemCards() >= this.GemCardsNeeded
+        }
+
+        GetResultString(success := true)
+        {
             redraws := this.Redraws
             str := success ? "Success" : "Failure"
             str .= " - Used " . redraws . " redraw" . IC_RNGWaitingRoom_Functions.Plural(redraws)

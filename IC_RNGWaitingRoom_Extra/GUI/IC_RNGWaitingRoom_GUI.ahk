@@ -87,11 +87,13 @@ Class IC_RNGWaitingRoom_GUI
         Gui, ICScriptHub:Add, CheckBox, xs y+%center% vRNGWR_EllywickGFGemWaitFor5Draws gRNGWR_EllywickGFGemWaitFor5Draws, Always wait for 5 draws
         ; Stats
         GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
-        Gui, ICScriptHub:Add, Groupbox, Section xs y+%ySpacing% vRNGWR_StatsGroup, Stats
+        Gui, ICScriptHub:Add, Groupbox, Section xs y+%ySpacing% vRNGWR_StatsGroup, Stats (z1)
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%yTitleSpacing% vRNGWR_RunsText, Runs:
         Gui, ICScriptHub:Add, Text, x+5 w220 vRNGWR_Runs
-        Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vRNGWR_AvgBonusGemsText, Avg. gem bonus (z1):
+        Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vRNGWR_SuccessText, Success rate:
+        Gui, ICScriptHub:Add, Text, x+5 w220 vRNGWR_Success
+        Gui, ICScriptHub:Add, Text, xs+%xSection% vRNGWR_AvgBonusGemsText, Avg. gem bonus:
         Gui, ICScriptHub:Add, Text, x+5 w220 vRNGWR_AvgBonusGems
         Gui, ICScriptHub:Add, Text, xs+%xSection% vRNGWR_AvgRedrawsText, Avg. redraws:
         Gui, ICScriptHub:Add, Text, x+5 w220 vRNGWR_AvgRedraws
@@ -117,9 +119,19 @@ Class IC_RNGWaitingRoom_GUI
     UpdateGUI(data)
     {
         runs := data[3]
+        success := data[4]
+        if (runs)
+        {
+            successRate := success / runs
+            successRateStr := success . "/" . runs . " (" . Round(100 * successRate) . "%)"
+        }
+        else
+            successRateStr := "/"
         avgBonusGemsStr := Round(data[1] / runs, 2) . "%"
         avgRedrawsStr := Round(data[2] / runs, 2)
         GuiControl, ICScriptHub:Text, RNGWR_Runs, % runs
+        GuiControl, ICScriptHub:Text, RNGWR_Success, % successRateStr
+        GuiControl, ICScriptHub:Text, RNGWR_AvgRedraws, % avgRedrawsStr
         GuiControl, ICScriptHub:Text, RNGWR_AvgBonusGems, % avgBonusGemsStr
         GuiControl, ICScriptHub:Text, RNGWR_AvgRedraws, % avgRedrawsStr
     }

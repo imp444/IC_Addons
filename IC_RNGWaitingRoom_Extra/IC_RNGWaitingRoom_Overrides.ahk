@@ -367,19 +367,20 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
         this.RNGWR_Elly.Start()
     }
 
-    RNGWR_UpdateStats(bonusGems := 0, redraws := 0)
+    RNGWR_UpdateStats(bonusGems := 0, redraws := 0, success := true)
     {
         if (this.RNGWR_FirstRun)
             return
         this.Stats["BonusGemsSum"] += bonusGems
         this.Stats["RedrawsSum"] += redraws
         this.Stats["Runs"] += 1
+        this.Stats["Success"] += success
     }
 
     RNGWR_GetStats()
     {
         stats := this.Stats
-        return [stats.BonusGemsSum, stats.RedrawsSum, stats.Runs]
+        return [stats.BonusGemsSum, stats.RedrawsSum, stats.Runs, stats.Success]
     }
 
     RNGWR_ResetStats()
@@ -388,6 +389,7 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
         stats.BonusGemsSum := 0
         stats.RedrawsSum := 0
         stats.Runs := 0
+        stats.Success := 0
         this.Stats := stats
     }
 

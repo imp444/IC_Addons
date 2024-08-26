@@ -29,6 +29,12 @@ Addon used to optimize hybrid stacking during BrivGemFarm.
 
 ___
 
+**IC_RNG_Waiting_Room_Extra**
+
+Addon used to optimize Ellywick's **The Deck Of Many Things** ability.
+
+___
+
 **IC_ProcessAffinity_Extra**
 
 Addon used to restrict the game's process to a selection of cores.

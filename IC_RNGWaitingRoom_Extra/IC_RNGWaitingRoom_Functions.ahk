@@ -81,7 +81,7 @@ class IC_RNGWaitingRoom_Functions
 
         MainLoop()
         {
-            if (g_SF.Memory.ReadResetting() || g_SF.Memory.ReadCurrentZone() == "")
+            if (g_SF.Memory.ReadResetting() || g_SF.Memory.ReadCurrentZone() == "" || this.GetNumCards() == "")
                 return
             if (this.WaitedForEllywickThisRun)
             {
@@ -171,7 +171,7 @@ class IC_RNGWaitingRoom_Functions
         GetNumCards()
         {
             size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
-            if (size == "")
+            if (size == "" && this.IsEllyWickOnTheField())
             {
                 g_SF.Memory.ActiveEffectKeyHandler.Refresh()
                 size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
@@ -220,8 +220,7 @@ class IC_RNGWaitingRoom_Functions
 
         CanUseEllyWickUlt()
         {
-            inFormation := g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Ellywick.HeroID, g_SF.Memory.GetCurrentFormation())
-            return inFormation && this.IsEllywickUltReady()
+            return this.IsEllyWickOnTheField() && this.IsEllywickUltReady()
         }
 
         CheckUltimateUsed()
@@ -229,6 +228,11 @@ class IC_RNGWaitingRoom_Functions
             if (!this.IsEllywickUltReady())
                 this.Redraws += 1
             this.UsedUlt := false
+        }
+
+        IsEllyWickOnTheField()
+        {
+            return g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Ellywick.HeroID, g_SF.Memory.GetCurrentFormation())
         }
     }
 

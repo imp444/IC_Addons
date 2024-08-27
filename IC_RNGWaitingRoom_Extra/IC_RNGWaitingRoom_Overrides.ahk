@@ -37,8 +37,11 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
             ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
             EllywickEnabled := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ]
             if (EllywickEnabled && g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > lastResetCount)
+            {
                 g_SharedData.RNGWR_Elly.Reset()
-            if (!EllywickEnabled || g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun)
+                g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
+            }
+            if (!EllywickEnabled || !g_SharedData.RNGWR_Elly.RNGWR_LockFormationSwitch)
                 g_SF.SetFormation(g_BrivUserSettings)
             if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
             {
@@ -208,6 +211,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
             g_SharedData.LoopString := "ServerCall: Restarting adventure"
             this.CloseIC( reason )
             g_SharedData.RNGWR_Elly.Reset()
+            g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
             if (this.sprint != "" AND this.steelbones != "" AND (this.sprint + this.steelbones) < 190000)
             {
                 response := g_serverCall.CallPreventStackFail(this.sprint + this.steelbones)
@@ -312,20 +316,23 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
     RNGWR_DoEllyWait()
     {
         this.Memory.ActiveEffectKeyHandler.Refresh()
-        timeout := 60000
-        ElapsedTime := 0
-        StartTime := A_TickCount
-        while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
+        if (g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())
         {
-            if (!g_SharedData.RNGWR_LockFormationSwitch)
-                g_SF.BGFLU_LoadZ1Formation()
-            g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
-            this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
-            Sleep, 30
-            ElapsedTime := A_TickCount - StartTime
+            timeout := 60000
+            ElapsedTime := 0
+            StartTime := A_TickCount
+            while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
+            {
+                if (!g_SharedData.RNGWR_LockFormationSwitch)
+                    g_SF.BGFLU_LoadZ1Formation()
+                g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
+                this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
+                Sleep, 30
+                ElapsedTime := A_TickCount - StartTime
+            }
+            if (ElapsedTime >= timeout)
+                g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
         }
-        if (ElapsedTime >= timeout)
-            g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
         ; Unlock formation switch
         g_SharedData.RNGWR_FirstRun := false
         g_SharedData.RNGWR_LockFormationSwitch := false

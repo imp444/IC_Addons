@@ -1,3 +1,7 @@
+August 27, 2024 - v0.1.3
+    - Updated the error message displayed on out of date EffectKeyHandler Memory.
+    - Added additional checks for Ellywick being on the field to improve formation switching and use of ultimate.
+
 August 26, 2024 - v0.1.2
     - Added number of runs and success rate in stats.
     - Stats are not updated anymore during the first partial run.

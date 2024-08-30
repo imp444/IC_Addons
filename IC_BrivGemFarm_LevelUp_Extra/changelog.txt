@@ -1,3 +1,7 @@
+August 30, 2024 - v1.3.5
+    - Added default min/max level settings for Ellywick.
+    - Updated leveling priority for Ellywick.
+
 August 10, 2024 - v1.3.4
     - Removed workaround fix + need for CloseWelcomeBack addon compatibility for WaitForModronReset() (not need anymore since SH commit 4290701).
     Fixes:

@@ -142,7 +142,7 @@ Class IC_RNGWaitingRoom_GUI
             Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickSingle%A_Index%Text, % cardName
         }
         Gui, ICScriptHub:Add, Button, xs+5 y+%ySpacing% vRNGWR_EllywickSingleStart gRNGWR_EllywickSingleStart, Start
-        Gui, ICScriptHub:Add, Button, x+5 vRNGWR_EllywickSingleStop gRNGWR_EllywickSingleStop, Stop
+        Gui, ICScriptHub:Add, Button, x+5 Disabled vRNGWR_EllywickSingleStop gRNGWR_EllywickSingleStop, Stop
         GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
         Gui, ICScriptHub:Add, Text, x+%xSpacing% w350 h%ctrlH% 0x200 vRNGWR_EllywickSingleWarningText
         GUIFunctions.UseThemeTextColor()

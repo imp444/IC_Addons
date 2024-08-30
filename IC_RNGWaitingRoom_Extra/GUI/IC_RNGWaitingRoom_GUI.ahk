@@ -56,6 +56,25 @@ RNGWR_ResetStats()
     g_RNGWaitingRoom.ResetStats()
 }
 
+RNGWR_EllywickSingleEdit()
+{
+    g_RNGWaitingRoomGui.UpdateWarningText()
+}
+
+RNGWR_EllywickSingleStart()
+{
+    GuiControl, ICScriptHub: Disable, RNGWR_EllywickSingleStart
+    GuiControl, ICScriptHub: Enable, RNGWR_EllywickSingleStop
+    g_RNGWaitingRoom.StartSingle()
+}
+
+RNGWR_EllywickSingleStop()
+{
+    g_RNGWaitingRoom.StopSingle()
+    GuiControl, ICScriptHub: Disable, RNGWR_EllywickSingleStop
+    g_RNGWaitingRoomGui.UpdateWarningText()
+}
+
 Class IC_RNGWaitingRoom_GUI
 {
     LastMaxTabHeight := 0
@@ -106,6 +125,37 @@ Class IC_RNGWaitingRoom_GUI
         newW := maxX - posX
         newH := maxY - posY
         GuiControl, ICScriptHub:MoveDraw, RNGWR_StatsGroup, w%newW% h%newH%
+        ; Single draw
+        GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
+        Gui, ICScriptHub:Add, Groupbox, Section xs y+%yTitleSpacing% vRNGWR_EllywickSingleGroup, Redraw until Ellywick has this hand
+        Loop, 5
+        {
+            cardName := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.CardType[A_Index]
+            GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+            if (A_Index == 1)
+                Gui, ICScriptHub:Add, Edit, w30 xs+5 ys+%yTitleSpacing% Limit1 Number vRNGWR_EllywickSingle%A_Index% gRNGWR_EllywickSingleEdit
+            else
+                Gui, ICScriptHub:Add, Edit, w30 xs+5 y+%ySpacing% Limit1 Number vRNGWR_EllywickSingle%A_Index% gRNGWR_EllywickSingleEdit
+            value := A_Index == 2 ? 5 : 0
+            Gui, ICScriptHub:Add, UpDown, vRNGWR_EllywickSingle%A_Index%UpDown Range0-5, % value
+            GUIFunctions.UseThemeTextColor()
+            Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vRNGWR_EllywickSingle%A_Index%Text, % cardName
+        }
+        Gui, ICScriptHub:Add, Button, xs+5 y+%ySpacing% vRNGWR_EllywickSingleStart gRNGWR_EllywickSingleStart, Start
+        Gui, ICScriptHub:Add, Button, x+5 vRNGWR_EllywickSingleStop gRNGWR_EllywickSingleStop, Stop
+        GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
+        Gui, ICScriptHub:Add, Text, x+%xSpacing% w350 h%ctrlH% 0x200 vRNGWR_EllywickSingleWarningText
+        GUIFunctions.UseThemeTextColor()
+        Gui, ICScriptHub:Add, Text, xs+5 y+%ySpacing% vRNGWR_EllywickSingleStatus, Status:
+        Gui, ICScriptHub:Add, Text, x+5 w420 vRNGWR_EllywickSingleStatusText, Idle
+        ; Resize Single group box
+        maxX := 500
+        GuiControlGet, pos, ICScriptHub:Pos, RNGWR_EllywickSingleStatus
+        maxY := posY + posH + ySpacing
+        GuiControlGet, pos, ICScriptHub:Pos, RNGWR_EllywickSingleGroup
+        newW := maxX - posX
+        newH := maxY - posY
+        GuiControl, ICScriptHub:MoveDraw, RNGWR_EllywickSingleGroup, w%newW% h%newH%
     }
 
     UpdateGUISettings(data)
@@ -134,5 +184,32 @@ Class IC_RNGWaitingRoom_GUI
         GuiControl, ICScriptHub:Text, RNGWR_AvgRedraws, % avgRedrawsStr
         GuiControl, ICScriptHub:Text, RNGWR_AvgBonusGems, % avgBonusGemsStr
         GuiControl, ICScriptHub:Text, RNGWR_AvgRedraws, % avgRedrawsStr
+    }
+
+    UpdateWarningText()
+    {
+        sum := 0
+        Loop, 5
+        {
+            GuiControlGet, value, ICScriptHub:, RNGWR_EllywickSingle%A_Index%
+            sum += value
+        }
+        if (sum > 5)
+            text := "Ellywick can not hold more than 5 cards in her hand."
+        else
+            text := ""
+        if (!g_RNGWaitingRoom.SingleRedrawActive)
+        {
+            if (sum > 5)
+                GuiControl, ICScriptHub: Disable, RNGWR_EllywickSingleStart
+            else
+                GuiControl, ICScriptHub: Enable, RNGWR_EllywickSingleStart
+        }
+        GuiControl, ICScriptHub:Text, RNGWR_EllywickSingleWarningText, % text
+    }
+
+    SetEllyWickSingleStatus(text)
+    {
+        GuiControl, ICScriptHub:Text, RNGWR_EllywickSingleStatusText, % text
     }
 }

@@ -17,6 +17,8 @@ Class IC_RNGWaitingRoom_Component
 {
     Settings := ""
     TimerFunction := ObjBindMethod(this, "UpdateStatus")
+    SingleRedrawActive := false
+    SingleEllywickHandler := ""
 
     Init()
     {
@@ -176,5 +178,31 @@ Class IC_RNGWaitingRoom_Component
     RequiredVersion()
     {
         return "v2.5.0"
+    }
+
+    StartSingle()
+    {
+        this.SingleRedrawActive := true
+        cards := this.GetSingleCardsArray()
+        this.SingleEllywickHandler := new IC_RNGWaitingRoom_Functions.EllywickHandlerHandlerSingle(cards)
+        this.SingleEllywickHandler.Start()
+    }
+
+    StopSingle()
+    {
+        this.SingleEllywickHandler.Stop()
+        this.SingleEllywickHandler := ""
+        this.SingleRedrawActive := false
+    }
+
+    GetSingleCardsArray()
+    {
+        array := []
+        Loop, 5
+        {
+            GuiControlGet, value, ICScriptHub:, RNGWR_EllywickSingle%A_Index%
+            array.Push(value)
+        }
+        return array
     }
 }

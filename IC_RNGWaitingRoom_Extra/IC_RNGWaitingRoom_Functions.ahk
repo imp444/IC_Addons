@@ -24,6 +24,13 @@ class IC_RNGWaitingRoom_Functions
         return g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.StatHandler.Resets.Read()
     }
 
+    GetExeName()
+    {
+        default := "IdleDragons.exe"
+        exeName := g_UserSettings[ "ExeName" ]
+        return (exeName != default && exeName != "") ? exeName : default
+    }
+
     ; Ellywick
 
     class EllywickHandlerHandler
@@ -78,6 +85,11 @@ class IC_RNGWaitingRoom_Functions
             SetTimer, %fncToCallOnTimer%, Off
             this.UsedUlt := false
         }
+        
+        SetStatus(text := "")
+        {
+            g_SharedData.RNGWR_SetStatus(text)
+        }
 
         MainLoop()
         {
@@ -99,24 +111,24 @@ class IC_RNGWaitingRoom_Functions
                     if (!this.UsedUlt && shouldRedraw && this.CanUseEllyWickUlt())
                         this.UseEllywickUlt()
                     if (!shouldRedraw)
-                        g_SharedData.RNGWR_SetStatus("Waiting for card #" . (numCards + 1))
+                        this.SetStatus("Waiting for card #" . (numCards + 1))
                 }
                 else if (!this.WaitForAllCards && numCards == 5 && this.Redraws == 0 || !this.WaitForAllCards && this.Redraws || this.WaitForAllCards && numCards == 5 && !this.RedrawsLeft)
                 {
                     this.WaitedForEllywickThisRun := true
                     success := this.IsSuccess()
-                    g_SharedData.RNGWR_SetStatus(this.GetResultString(success))
+                    this.SetStatus(this.GetResultString(success))
                     bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
                     g_SharedData.RNGWR_UpdateStats(bonusGems, this.Redraws, success)
                 }
                 else if (numCards < 5)
-                    g_SharedData.RNGWR_SetStatus("Waiting for card #" . (numCards + 1))
+                    this.SetStatus("Waiting for card #" . (numCards + 1))
             }
             else
             {
                 this.WaitedForEllywickThisRun := true
                 success := this.IsSuccess()
-                g_SharedData.RNGWR_SetStatus(this.GetResultString(success))
+                this.SetStatus(this.GetResultString(success))
                 bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
                 g_SharedData.RNGWR_UpdateStats(bonusGems, this.Redraws, success)
             }
@@ -201,7 +213,7 @@ class IC_RNGWaitingRoom_Functions
             heroID := ActiveEffectKeySharedFunctions.Ellywick.HeroID
             if (this.CanUseEllyWickUlt())
             {
-                g_SharedData.RNGWR_SetStatus("Using Ellywick's ultimate to redraw cards")
+                this.SetStatus("Using Ellywick's ultimate to redraw cards")
                 g_SF.DirectedInput(,, "{" . g_SF.GetUltimateButtonByChampID(heroID) . "}")
                 ; Check if the ultimate is on cooldown one second later.
                 fncToCallOnTimer := this.UltimateTimer
@@ -233,6 +245,78 @@ class IC_RNGWaitingRoom_Functions
         IsEllyWickOnTheField()
         {
             return g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Ellywick.HeroID, g_SF.Memory.GetCurrentFormation())
+        }
+    }
+
+    class EllywickHandlerHandlerSingle extends IC_RNGWaitingRoom_Functions.EllywickHandlerHandler
+    {
+        __New(cardsNeeded := "")
+        {
+            ; 5 Moon cards
+            if (cardsNeeded == "")
+                cardsNeeded := [0, 5, 0, 0, 0]
+            this.CardsNeeded := cardsNeeded
+        }
+
+        Stop()
+        {
+            if (!this.WaitedForEllywickThisRun)
+                this.SetStatus("Idle")
+            base.Stop()
+        }
+
+        SetStatus(text := "")
+        {
+            g_RNGWaitingRoomGui.SetEllyWickSingleStatus(text)
+        }
+
+        MainLoop()
+        {
+            if (g_SF.Memory.ReadResetting() || g_SF.Memory.ReadCurrentZone() == "" || this.GetNumCards() == "")
+                return
+            remaining := this.GetRemainingCardsToDraw()
+            if (remaining == 0)
+            {
+                this.WaitedForEllywickThisRun := true
+                this.SetStatus(this.GetResultString())
+                this.StopGlobal()
+            }
+            else if (this.DrawsLeft < remaining)
+            {
+                ; Use ultimate to redraw cards
+                if (this.CanUseEllyWickUlt() && !this.UsedUlt)
+                    this.UseEllywickUlt()
+                else
+                {
+                    numCards := this.GetNumCards()
+                    if (numCards < 5)
+                        this.SetStatus("Waiting for card #" . (numCards + 1))
+                    else
+                        this.SetStatus("Waiting for Ellywick's ult being available")
+                }
+            }
+        }
+
+        StopGlobal()
+        {
+            g_RNGWaitingRoom.StopSingle()
+            GuiControl, ICScriptHub: Disable, RNGWR_EllywickSingleStop
+            g_RNGWaitingRoomGui.UpdateWarningText()
+        }
+
+        UseEllywickUlt()
+        {
+            exeName := IC_RNGWaitingRoom_Functions.GetExeName()
+            g_SF.Hwnd := WinExist("ahk_exe " . exeName)
+            base.UseEllywickUlt()
+        }
+
+        GetRemainingCardsToDraw()
+        {
+            num := 0
+            for cardType, numCards in this.CardsNeeded
+                num += Max(0, numCards - this.GetNumCardsOfType(cardType))
+            return num
         }
     }
 

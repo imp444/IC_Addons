@@ -36,6 +36,11 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
                 g_SF.ToggleAutoProgress( 1, false, true ) ; Turn on autoprogress after a restart
             ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
             EllywickEnabled := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ]
+            if (EllywickEnabled && g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > lastResetCount)
+            {
+                g_SharedData.RNGWR_Elly.Reset()
+                g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
+            }
             if (!EllywickEnabled || !g_SharedData.RNGWR_Elly.RNGWR_LockFormationSwitch)
                 g_SF.SetFormation(g_BrivUserSettings)
             if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset

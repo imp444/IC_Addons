@@ -41,6 +41,10 @@ You have to save another formation containing all the champions in the starting 
 
 Select your formation in the Modron Automation Setup menu.
 
+### Dungeon Master
+
+If Dungeon Master is saved in the Modron formation, his ultimate will be used automatically to refresh Ellywick's.
+
 ## Settings:
 
 #### The settings below are used on z1 before Thellora is placed on the field.

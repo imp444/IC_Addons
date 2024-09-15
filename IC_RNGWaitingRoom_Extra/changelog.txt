@@ -1,8 +1,11 @@
+September 15, 2024 - v0.2.2
+    - DM's ultimate is used automatically to refresh Ellywick's ultimate is on cooldown when he is in the Modron formation.
+
 August 30, 2024 - v0.2.1
-    Reverted main loop version to 0.1.3.
+    - Reverted main loop version to 0.1.3.
 
 August 30, 2024 - v0.2.0
-    Added a non-gem farm redrawing mode for Ellywick that waits for a specific hand.
+    - Added a non-gem farm redrawing mode for Ellywick that waits for a specific hand.
 
 August 27, 2024 - v0.1.3
     - Updated the error message displayed on out of date EffectKeyHandler Memory.

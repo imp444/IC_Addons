@@ -141,7 +141,7 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
         if (forceBrivShandie || currentZone == 1)
             g_SF.ToggleAutoProgress( 0, false, true )
         g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
-        formation := g_SF.BGFLU_GetDefaultFormation()
+        formation := IC_RNGWaitingRoom_Functions.GetIntitialFormation()
         ; If low favor mode is active, cheapeast upgrade first
         lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
@@ -160,7 +160,7 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
             if (currentZone < g_SF.Memory.ReadCurrentZone())
             {
                 currentZone := g_SF.Memory.ReadCurrentZone()
-                formation := g_SF.BGFLU_GetDefaultFormation()
+                formation := IC_RNGWaitingRoom_Functions.GetIntitialFormation()
             }
             if (lowFavorMode)
             {

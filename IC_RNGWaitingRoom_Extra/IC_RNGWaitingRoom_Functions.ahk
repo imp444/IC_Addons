@@ -41,7 +41,6 @@ class IC_RNGWaitingRoom_Functions
         WaitForAllCards := false
         WaitedForEllywickThisRun := false
         Redraws := 0
-        UltimateTimer := ObjBindMethod(this, "CheckUltimateUsed")
         UsedUlt := false
 
         __New(gemCardsNeeded := 1, maxRedraws := 1, wait := false)
@@ -81,8 +80,6 @@ class IC_RNGWaitingRoom_Functions
         {
             this.WaitedForEllywickThisRun := false
             this.Redraws := 0
-            fncToCallOnTimer := this.UltimateTimer
-            SetTimer, %fncToCallOnTimer%, Off
             this.UsedUlt := false
         }
         
@@ -132,6 +129,7 @@ class IC_RNGWaitingRoom_Functions
                 bonusGems := ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadGemMult()
                 g_SharedData.RNGWR_UpdateStats(bonusGems, this.Redraws, success)
             }
+            this.UpdateRedraws()
         }
 
         DrawsLeft
@@ -215,10 +213,6 @@ class IC_RNGWaitingRoom_Functions
             {
                 this.SetStatus("Using Ellywick's ultimate to redraw cards")
                 g_SF.DirectedInput(,, "{" . g_SF.GetUltimateButtonByChampID(heroID) . "}")
-                ; Check if the ultimate is on cooldown one second later.
-                fncToCallOnTimer := this.UltimateTimer
-                SetTimer, %fncToCallOnTimer%, -1000, 0
-                this.UsedUlt := true
             }
         }
 
@@ -232,19 +226,58 @@ class IC_RNGWaitingRoom_Functions
 
         CanUseEllyWickUlt()
         {
-            return this.IsEllyWickOnTheField() && this.IsEllywickUltReady()
-        }
-
-        CheckUltimateUsed()
-        {
-            if (!this.IsEllywickUltReady())
-                this.Redraws += 1
-            this.UsedUlt := false
+            return this.IsEllyWickOnTheField() && this.IsEllywickUltReady() && !this.IsEllywickUltActive()
         }
 
         IsEllyWickOnTheField()
         {
             return g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Ellywick.HeroID, g_SF.Memory.GetCurrentFormation())
+        }
+
+        IsEllywickUltActive()
+        {
+            return ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.ReadUltimateActive()
+        }
+        
+        UseDMUlt()
+        {
+            heroID := 99
+            if (this.CanUseDMUlt())
+            {
+                this.SetStatus("Using Dungeon Master's ultimate")
+                g_SF.DirectedInput(,, "{" . g_SF.GetUltimateButtonByChampID(heroID) . "}")
+            }
+        }
+
+        IsDMUltReady()
+        {
+            heroID := 99
+            ultButton := g_SF.GetUltimateButtonByChampID(heroID)
+            ultCd := g_SF.Memory.ReadUltimateCooldownByItem(ultButton - 1)
+            return ultCd <= 0 ; any <= 0 means it's not on cd
+        }
+
+        CanUseDMUlt()
+        {
+            return this.IsDMOnTheField() && this.IsDMUltReady()
+        }
+
+        IsDMOnTheField()
+        {
+            return g_SF.IsChampInFormation(99, g_SF.Memory.GetCurrentFormation())
+        }
+
+        UpdateRedraws()
+        {
+            if (!this.UsedUlt && !this.IsEllywickUltReady())
+            {
+                this.Redraws += 1
+                this.UsedUlt := true
+            }
+            else if (this.UsedUlt && this.IsEllywickUltReady())
+                this.UsedUlt := false
+            if (this.IsEllyWickOnTheField() && !this.IsEllywickUltReady())
+                this.UseDMUlt()
         }
     }
 
@@ -295,6 +328,7 @@ class IC_RNGWaitingRoom_Functions
                         this.SetStatus("Waiting for Ellywick's ult being available")
                 }
             }
+            this.UpdateRedraws()
         }
 
         StopGlobal()
@@ -366,5 +400,15 @@ class IC_RNGWaitingRoom_Functions
         formationFavorite := g_SF.Memory.GetFormationByFavorite(favorite)
         heroID := ActiveEffectKeySharedFunctions.Thellora.HeroID
         return g_SF.IsChampInFormation(heroID, formationFavorite)
+    }
+
+    GetIntitialFormation()
+    {
+        formation := g_SF.BGFLU_GetDefaultFormation()
+        ; Use DM if in modron formation.
+        heroID := 99
+        if (g_SF.IsChampInFormation(heroID, g_SF.Memory.GetActiveModronFormation()))
+            formation.Push(heroID)
+        return formation
     }
 }

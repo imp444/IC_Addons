@@ -1,5 +1,6 @@
 September 15, 2024 - v0.2.2
-    - DM's ultimate is used automatically to refresh Ellywick's ultimate is on cooldown when he is in the Modron formation.
+    - DM's ultimate is used automatically to refresh Ellywick's ultimate when he is on the field.
+      He is levelled at the start if he is in the Modron formation.
 
 August 30, 2024 - v0.2.1
     - Reverted main loop version to 0.1.3.

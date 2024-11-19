@@ -155,6 +155,19 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
                 status := SharedRunData.BGFHTS_Status
                 str := "Running" . (status != "" ? " - " . status : "")
                 GuiControl, ICScriptHub:Text, BGFHTS_StatusText, % str
+                stacks := SharedRunData.BGFHTS_SBStacksPredict
+                GuiControl, ICScriptHub:Text, BGFHTS_StacksPredict, % stacks
+                str := SharedRunData.BGFHTS_StacksPredictionActive ? "On" : "Off"
+                GuiControl, ICScriptHub:Text, BGFHTS_StacksPredictActive, % str
+                if (SharedRunData.BGFHTS_StacksPredictionActive)
+                {
+                    settings := this.Settings
+                    targetStacks := g_BrivUserSettings[ "TargetStacks" ]
+                    if (settings.Multirun && stacks - g_SF.Memory.ReadSBStacks() < targetStacks)
+                        targetStacks := settings.MultirunTargetStacks
+                    value := Max(0, targetStacks - stacks)
+                    GuiControl, ICScriptHub:Text, BGFHTS_SBStacksNeeded, % value
+                }
             }
             else
                 GuiControl, ICScriptHub:Text, BGFHTS_StatusText, Disabled

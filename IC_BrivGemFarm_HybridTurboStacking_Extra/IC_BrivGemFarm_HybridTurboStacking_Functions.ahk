@@ -81,4 +81,186 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         skipAmount := IC_BrivGemFarm_HybridTurboStacking_Functions.GetHighestBrivSkipAmount()
         return lastZone - skipAmount - 1
     }
+
+    ; Stacks
+
+    ; Return the number of stacks needed to jump noMetalbornJumps + metalbornJumps times.
+    ; Parameters: - noMetalbornJumps:int - Number of times Briv jumps without Metalborn.
+    ;             - metalbornJumps:int - Number of times Briv jumps with Metalborn.
+    CalcBrivStacksNeeded(noMetalbornJumps, metalbornJumps)
+    {
+        stacks := (noMetalbornJumps + metalbornJumps > 0) * 50
+        ; Last jump is always with Metalborn unless Briv never gets to level 170
+        ; Metalborn calculations must apply last meaning backtracking starts with Metalborn
+        Loop, % (metalbornJumps > 0 ? metalbornJumps - 1 : metalbornJumps)
+        {
+            stacks := Ceil((stacks - 0.5) / 0.968)
+            if (stacks > 999999999999999)
+                return "Too many"
+        }
+        Loop, % (metalbornJumps > 0 ? noMetalbornJumps : noMetalbornJumps - 1)
+        {
+            stacks := Ceil((stacks - 0.5) / 0.96)
+            if (stacks > 999999999999999)
+                return "Too many"
+        }
+        return stacks
+    }
+
+    ; Calculates the path from z1 to the reset area.
+    ; Parameters: - mod50values:Array - Preferred Briv jump zones for the Q/E favorite formations.
+    ;             - currentZone:int - Starting zone.
+    ;             - resetZone:int - Actual zone where the run is reset.
+    ;             - startStacks:int - Briv Haste stacks.
+    ;             - skipQ:int - Number of Briv jumps in the Q formation.
+    ;             - skipE:int - Number of Briv jumps in the E formation.
+    ;             - brivMinLevelArea:int - Minimum level where Briv can jump (LevelUp addon setting).
+    ;             - brivMetalbornArea:int - Minimum level where Briv gets Metalborn (LevelUp addon setting).
+    ; Returns:    - int - Number of Briv Haste stacks left at the reset zone.
+    CalcStacksLeftAtReset(mod50values, currentZone, resetZone, startStacks, skipQ, skipE, brivMinLevelArea := 1, brivMetalbornArea := 1)
+    {
+        qVal := skipQ != "" ? skipQ + 1 : 1
+        eVal := skipE != "" ? skipE + 1 : 1
+        if (!Isobject(mod50values))
+        {
+            mod50Int := mod50values
+            mod50values := []
+            Loop, 50
+                mod50values[A_Index] := (mod50Int & (2 ** (A_Index - 1))) != 0
+        }
+        ; Walk
+        Loop, % brivMinLevelArea - 1
+            ++currentZone > resetZone ? break : 1
+        ; Jump
+        while (currentZone < resetZone)
+        {
+            ; Area progress
+            mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)
+            mod50Value := mod50values[mod50Index]
+            move := mod50Value ? qVal : eVal
+            ; Update walk and metalborn jump counters
+            if (move == 1)
+                ++walks
+            else
+                startStacks := Round(startStacks * (currentZone < brivMetalbornArea ? 0.96 : 0.968))
+            currentZone += move
+        }
+        return startStacks
+    }
+
+    ; Predicts the number of Briv haste stacks after the next reset.
+    ; After resetting, Briv's Steelborne stacks are added to the remaining Haste stacks.
+    PredictStacks(addSBStacks := true, refreshCache := false)
+    {
+        static skipQ
+        static skipE
+
+        preferred := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
+        if (IsObject(IC_BrivGemFarm_LevelUp_Component))
+        {
+            brivMinlevelArea := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]
+            brivMetalbornArea := brivMinlevelArea
+        }
+        else
+        {
+            brivMinlevelArea := brivMetalbornArea := 1
+        }
+        if (refreshCache || skipQ == "" || skipE == "" || skipQ == 0 && skipE == 0)
+        {
+            skipQ := this.GetBrivSkipValue(1)
+            skipE := this.GetBrivSkipValue(3)
+        }
+        modronReset := g_SF.Memory.GetModronResetArea()
+        sbStacks := g_SF.Memory.ReadSBStacks()
+        currentZone := g_SF.Memory.ReadHighestZone()
+        highestZone := g_SF.Memory.ReadCurrentZone()
+        sprintStacks := g_SF.Memory.ReadHasteStacks()
+        ; Party has not progressed to the next zone yet but Briv stacks were consumed.
+        if (highestZone - currentZone > 1)
+            currentZone := highestZone
+        ; This assumes Briv has gained more than 48 stacks ever.
+        stacksAtReset := Max(48, this.CalcStacksLeftAtReset(preferred, currentZone, modronReset, sprintStacks, skipQ, skipE, brivMinlevelArea, brivMetalbornArea))
+        if (addSBStacks)
+            stacksAtReset += sbStacks
+        return stacksAtReset
+    }
+
+    PredictStacksActive
+    {
+        get
+        {
+            return !g_BrivUserSettings[ "AutoCalculateBrivStacks" ] && !g_BrivUserSettings[ "IgnoreBrivHaste" ]
+        }
+    }
+
+    GetBrivSkipValue(favoriteformationSlot := 1)
+    {
+        formation := g_SF.Memory.GetFormationByFavorite(favoriteformationSlot)
+        heroID := ActiveEffectKeySharedFunctions.Briv.HeroID
+        if (g_SF.IsChampInFormation(heroID, formation))
+        {
+            feats := this.GetHeroFeatsInFormationFavorite(favoriteformationSlot, heroID)
+            has9JFeat := false
+            for k, v in feats
+            {
+                ; 4J feat takes precedence over 9J feat
+                if (v == 791)
+                    return 4
+                else if (v == 2004)
+                    has9JFeat := true
+                if (has9JFeat)
+                    return 9
+            }
+            return this.GetBrivSkipValues()[1]
+        }
+        else
+            return 0
+    }
+
+    GetHeroFeatsInFormationFavorite(formationFavorite, heroID)
+    {
+        if (heroID < 1)
+            return ""
+        slot := g_SF.Memory.GetSavedFormationSlotByFavorite(formationFavorite)
+        size := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].FormationSaveHandler.formationSavesV2[slot].Feats[heroID].List.size.Read()
+        ; Sanity check, should be < 4 but set to 6 in case of future feat num increase.
+        if (size < 0 || size > 6)
+            return ""
+        featList := []
+        Loop, %size%
+        {
+            value := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].FormationSaveHandler.formationSavesV2[slot].Feats[heroID].List[A_Index - 1].Read()
+            featList.Push(value)
+        }
+        return featList
+    }
+
+    GetBrivLoot()
+    {
+        BrivID := 58
+        BrivJumpSlot := 4
+        gild := g_SF.Memory.ReadHeroLootGild(BrivID, BrivJumpSlot)
+        enchant := Floor(g_SF.Memory.ReadHeroLootEnchant(BrivID, BrivJumpSlot))
+        rarity := g_SF.Memory.ReadHeroLootRarityValue(BrivID, BrivJumpSlot)
+        return {gild:gild, enchant:enchant, rarity:rarity}
+    }
+
+    GetBrivSkipValues()
+    {
+        loot := this.GetBrivLoot()
+        gild := loot.gild
+        enchant := loot.enchant
+        rarity := loot.rarity
+        if (gild == "" || enchant == "" || rarity == "")
+            return ""
+        return this.CalculateAreaSkipValues(gild, enchant, rarity)
+    }
+
+    GetTargetQSkipValues()
+    {
+        skipValues := this.GetBrivSkipValues()
+        if (skipValues[2] == 100)
+            return [skipValues[1]]
+        return [skipValues[1] - 1, skipValues[1]]
+    }
 }

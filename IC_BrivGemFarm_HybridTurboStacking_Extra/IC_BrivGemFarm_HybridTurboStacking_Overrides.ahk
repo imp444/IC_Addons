@@ -49,18 +49,24 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         return shouldOfflineStack && !this.BGFHTS_DelayedOffline
     }
 
-    GetNumStacksFarmed()
+    GetNumStacksFarmed(afterReset := false)
     {
-        if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ] || !g_BrivUserSettingsFromAddons[ "BGFHTS_Multirun" ])
+        if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
             return base.GetNumStacksFarmed()
         if (base.ShouldOfflineStack())
             this.ShouldOfflineStack()
-        targetStacks := g_BrivUserSettings[ "TargetStacks" ]
-        combinedStacks := g_SF.Memory.ReadHasteStacks() + g_SF.Memory.ReadSBStacks()
-        return combinedStacks >= targetStacks ? combinedStacks : g_SF.Memory.ReadSBStacks() + 47
+        if (afterReset || IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive)
+        {
+            stacksAfterReset := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
+            g_SharedData.BGFHTS_SBStacksPredict := stacksAfterReset
+            return stacksAfterReset
+        }
+        else
+            return g_SF.Memory.ReadSBStacks() + 48
     }
 
     ; Tries to complete the zone before online stacking.
+    ; TODO:: Update target stacks if Thellora doesn't have enough stacks for the next run.
     StackNormal(maxOnlineStackTime := 300000)
     {
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
@@ -68,10 +74,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Melf stacking
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] && this.BGFHTS_PostponeStacking())
             return 0
-        stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed()
+        predictStacks := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive
+        stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed(predictStacks)
         targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
-        if (g_BrivUserSettingsFromAddons[ "BGFHTS_Multirun" ])
-            targetStacks := g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunTargetStacks" ]
         if (this.ShouldAvoidRestack(stacks, targetStacks))
             return
         if (this.BGFHTS_DelayedOffline)
@@ -79,6 +84,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             this.BGFHTS_DelayedOffline := false
             return this.StackRestart()
         }
+        if (g_BrivUserSettingsFromAddons[ "BGFHTS_Multirun" ])
+            targetStacks := g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunTargetStacks" ]
         g_SF.ToggleAutoProgress( 0, false, true )
         ; Complete the current zone
         completed := g_BrivUserSettingsFromAddons[ "BGFHTS_CompleteOnlineStackZone" ] && this.BGFHTS_WaitForZoneCompleted()
@@ -87,17 +94,38 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ElapsedTime := 0
         g_SharedData.LoopString := "Stack Normal"
         usedWardenUlt := false
-        while ( stacks < targetStacks AND ElapsedTime < maxOnlineStackTime )
+        ; Haste stacks are taken into account
+        if (predictStacks)
         {
-            g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
-            g_SF.FallBackFromBossZone()
-            ; Warden ultimate
-            wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
-            if (!usedWardenUlt && wardenThreshold > 0)
-                usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
-            stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed()
-            Sleep, 30
-            ElapsedTime := A_TickCount - StartTime
+            remainder := targetStacks - stacks
+            SBStacks := g_SF.Memory.ReadSBStacks()
+            while (SBStacks < remainder AND ElapsedTime < maxOnlineStackTime )
+            {
+                g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacks ) . "/" . targetStacks
+                g_SF.FallBackFromBossZone()
+                ; Warden ultimate
+                wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
+                if (!usedWardenUlt && wardenThreshold > 0)
+                    usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
+                Sleep, 30
+                ElapsedTime := A_TickCount - StartTime
+                SBStacks := g_SF.Memory.ReadSBStacks()
+            }
+        }
+        else
+        {
+            while ( stacks < targetStacks AND ElapsedTime < maxOnlineStackTime )
+            {
+                g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
+                g_SF.FallBackFromBossZone()
+                ; Warden ultimate
+                wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
+                if (!usedWardenUlt && wardenThreshold > 0)
+                    usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
+                Sleep, 30
+                ElapsedTime := A_TickCount - StartTime
+                stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed()
+            }
         }
         if ( ElapsedTime >= maxOnlineStackTime)
         {
@@ -117,6 +145,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             g_SharedData.BGFHTS_PreviousStackZone := g_SF.Memory.ReadCurrentZone()
             g_SharedData.BGFHTS_CurrentRunStackRange := ["", ""]
         }
+        g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
         g_SharedData.BGFHTS_Status := "Online stacking done"
     }
 
@@ -200,6 +229,8 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
 ;    BGFHTS_PreviousStackZone := 0
 ;    BGFHTS_Status := ""
 ;    BGFHTS_TimerFunction := ""
+;    BGFHTS_SBStacksPredict := 0
+;    BGFHTS_StacksPredictionActive := false
 
     ; Return true if the class has been updated by the addon.
     ; Returns "" if not properly loaded.
@@ -235,9 +266,6 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         mod50Zones := IC_BrivGemFarm_HybridTurboStacking_Functions.GetPreferredBrivStackZones(settings.PreferredBrivStackZones)
         g_BrivUserSettingsFromAddons[ "BGFHTS_PreferredBrivStackZones" ] := mod50Zones
         ; Melf
-        ; Disabled until this works properly
-        if (settings.Multirun)
-            settings.100Melf := false
         fncToCallOnTimer := this.BGFHTS_TimerFunction
         if (settings.Enabled && settings.100Melf)
         {
@@ -255,10 +283,19 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         resets := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
         if (forceUpdate || resets > lastResets || !IsObject(this.BGFHTS_CurrentRunStackRange))
         {
-            g_SharedData.BGFHTS_Status := ""
+            this.BGFHTS_Status := ""
             this.BGFHTS_CurrentRunStackRange := this.BGFHTS_CheckMelf()
             lastResets := resets
         }
+        this.BGFHTS_UpdateStacksPredict()
+    }
+
+    BGFHTS_UpdateStacksPredict()
+    {
+        predictStacks := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive
+        this.BGFHTS_StacksPredictionActive := predictStacks
+        if (predictStacks)
+                g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
     }
 
     BGFHTS_CheckMelf()

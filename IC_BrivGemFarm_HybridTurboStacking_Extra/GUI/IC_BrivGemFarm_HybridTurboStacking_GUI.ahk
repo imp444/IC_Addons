@@ -173,9 +173,22 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit4 vBGFHTS_WardenUlt gBGFHTS_WardenUlt
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vBGFHTS_WardenUltText, Use Warden's ultimate when enemy count has reached this value (0 disables)
+        ; Stack settings
+        Gui, ICScriptHub:Add, Groupbox, Section xs y+%ySpacing% vBGFHTS_StacksGroup, Stacks
+        ; Warning
+        GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
+        Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%yTitleSpacing% vBGFHTS_StacksWarning, The settings below require both Auto Detect and IgnoreBrivHaste off.
+        GUIFunctions.UseThemeTextColor()
+        ; Stacks prediction
+        Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vBGFHTS_StacksPredictActiveText, Stacks prediction:
+        Gui, ICScriptHub:Add, Text, x+5 w40 vBGFHTS_StacksPredictActive
+        Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vBGFHTS_StacksPredictText, Stacks after reset:
+        Gui, ICScriptHub:Add, Text, x+5 w60 vBGFHTS_StacksPredict
+        Gui, ICScriptHub:Add, Text, x+%xSpacing% vBGFHTS_SBStacksNeededText, SB stacks to farm for next run:
+        Gui, ICScriptHub:Add, Text, x+5 w60 vBGFHTS_SBStacksNeeded
         ; Multi-run
         center := ySpacing + 4
-        Gui, ICScriptHub:Add, CheckBox, xs y+%center% vBGFHTS_Multirun gBGFHTS_Multirun, Multiple run mode
+        Gui, ICScriptHub:Add, CheckBox, xs+%xSection% y+%center% vBGFHTS_Multirun gBGFHTS_Multirun, Multiple run mode
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
         Gui, ICScriptHub:Add, Edit, w40 x+%xSpacing% yp-4 Limit5 vBGFHTS_MultirunTargetStacks gBGFHTS_MultirunTargetStacks
         GUIFunctions.UseThemeTextColor()
@@ -187,16 +200,21 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         GuiControl, ICScriptHub:MoveDraw, BGFHTS_MultirunDelayOffline, w%newW%
         textPos := posX + 19
         Gui, ICScriptHub:Add, Text, x%textPos% yp-4 h%ctrlH% 0x200 vBGFHTS_MultirunDelayOfflineText, Delay offline until last run
-        ; Disabled until this works properly
-        GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-        Gui, ICScriptHub:Add, Text, xs y+5 vBGFHTS_TempWarning, Settings above will currently only work if late stacking (ignores Melf settings).
-        GUIFunctions.UseThemeTextColor()
+        ; Resize Stacks groupbox
+        GuiControlGet, pos, ICScriptHub:Pos, BGFHTS_MultirunDelayOfflineText
+        maxX := posX + posW + xSection - 5
+        GuiControlGet, pos, ICScriptHub:Pos, BGFHTS_MultirunDelayOfflineText
+        maxY := posY + posH + ySpacing
+        GuiControlGet, pos, ICScriptHub:Pos, BGFHTS_StacksGroup
+        newW := maxX - posX
+        newH := maxY - posY
+        GuiControl, ICScriptHub:MoveDraw, BGFHTS_StacksGroup, w%newW% h%newH%
         ; Melf settings
         Gui, ICScriptHub:Add, Groupbox, Section xs y+%ySpacing% vBGFHTS_MelfGroup, Melf
         Gui, ICScriptHub:Add, CheckBox, xs+%xSection% ys+%yTitleSpacing% vBGFHTS_100Melf gBGFHTS_100Melf, % "Delay stacking until Melf's" . " ""% " . "chance to spawn additional enemies"" effect is active"
         ; Min/max online stack zones
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
-        Gui, ICScriptHub:Add, Edit, w40 xs+%xSection%  y+%ySpacing% Limit4 vBGFHTS_MelfMinStackZone gBGFHTS_MelfMinStackZone
+        Gui, ICScriptHub:Add, Edit, w40 xs+%xSection% y+%ySpacing% Limit4 vBGFHTS_MelfMinStackZone gBGFHTS_MelfMinStackZone
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vBGFHTS_MelfMinStackZoneText, Min StackZone
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")

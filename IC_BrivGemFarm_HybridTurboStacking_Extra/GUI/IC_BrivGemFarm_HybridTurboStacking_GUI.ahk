@@ -85,6 +85,22 @@ BGFHTS_MelfMaxStackZone()
         g_HybridTurboStacking.UpdateSetting("MelfMaxStackZone", value)
 }
 
+BGFHTS_MelfActive()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    local value := % %A_GuiControl%
+    g_HybridTurboStacking.UpdateSetting("MelfActiveStrategy", value)
+}
+
+BGFHTS_MelfInactive()
+{
+    global
+    Gui, ICScriptHub:Submit, NoHide
+    local value := % %A_GuiControl%
+    g_HybridTurboStacking.UpdateSetting("MelfInactiveStrategy", value)
+}
+
 BGFHTS_Multirun()
 {
     global
@@ -221,6 +237,29 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         Gui, ICScriptHub:Add, Edit, w40 x+%xSpacing% Limit4 vBGFHTS_MelfMaxStackZone gBGFHTS_MelfMaxStackZone
         GUIFunctions.UseThemeTextColor()
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vBGFHTS_MelfMaxStackZoneText, Max StackZone
+        ; Melf  active
+        Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vBGFHTS_MelfActiveText, If Melf's effect is active:
+        Gui, ICScriptHub:Add, DropDownList, x+7 yp-3 AltSubmit w165 vBGFHTS_MelfActive gBGFHTS_MelfActive
+        choices := "Stack online with Melf||Stack online with Melf + Tatyana/Warden"
+        GuiControl, ICScriptHub:, BGFHTS_MelfActive, % "|" . choices
+        newWidth := this.DropDownSize(choices,,, 8)
+        GuiControlGet, hnwd, ICScriptHub:Hwnd, BGFHTS_MelfActive
+        SendMessage, 0x0160, newWidth, 0,, ahk_id %hnwd% ; CB_SETDROPPEDWIDTH
+        ; Melf not active
+        Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vBGFHTS_MelfInactiveText, If Melf's effect is not active:
+        Gui, ICScriptHub:Add, DropDownList, x+7 yp-3 AltSubmit w165 vBGFHTS_MelfInactive gBGFHTS_MelfInactive
+        choices := "Stack online with Tatyana||Stack offline"
+        GuiControl, ICScriptHub:, BGFHTS_MelfInactive, % "|" . choices
+        newWidth := this.DropDownSize(choices,,, 8)
+        ; Position
+        GuiControlGet, pos, ICScriptHub:Pos, BGFHTS_MelfInactive
+        controlID := "BGFHTS_MelfActive"
+        GuiControlGet, oldPos, ICScriptHub:Pos, %controlID%
+        GuiControl, ICScriptHub:Move, %controlID%, x%posX%
+        ; Bug when using Move in a Tab control
+        GuiControlGet, bugPos, ICScriptHub:Pos, %controlID%
+        xFixBug := 2 * posX - bugPosX
+        GuiControl, ICScriptHub:MoveDraw, %controlID%, x%xFixBug%
         ; BGFHTS_CurrentRunStackRange
         Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vBGFHTS_CurrentRunStackRangeText, Current Run Stack Range:
         Gui, ICScriptHub:Add, Text, x+5 w220 vBGFHTS_CurrentRunStackRange
@@ -339,6 +378,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         GuiControl, ICScriptHub:, BGFHTS_100Melf, % data.100Melf
         GuiControl, ICScriptHub:, BGFHTS_MelfMinStackZone, % data.MelfMinStackZone
         GuiControl, ICScriptHub:, BGFHTS_MelfMaxStackZone, % data.MelfMaxStackZone
+        GuiControl, ICScriptHub:Choose, BGFHTS_MelfInactive, % data.MelfInactiveStrategy
         this.ToggleMultirun(data.Multirun)
         this.LoadMod50(data.PreferredBrivStackZones)
     }
@@ -503,5 +543,20 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
             GuiControl, ICScriptHub:, BGFHTS_BrivStack_Mod_50_%A_Index%, % checked
         }
         Gui, ICScriptHub:Submit, NoHide
+    }
+
+    ; Returns the width of DDL accomodating the longest item in list.
+    DropDownSize(List, Font:="", FontSize:=10, Padding:=24)
+    {
+        Loop, Parse, List, |
+        {
+            if Font
+                Gui DropDownSize:Font, s%FontSize%, %Font%
+            Gui DropDownSize:Add, Text, R1, %A_LoopField%
+            GuiControlGet T, DropDownSize:Pos, Static%A_Index%
+            TW > X ? X := TW :
+        }
+        Gui DropDownSize:Destroy
+        return X + Padding
     }
 }

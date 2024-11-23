@@ -3,7 +3,10 @@
 ; Functions that are used by this Addon.
 class IC_BrivGemFarm_HybridTurboStacking_Functions
 {
+    static WARDEN_ID := 36
     static BRIV_ID := 58
+    static MELF_ID := 59
+    static TATYANA_ID := 97
     static BrivJumpSlot := 4
     static SettingsPath := A_LineFile . "\..\BrivGemFarm_HybridTurboStacking_Settings.json"
 
@@ -262,5 +265,44 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         if (skipValues[2] == 100)
             return [skipValues[1]]
         return [skipValues[1] - 1, skipValues[1]]
+    }
+
+    ; Hotswap to have different stacking formations.
+    GetFormationByFavoriteRemoveTatyanaWarden(favorite := 0)
+    {
+        slot := g_SF.Memory.GetSavedFormationSlotByFavorite(favorite)
+        formation := g_SF.Memory.GetFormationSaveBySlot(slot)
+        if (favorite == 2)
+        {
+            for k, v in formation
+            {
+                if (v == IC_BrivGemFarm_HybridTurboStacking_Functions.WARDEN_ID || v == IC_BrivGemFarm_HybridTurboStacking_Functions.TATYANA_ID)
+                {
+                    ; Champions will be on the field if already levelled.
+                    if (g_SF.Memory.ReadChampLvlByID(v) < 1)
+                        formation[k] := -1
+                }
+            }
+        }
+        return formation
+    }
+
+    GetFormationByFavoriteRemoveMelf(favorite := 0)
+    {
+        slot := g_SF.Memory.GetSavedFormationSlotByFavorite(favorite)
+        formation := g_SF.Memory.GetFormationSaveBySlot(slot)
+        if (favorite == 2)
+        {
+            for k, v in formation
+            {
+                if (v == IC_BrivGemFarm_HybridTurboStacking_Functions.MELF_ID)
+                {
+                    ; Champions will be on the field if already levelled.
+                    if (g_SF.Memory.ReadChampLvlByID(v) < 1)
+                        formation[k] := -1
+                }
+            }
+        }
+        return formation
     }
 }

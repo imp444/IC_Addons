@@ -9,24 +9,38 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
 ;    BGFHTS_DelayedOffline := false
 ;    BGFHTS_LastOfflineReset := 0
 
+    ; Stacking offline uses g_BrivUserSettings[ "StackZone" ].
+    ; While online uses BGFHTS_MelfMinStackZone.
     TestForSteelBonesStackFarming()
     {
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ] || this.ShouldOfflineStack())
             return base.TestForSteelBonesStackFarming()
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ])
             return base.TestForSteelBonesStackFarming()
-        ; Use Melf Min StackZone settings
+        ; If no Melf +spawn effect until reset, stack offline.
+        range := g_SharedData.BGFHTS_CurrentRunStackRange
+        if (range[1] == "" || range[2] == "")
+            return base.TestForSteelBonesStackFarming()
+        ; Use Melf Min StackZone settings.
         savedStackZone := g_BrivUserSettings[ "StackZone" ]
         g_BrivUserSettings[ "StackZone" ] := g_BrivUserSettingsFromAddons[ "BGFHTS_MelfMinStackZone" ] - 1
-        base.TestForSteelBonesStackFarming()
+        r := base.TestForSteelBonesStackFarming()
         g_BrivUserSettings[ "StackZone" ] := savedStackZone
+        return r
     }
 
     ; Determines if offline stacking is expected with current settings and conditions.
     ShouldOfflineStack()
     {
-        if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ] || !g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunDelayOffline" ])
+        if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
             return base.ShouldOfflineStack()
+        ; If no Melf +spawn effect until reset, stack offline.
+        range := g_SharedData.BGFHTS_CurrentRunStackRange
+        if ((range[1] == "" || range[2] == "") && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
+            return true
+        if (!g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunDelayOffline" ])
+            return base.ShouldOfflineStack()
+        ; Delay offline until last restart for multiple runs.
         shouldOfflineStack := base.ShouldOfflineStack()
         targetStacks := g_BrivUserSettings[ "TargetStacks" ]
         combinedStacks := g_SF.Memory.ReadHasteStacks() + g_SF.Memory.ReadSBStacks()
@@ -79,7 +93,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
         if (this.ShouldAvoidRestack(stacks, targetStacks))
             return
-        if (this.BGFHTS_DelayedOffline)
+        ; Check if offline stack is needed
+        isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
+        if (this.BGFHTS_DelayedOffline || !isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
         {
             this.BGFHTS_DelayedOffline := false
             return this.StackRestart()
@@ -89,7 +105,23 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         g_SF.ToggleAutoProgress( 0, false, true )
         ; Complete the current zone
         completed := g_BrivUserSettingsFromAddons[ "BGFHTS_CompleteOnlineStackZone" ] && this.BGFHTS_WaitForZoneCompleted()
+        ; Conditional stack formation
+        if (!isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 1)
+        {
+            savedFunc := g_SF.Memory.GetFormationByFavorite
+            g_SF.Memory["GetFormationByFavorite"] := IC_BrivGemFarm_HybridTurboStacking_Functions.GetFormationByFavoriteRemoveMelf
+            modifiedStackFormation := true
+        }
+        else if (isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfActiveStrategy" ] == 1)
+        {
+            savedFunc := g_SF.Memory.GetFormationByFavorite
+            g_SF.Memory["GetFormationByFavorite"] := IC_BrivGemFarm_HybridTurboStacking_Functions.GetFormationByFavoriteRemoveTatyanaWarden
+            modifiedStackFormation := true
+        }
         this.StackFarmSetup()
+        if (modifiedStackFormation)
+            g_SF.Memory["GetFormationByFavorite"] := savedFunc
+        ; Start online stacking
         StartTime := A_TickCount
         ElapsedTime := 0
         g_SharedData.LoopString := "Stack Normal"
@@ -199,13 +231,18 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Stack immediately if Briv can't jump anymore.
         if (g_SF.Memory.ReadHasteStacks() < 50)
             return false
-        ; Stack immediately if not inside range.
+        currentZone := g_SF.Memory.ReadCurrentZone()
+        ; Stack as soon as possible if not inside range.
         range := g_SharedData.BGFHTS_CurrentRunStackRange
         if (range[1] == "" || range[2] == "")
+        {
+            ; Offline stack after StackZone has been reached
+            if (g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
+                return currentZone < g_BrivUserSettings[ "StackZone" ] + 1
             return false
+        }
         stackZone := range[1]
         ; Stack immediately to prevent resetting before stacking.
-        currentZone := g_SF.Memory.ReadCurrentZone()
         if (currentZone > IC_BrivGemFarm_HybridTurboStacking_Functions.GetLastSafeStackZone())
             return false
         if (stackZone)
@@ -218,6 +255,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             if (!IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore())
                 return true
         }
+        ; Offline stack after StackZone has been reached
+        if (this.BGFHTS_DelayedOffline)
+            return currentZone < g_BrivUserSettings[ "StackZone" ] + 1
         return false
     }
 }
@@ -263,6 +303,8 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] := settings.100Melf
         g_BrivUserSettingsFromAddons[ "BGFHTS_MelfMinStackZone" ] := settings.MelfMinStackZone
         g_BrivUserSettingsFromAddons[ "BGFHTS_MelfMaxStackZone" ] := settings.MelfMaxStackZone
+        g_BrivUserSettingsFromAddons[ "BGFHTS_MelfActiveStrategy" ] := settings.MelfActiveStrategy
+        g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] := settings.MelfInactiveStrategy
         mod50Zones := IC_BrivGemFarm_HybridTurboStacking_Functions.GetPreferredBrivStackZones(settings.PreferredBrivStackZones)
         g_BrivUserSettingsFromAddons[ "BGFHTS_PreferredBrivStackZones" ] := mod50Zones
         ; Melf

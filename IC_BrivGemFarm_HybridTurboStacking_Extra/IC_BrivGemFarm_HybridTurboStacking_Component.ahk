@@ -89,6 +89,8 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         settings.MelfMinStackZone := g_BrivUserSettings[ "StackZone" ] + 1
         last := IC_BrivGemFarm_HybridTurboStacking_Functions.GetLastSafeStackZone()
         settings.MelfMaxStackZone := last != "" ? last : 1949
+        settings.MelfActiveStrategy := 1
+        settings.MelfInactiveStrategy := 1
         settings.PreferredBrivStackZones := 544790277504495
         return settings
     }

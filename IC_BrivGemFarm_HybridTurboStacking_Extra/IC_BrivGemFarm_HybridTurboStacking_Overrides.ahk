@@ -179,7 +179,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         }
         g_PreviousZoneStartTime := A_TickCount
         ; Go back to z-1 if failed to complete the current zone
-        if (!completed)
+        if (g_SF.Memory.ReadQuestRemaining() > 0)
             g_SF.FallBackFromZone()
         else
             g_SF.ToggleAutoProgress( 1, false, true )

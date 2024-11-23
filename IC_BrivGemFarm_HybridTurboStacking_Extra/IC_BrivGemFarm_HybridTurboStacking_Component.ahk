@@ -219,13 +219,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         this.Forecast := forecast
         minZone := this.settings.MelfMinStackZone
         maxZone := this.settings.MelfMaxStackZone
-        success := 0
-        Loop, % maxRows
-        {
-            reset := resets + A_Index - 1
-            if (IC_BrivGemFarm_HybridTurboStacking_Melf.GetFirstSpawnMoreEffectRange(reset, minZone, maxZone))
-                ++success
-        }
+        success := IC_BrivGemFarm_HybridTurboStacking_Melf.GetNumberOfSuccessesInRange(resets, maxRows, minZone, maxZone)
         g_HybridTurboStackingGui.UpdateForecast(newValues, minZone, maxZone, success)
     }
 

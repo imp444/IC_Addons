@@ -53,4 +53,19 @@ Class IC_BrivGemFarm_HybridTurboStacking_Melf
 		    result[A_Index] := rng.NextRange(0, 3)
 		return result
     }
+
+    GetNumberOfSuccessesInRange(resets := "", next := 1000, min := 1, max := 2050)
+    {
+        if (resets == "")
+            resets := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
+        successes := 0
+        Loop, % next
+        {
+            reset := resets + A_Index - 1
+            range := this.GetFirstSpawnMoreEffectRange(reset, min, max)
+            if (range != 0)
+                successes += 1
+        }
+        return successes
+    }
 }

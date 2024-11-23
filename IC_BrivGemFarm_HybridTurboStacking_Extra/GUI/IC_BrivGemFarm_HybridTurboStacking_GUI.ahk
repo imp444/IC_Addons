@@ -147,6 +147,13 @@ BGFHTS_ShowMelfForecast()
     Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Show, AutoSize Center
 }
 
+BGFHTS_SuccessManual()
+{
+    GuiControl, IC_BrivGemFarm_HybridTurboStacking_Melf: Disable, BGFHTS_SuccessManualButton
+    g_HybridTurboStackingGui.UpdateSuccessManual()
+    GuiControl, IC_BrivGemFarm_HybridTurboStacking_Melf: Enable, BGFHTS_SuccessManualButton
+}
+
 BGFHTS_Mod50CheckBoxes()
 {
 }
@@ -344,7 +351,9 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         ; Success rate
         Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Text, xs y+%ySpacing% vBGFHTS_SuccessText, Success:
         GUIFunctions.UseThemeTextColor()
-        Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Text, x+5 w150 vBGFHTS_SuccessValueText
+        Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Text, x+5 w100 vBGFHTS_SuccessValueText
+        Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Button, x+10 yp-5 vBGFHTS_SuccessManualButton gBGFHTS_SuccessManual, Calculate rate for the next 10000 resets
+        Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Text, x+5 w100 yp+5 vBGFHTS_SuccessManual, % "       /10000"
         ; LV
         if (VerCompare(A_AhkVersion, "<1.1.37.02"))
         {
@@ -489,6 +498,16 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         GuiControl, +Redraw, %controlID%
         successStr := success . "/" . g_HybridTurboStacking.MAX_MELF_FORECAST_ROWS
         GuiControl, IC_BrivGemFarm_HybridTurboStacking_Melf:, BGFHTS_SuccessValueText, % successStr
+    }
+
+    UpdateSuccessManual(next := 10000)
+    {
+        settings := g_HybridTurboStacking.Settings
+        minZone := settings.MelfMinStackZone
+        maxZone := settings.MelfMaxStackZone
+        success := IC_BrivGemFarm_HybridTurboStacking_Melf.GetNumberOfSuccessesInRange(, next, minZone, maxZone)
+        successStr := success . "/" . next
+        GuiControl, IC_BrivGemFarm_HybridTurboStacking_Melf:, BGFHTS_SuccessManual, % successStr
     }
 
     ; Resize ListViews up to the maximum size of ICScriptHub's main tab.

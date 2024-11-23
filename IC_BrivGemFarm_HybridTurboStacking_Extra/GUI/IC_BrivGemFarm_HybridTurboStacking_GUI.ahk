@@ -91,6 +91,7 @@ BGFHTS_MelfActive()
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
     g_HybridTurboStacking.UpdateSetting("MelfActiveStrategy", value)
+    g_HybridTurboStackingGui.CheckSettingsCombo()
 }
 
 BGFHTS_MelfInactive()
@@ -99,6 +100,7 @@ BGFHTS_MelfInactive()
     Gui, ICScriptHub:Submit, NoHide
     local value := % %A_GuiControl%
     g_HybridTurboStacking.UpdateSetting("MelfInactiveStrategy", value)
+    g_HybridTurboStackingGui.CheckSettingsCombo()
 }
 
 BGFHTS_Multirun()
@@ -181,19 +183,23 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         local yTitleSpacing := 20
         local ySpacing := 10
         local ctrlH:= 21
+        local text := ""
         Gui, ICScriptHub:Add, Button, xs y+%yTitleSpacing% vBGFHTS_Save gBGFHTS_Save, Save
         Gui, ICScriptHub:Add, CheckBox, x+18 yp+5 vBGFHTS_Enabled gBGFHTS_Enabled, Enabled
-        Gui, ICScriptHub:Add, CheckBox, xs y+%yTitleSpacing% vBGFHTS_CompleteZone gBGFHTS_CompleteZone, Complete the stacking zone before online stacking
+        text := "Complete the stacking zone before online stacking"
+        Gui, ICScriptHub:Add, CheckBox, xs y+%yTitleSpacing% vBGFHTS_CompleteZone gBGFHTS_CompleteZone, % text
         ; Warden ult
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
         Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacing% Limit4 vBGFHTS_WardenUlt gBGFHTS_WardenUlt
         GUIFunctions.UseThemeTextColor()
-        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vBGFHTS_WardenUltText, Use Warden's ultimate when enemy count has reached this value (0 disables)
+        text := "Use Warden's ultimate when enemy count has reached this value (0 disables)"
+        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vBGFHTS_WardenUltText, % text
         ; Stack settings
         Gui, ICScriptHub:Add, Groupbox, Section xs y+%ySpacing% vBGFHTS_StacksGroup, Stacks
         ; Warning
         GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-        Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%yTitleSpacing% vBGFHTS_StacksWarning, The settings below require both Auto Detect and IgnoreBrivHaste off.
+        text := "The settings below require both Auto Detect and IgnoreBrivHaste off."
+        Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%yTitleSpacing% vBGFHTS_StacksWarning, % text
         GUIFunctions.UseThemeTextColor()
         ; Stacks prediction
         Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vBGFHTS_StacksPredictActiveText, Stacks prediction:
@@ -227,7 +233,8 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         GuiControl, ICScriptHub:MoveDraw, BGFHTS_StacksGroup, w%newW% h%newH%
         ; Melf settings
         Gui, ICScriptHub:Add, Groupbox, Section xs y+%ySpacing% vBGFHTS_MelfGroup, Melf
-        Gui, ICScriptHub:Add, CheckBox, xs+%xSection% ys+%yTitleSpacing% vBGFHTS_100Melf gBGFHTS_100Melf, % "Delay stacking until Melf's" . " ""% " . "chance to spawn additional enemies"" effect is active"
+        text := "Delay stacking until Melf's" . " ""% " . "chance to spawn additional enemies"" effect is active"
+        Gui, ICScriptHub:Add, CheckBox, xs+%xSection% ys+%yTitleSpacing% vBGFHTS_100Melf gBGFHTS_100Melf, % text
         ; Min/max online stack zones
         GUIFunctions.UseThemeTextColor("InputBoxTextColor")
         Gui, ICScriptHub:Add, Edit, w40 xs+%xSection% y+%ySpacing% Limit4 vBGFHTS_MelfMinStackZone gBGFHTS_MelfMinStackZone
@@ -245,6 +252,16 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         newWidth := this.DropDownSize(choices,,, 8)
         GuiControlGet, hnwd, ICScriptHub:Hwnd, BGFHTS_MelfActive
         SendMessage, 0x0160, newWidth, 0,, ahk_id %hnwd% ; CB_SETDROPPEDWIDTH
+        ; Info
+        link := ""
+        if (GUIFunctions.isDarkMode)
+            link := A_LineFile . "\..\..\..\SH_Addon_Management\Images\MenuBarDark.png"
+        else
+            link := A_LineFile . "\..\..\..\SH_Addon_Management\Images\MenuBar.png"
+        handle := LoadPicture(link)
+        Gui, ICScriptHub:Add, Pic, w%ctrlH% h-1 x+%ctrlH% vBGFHTS_AddonRequiredPic, % "HBITMAP:*" handle
+        text := "ScriptHub doesn't support multiple stacking formations natively. Level up addon is required for this combination."
+        GUIFunctions.AddToolTip("BGFHTS_AddonRequiredPic", text)
         ; Melf not active
         Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vBGFHTS_MelfInactiveText, If Melf's effect is not active:
         Gui, ICScriptHub:Add, DropDownList, x+7 yp-3 AltSubmit w165 vBGFHTS_MelfInactive gBGFHTS_MelfInactive
@@ -558,5 +575,15 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         }
         Gui DropDownSize:Destroy
         return X + Padding
+    }
+
+    CheckSettingsCombo()
+    {
+        GuiControlGet, melfActiveValue, ICScriptHub:, BGFHTS_MelfActive
+        GuiControlGet, melfInactiveValue, ICScriptHub:, BGFHTS_MelfInactive
+        if (melfActiveValue == 1 && melfInactiveValue == 1)
+            GuiControl, ICScriptHub:Show, BGFHTS_AddonRequiredPic
+        else
+            GuiControl, ICScriptHub:Hide, BGFHTS_AddonRequiredPic
     }
 }

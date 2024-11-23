@@ -127,6 +127,13 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ElapsedTime := 0
         g_SharedData.LoopString := "Stack Normal"
         usedWardenUlt := false
+        ; Turn on Briv auto-heal
+        autoHeal := g_BrivUserSettingsFromAddons[ "BGFHTS_BrivAutoHeal" ] > 0
+        if (autoHeal)
+        {
+            fncToCallOnTimer := g_SharedData.BGFHTS_TimerFunctionHeal
+            SetTimer, %fncToCallOnTimer%, 1000, 0
+        }
         ; Haste stacks are taken into account
         if (predictStacks)
         {
@@ -160,6 +167,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
                 stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed()
             }
         }
+        ; Turn off Briv auto-heal
+        if (autoHeal)
+            SetTimer, %fncToCallOnTimer%, Off
         if ( ElapsedTime >= maxOnlineStackTime)
         {
             this.RestartAdventure( "Online stacking took too long (> " . (maxOnlineStackTime / 1000) . "s) - z[" . g_SF.Memory.ReadCurrentZone() . "].")
@@ -268,8 +278,11 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
 {
 ;    BGFHTS_CurrentRunStackRange := ""
 ;    BGFHTS_PreviousStackZone := 0
+;    BGFHTS_BrivDeaths := 0
+;    BGFHTS_BrivHeals := 0
 ;    BGFHTS_Status := ""
 ;    BGFHTS_TimerFunction := ""
+;    BGFHTS_TimerFunctionHeal := ""
 ;    BGFHTS_SBStacksPredict := 0
 ;    BGFHTS_StacksPredictionActive := false
 
@@ -283,7 +296,10 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
     ; Load settings after "Start Gem Farm" has been clicked.
     BGFHTS_Init()
     {
+        this.BGFHTS_BrivDeaths := 0
+        this.BGFHTS_BrivHeals := 0
         this.BGFHTS_TimerFunction := ObjBindMethod(this, "BGFHTS_UpdateMelfStackZoneAfterReset")
+        this.BGFHTS_TimerFunctionHeal := ObjBindMethod(IC_BrivGemFarm_HybridTurboStacking_Functions, "CheckBrivHealth")
         this.BGFHTS_UpdateSettingsFromFile()
     }
 
@@ -298,6 +314,7 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ] := settings.Enabled
         g_BrivUserSettingsFromAddons[ "BGFHTS_CompleteOnlineStackZone" ] := settings.CompleteOnlineStackZone
         g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ] := settings.WardenUltThreshold
+        g_BrivUserSettingsFromAddons[ "BGFHTS_BrivAutoHeal" ] := settings.BrivAutoHeal
         g_BrivUserSettingsFromAddons[ "BGFHTS_Multirun" ] := settings.Multirun
         g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunTargetStacks" ] := settings.MultirunTargetStacks
         g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunDelayOffline" ] := settings.MultirunDelayOffline

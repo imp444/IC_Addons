@@ -82,6 +82,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         settings.Enabled := false
         settings.CompleteOnlineStackZone := true
         settings.WardenUltThreshold := 50
+        settings.BrivAutoHeal := 50
         settings.Multirun := false
         settings.MultirunTargetStacks := g_BrivUserSettings[ "TargetStacks" ]
         settings.MultirunDelayOffline := true
@@ -153,6 +154,8 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
                 data.CurrentRunEffects := SharedRunData.BGFHTS_CurrentRunEffects
                 data.CurrentRunStackRange := SharedRunData.BGFHTS_CurrentRunStackRange
                 data.PreviousStackZone := SharedRunData.BGFHTS_PreviousStackZone
+                data.BrivDeaths := SharedRunData.BGFHTS_BrivDeaths
+                data.BrivHeals := SharedRunData.BGFHTS_BrivHeals
                 g_HybridTurboStackingGui.UpdateGUI(data)
                 status := SharedRunData.BGFHTS_Status
                 str := "Running" . (status != "" ? " - " . status : "")

@@ -159,7 +159,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         static skipE
 
         preferred := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
-        if (IsObject(IC_BrivGemFarm_LevelUp_Component))
+        if (IsObject(IC_BrivGemFarm_LevelUp_Component) || IsObject(IC_BrivGemFarm_LevelUp_Class))
         {
             brivMinlevelArea := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]
             brivMetalbornArea := brivMinlevelArea
@@ -304,5 +304,56 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
             }
         }
         return formation
+    }
+
+    ; Heal
+
+    ReadHealthPercent(champID := 58)
+    {
+        if (champID < 1)
+            return ""
+        obj := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.HeroHandler.heroes[g_SF.Memory.GetHeroHandlerIndexByChampID(champID)].health.QuickClone()
+        ; lastHealthPercent
+        obj.FullOffsets[obj.FullOffsets.Length()] += 8
+        return 100 * obj.Read()
+    }
+
+    HealHero(champID := 58)
+    {
+        if (champID < 1)
+            return ""
+        ; x10 = full heal
+        if (this.ReadLevelUpAmount() != 10)
+            g_SF.DirectedInput(, release := 0, "{Shift}") ;keysdown
+        keys := ["{Shift}", "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}"]
+        g_SF.DirectedInput(, release := 0, keys*) ;keysdown
+        g_SF.DirectedInput(hold := 0,, keys*) ;keysup
+        return true
+    }
+
+    ReadLevelUpAmount()
+    {
+        value := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.levelUpAmount.Read()
+        return value == "" ? 100 : value
+    }
+
+    CheckBrivHealth()
+    {
+        static lastPercent := ""
+
+        percent := Max(0, this.ReadHealthPercent())
+        if (lastPercent > 0 && percent == 0)
+        {
+            g_SharedData.BGFHTS_BrivDeaths += 1
+            lastPercent := 0
+        }
+        else if (percent > 0 && percent < g_BrivUserSettingsFromAddons[ "BGFHTS_BrivAutoHeal" ])
+        {
+            if (IsObject(IC_BrivGemFarm_LevelUp_Class) && !IC_BrivGemFarm_LevelUp_Class.BGFLU_CanAffordUpgrade(58))
+                return
+            this.HealHero()
+            g_SharedData.BGFHTS_BrivHeals += 1
+        }
+        lastPercent := percent
     }
 }

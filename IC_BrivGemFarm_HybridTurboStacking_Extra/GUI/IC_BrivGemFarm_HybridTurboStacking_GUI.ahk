@@ -71,6 +71,13 @@ BGFHTS_WardenUlt()
         g_HybridTurboStacking.UpdateSetting("WardenUltThreshold", value)
 }
 
+BGFHTS_BrivAutoHeal()
+{
+    global
+    if ((value := BGFHTS_ValidateInput(0, 100)) != "RETURN")
+        g_HybridTurboStacking.UpdateSetting("BrivAutoHeal", value)
+}
+
 BGFHTS_MelfMinStackZone()
 {
     global
@@ -182,6 +189,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         local xSpacing := 10
         local yTitleSpacing := 20
         local ySpacing := 10
+        local ySpacingSmall := 5
         local ctrlH:= 21
         local text := ""
         Gui, ICScriptHub:Add, Button, xs y+%yTitleSpacing% vBGFHTS_Save gBGFHTS_Save, Save
@@ -194,6 +202,18 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         GUIFunctions.UseThemeTextColor()
         text := "Use Warden's ultimate when enemy count has reached this value (0 disables)"
         Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vBGFHTS_WardenUltText, % text
+        ; Briv auto-heal
+        GUIFunctions.UseThemeTextColor("InputBoxTextColor")
+        Gui, ICScriptHub:Add, Edit, w40 xs y+%ySpacingSmall% Limit4 vBGFHTS_BrivAutoHeal gBGFHTS_BrivAutoHeal
+        GUIFunctions.UseThemeTextColor()
+        text := "Heal Briv if his health goes below this percentage (0 disables)"
+        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 vBGFHTS_BrivAutoHealText, % text
+        Gui, ICScriptHub:Add, Text, xs y+%ySpacingSmall% vBGFHTS_BrivHealthText, Current health:
+        Gui, ICScriptHub:Add, Text, x+5 w60 vBGFHTS_BrivHealth
+        Gui, ICScriptHub:Add, Text, x+%xSpacing% vBGFHTS_DeathsText, Deaths:
+        Gui, ICScriptHub:Add, Text, x+5 w30 vBGFHTS_Deaths
+        Gui, ICScriptHub:Add, Text, x+%xSpacing% vBGFHTS_HealsText, Times healed:
+        Gui, ICScriptHub:Add, Text, x+5 w30 vBGFHTS_Heals
         ; Stack settings
         Gui, ICScriptHub:Add, Groupbox, Section xs y+%ySpacing% vBGFHTS_StacksGroup, Stacks
         ; Warning
@@ -382,6 +402,11 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         rangeStr := range[1] . "-" . range[2]
         GuiControl, ICScriptHub:Text, BGFHTS_CurrentRunStackRange, % rangeStr
         GuiControl, ICScriptHub:Text, BGFHTS_PreviousStackZone, % data.PreviousStackZone
+        GuiControl, ICScriptHub:Text, BGFHTS_Deaths, % data.BrivDeaths
+        GuiControl, ICScriptHub:Text, BGFHTS_Heals, % data.BrivHeals
+        healthPercentage := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadHealthPercent()
+        value := Round(healthPercentage, 3) . "%"
+        GuiControl, ICScriptHub:Text, BGFHTS_BrivHealth, % value
     }
 
     UpdateGUISettings(data)
@@ -389,6 +414,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         GuiControl, ICScriptHub:, BGFHTS_Enabled, % data.Enabled
         GuiControl, ICScriptHub:, BGFHTS_CompleteZone, % data.CompleteOnlineStackZone
         GuiControl, ICScriptHub:, BGFHTS_WardenUlt, % data.WardenUltThreshold
+        GuiControl, ICScriptHub:, BGFHTS_BrivAutoHeal, % data.BrivAutoHeal
         GuiControl, ICScriptHub:, BGFHTS_Multirun, % data.Multirun
         GuiControl, ICScriptHub:, BGFHTS_MultirunTargetStacks, % data.MultirunTargetStacks
         GuiControl, ICScriptHub:, BGFHTS_MultirunDelayOffline, % data.MultirunDelayOffline

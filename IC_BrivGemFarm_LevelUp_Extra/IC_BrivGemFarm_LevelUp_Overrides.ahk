@@ -362,7 +362,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                     continue
                 ; Level up Briv to BrivMinLevelStacking before stacking
                 if (this.BGFLU_NeedToStack())
-                    targetLevel := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" . (this.ShouldOfflineStack() ? "" : "Online") ]
+                    targetLevel := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" . (g_BrivGemFarm.ShouldOfflineStack() ? "" : "Online") ]
             }
             if (this.BGFLU_LevelUpChamp(champID, targetLevel))
                 return false

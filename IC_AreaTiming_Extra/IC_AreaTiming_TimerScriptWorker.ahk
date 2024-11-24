@@ -165,11 +165,26 @@ Class IC_AreaTiming_TimerScriptWorker
         isQFormation := g_SF.IsCurrentFormation(formationQ)
         isWFormation := g_SF.IsCurrentFormation(formationW)
         isEFormation := g_SF.IsCurrentFormation(formationE)
-        if (!stacking && !resetting && cond && isWFormation && currentZone != 1 && !skipFirstValue)
+        if (!stacking && !resetting && cond && currentZone != 1 && !skipFirstValue)
         {
-            if (!g_SF.Memory.ReadTransitioning())
+            if (!isWFormation)
+            {
+                try
+                {
+                    guid := g_SF.LoadObjectFromJSON(A_LineFile . "\..\..\IC_BrivGemFarm_Performance\LastGUID_BrivGemFarm.json")
+                    sharedData := ComObjActive(guid)
+                    if (sharedData.LoopString == "Setting stack farm formation.")
+                        shStacking := true
+                    else if (sharedData.LoopString == "Stack Normal")
+                        shStacking := true
+                    else if InStr(sharedData.LoopString, "Stack Sleep: ")
+                        shStacking := true
+                }
+            }
+            if ((isWFormation || shStacking) && !g_SF.Memory.ReadTransitioning())
             {
                 stacking := true
+                shStacking := false
                 sbStacksBefore := g_SF.Memory.ReadSBStacks()
                 currentZone := g_SF.Memory.ReadCurrentZone()
                 stacksTimeObj.Reset()

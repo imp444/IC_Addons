@@ -5,7 +5,7 @@ November 24, 2024 - v1.1.0
           NOTE: This doesn't take into account the need for Thellora Rush stacks and assumes values for TargetStacks / MultirunTargetStacks are correct.
         - Added a setting to automatically heal Briv under a certain threshold when stacking online.
         - Added two settings for allowing different setups depending on whether Melf's +spawn effect is active or not:
-            1. A setting to have either Melf and Melf + Tatyana + Warden when Melf is active.
+            1. A setting to have either Melf or Melf + Tatyana + Warden when Melf is active.
             2. A setting to either stack online with Tatyana or offline if Melf is inactive.
         - Added a button in the Melf forecast window to calculate the success rate for the next 10000 resets.
     - Fixes:

@@ -120,8 +120,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             modifiedStackFormation := true
         }
         this.StackFarmSetup()
-        if (modifiedStackFormation)
-            g_SF.Memory["GetFormationByFavorite"] := savedFunc
         ; Start online stacking
         StartTime := A_TickCount
         ElapsedTime := 0
@@ -172,22 +170,32 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             SetTimer, %fncToCallOnTimer%, Off
         if ( ElapsedTime >= maxOnlineStackTime)
         {
+            if (modifiedStackFormation)
+                g_SF.Memory["GetFormationByFavorite"] := savedFunc
             this.RestartAdventure( "Online stacking took too long (> " . (maxOnlineStackTime / 1000) . "s) - z[" . g_SF.Memory.ReadCurrentZone() . "].")
             this.SafetyCheck()
             g_PreviousZoneStartTime := A_TickCount
             return
         }
-        g_PreviousZoneStartTime := A_TickCount
-        ; Go back to z-1 if failed to complete the current zone
-        if (g_SF.Memory.ReadQuestRemaining() > 0)
-            g_SF.FallBackFromZone()
-        else
-            g_SF.ToggleAutoProgress( 1, false, true )
+        ; Update stats
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ])
         {
             g_SharedData.BGFHTS_PreviousStackZone := g_SF.Memory.ReadCurrentZone()
             g_SharedData.BGFHTS_CurrentRunStackRange := ["", ""]
         }
+        g_PreviousZoneStartTime := A_TickCount
+        ; Go back to z-1 if failed to complete the current zone
+        if (g_SF.Memory.ReadQuestRemaining() > 0)
+            g_SF.FallBackFromZone()
+        g_SF.ToggleAutoProgress( 1, false, true )
+        ; StackFarm won't be able to switch back to Q/E from W if the formation on the field isn't the exact
+        ; formation saved in the second favorite formationslot.
+        g_SF.SetFormation(g_BrivUserSettings)
+        if (g_SF.ShouldDashWait())
+            g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
+        if (modifiedStackFormation)
+            g_SF.Memory["GetFormationByFavorite"] := savedFunc
+        ; Update stats
         g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
         g_SharedData.BGFHTS_Status := "Online stacking done"
     }

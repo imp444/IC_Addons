@@ -362,10 +362,10 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Button, x+10 yp-5 vBGFHTS_SuccessManualButton gBGFHTS_SuccessManual, Calculate rate for the next 10000 resets
         Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Text, x+5 w100 yp+5 vBGFHTS_SuccessManual, % "       /10000"
         ; LV
-        if (VerCompare(A_AhkVersion, "<1.1.37.02"))
+        if (SH_VersionHelper.IsVersionNewer("1.1.37.02", A_AhkVersion))
         {
             GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-            Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Text, xs y+5 vBGFHTS_VersionWarning, % "If you ever experience window crashes, try updating AHK to v1.1.37.02+."
+            Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, Text, xs y+10 vBGFHTS_VersionWarning, % "If you ever experience window crashes, try updating AHK to v1.1.37.02+."
         }
         GUIFunctions.UseThemeTextColor("TableTextColor")
         Gui, IC_BrivGemFarm_HybridTurboStacking_Melf:Add, ListView, xs y+%ySpacing% w2400 R50 AltSubmit NoSortHdr -LV0x10 vBGFHTS_MelfForecast

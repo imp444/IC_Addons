@@ -77,7 +77,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Colors
     NewColoredLV(guiName, controlID)
     {
         GuiControlGet, hwnd, %guiName%:Hwnd, %controlID%
-        if (VerCompare(A_AhkVersion, "<1.1.37.02"))
+        if (SH_VersionHelper.IsVersionNewer("1.1.37.02", A_AhkVersion))
         {
             instance := new IC_BrivGemFarm_HybridTurboStacking_Colors.LV_Colors(hwnd, true)
             instance.Critical := "On"

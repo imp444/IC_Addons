@@ -306,19 +306,26 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         GuiControl, ICScriptHub:MoveDraw, %controlID%, x%xFixBug%
         ; BGFHTS_CurrentRunStackRange
         Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vBGFHTS_CurrentRunStackRangeText, Current Run Stack Range:
-        Gui, ICScriptHub:Add, Text, x+5 w220 vBGFHTS_CurrentRunStackRange
+        Gui, ICScriptHub:Add, Text, x+5 w80 vBGFHTS_CurrentRunStackRange
         ; BGFHTS_PreviousStackZone
         Gui, ICScriptHub:Add, Text, xs+%xSection% y+5 vBGFHTS_PreviousStackZoneText, Previous StackZone:
-        Gui, ICScriptHub:Add, Text, x+5 w220 vBGFHTS_PreviousStackZone
+        Gui, ICScriptHub:Add, Text, x+5 w80 vBGFHTS_PreviousStackZone
         ; Melf forecast
         this.InitForecast()
-        Gui, ICScriptHub:Add, Button, xs+%xSection% y+%ySpacing% vBGFHTS_ShowMelfForecast gBGFHTS_ShowMelfForecast, Melf forecast
+        GuiControlGet, pos, ICScriptHub:Pos, BGFHTS_MelfInactive
+        xPos := posX + posW - 85
+        GuiControlGet, pos, ICScriptHub:Pos, BGFHTS_CurrentRunStackRange
+        GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
+        Gui, ICScriptHub:Add, Button, x%xPos% y%posY% w85 h30 vBGFHTS_ShowMelfForecast gBGFHTS_ShowMelfForecast, Melf forecast
+        GUIFunctions.UseThemeTextColor()
         ; Resets
-        Gui, ICScriptHub:Add, Text, x+%xSpacing% h%ctrlH% 0x200 vBGFHTS_ResetsText, Resets:
-        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w220 vBGFHTS_Resets
+        Gui, ICScriptHub:Add, Text, x+%xSpacing% h%ctrlH% 0x200 h30 vBGFHTS_ResetsText, Resets:
+        Gui, ICScriptHub:Add, Text, x+5 h%ctrlH% 0x200 w60 h30 vBGFHTS_Resets
         ; Preferred Briv stack zones
         GUIFunctions.UseThemeTextColor("HeaderTextColor", 700)
-        Gui, ICScriptHub:Add, Text, xs+%xSection% y+%ySpacing% vBGFHTS_BrivStackZonesText, Preferred Briv Stack Zones:
+        GuiControlGet, pos, ICScriptHub:Pos, BGFHTS_PreviousStackZoneText
+        yPos := posY + posH + ySpacing
+        Gui, ICScriptHub:Add, Text, xs+%xSection% y%yPos% vBGFHTS_BrivStackZonesText, Preferred Briv Stack Zones:
         GUIFunctions.UseThemeTextColor()
         GuiControlGet, pos, ICScriptHub:Pos, BGFHTS_BrivStackZonesText
         this.BuildModTable(posX, posY)

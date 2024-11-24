@@ -1,3 +1,6 @@
+November 24, 2024 - v1.3.6
+    - Fixed a bug when Briv is levelled before offline stacking.
+
 August 30, 2024 - v1.3.5
     - Added default min/max level settings for Ellywick.
     - Updated leveling priority for Ellywick.

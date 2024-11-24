@@ -1,3 +1,6 @@
+November 24, 2024 - v1.1.1
+    - Fixed MelfActive setting not getting loaded when reloading ICScripthub.
+
 November 24, 2024 - v1.1.0
     - New features:
         - If both Auto-Detect stacks and IgnoreBrivHaste settigns are off, the script tries to predict Briv stacks left after resetting

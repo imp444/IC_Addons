@@ -437,6 +437,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         GuiControl, ICScriptHub:, BGFHTS_100Melf, % data.100Melf
         GuiControl, ICScriptHub:, BGFHTS_MelfMinStackZone, % data.MelfMinStackZone
         GuiControl, ICScriptHub:, BGFHTS_MelfMaxStackZone, % data.MelfMaxStackZone
+        GuiControl, ICScriptHub:Choose, BGFHTS_MelfActive, % data.MelfActiveStrategy
         GuiControl, ICScriptHub:Choose, BGFHTS_MelfInactive, % data.MelfInactiveStrategy
         this.ToggleMultirun(data.Multirun)
         this.LoadMod50(data.PreferredBrivStackZones)

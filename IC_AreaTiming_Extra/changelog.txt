@@ -1,3 +1,6 @@
+November 24, 2024 - v1.1.1
+    - Added additional triggers for recording stacking events from ScriptHub.
+
 April 03, 2024 - v1.1.0
     - Requires ICScriptHub v4.
     - Briv Gem Farm addon is now a dependency to make sure start/stop buttons functions

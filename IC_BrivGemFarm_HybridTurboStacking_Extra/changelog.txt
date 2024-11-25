@@ -12,7 +12,7 @@ November 24, 2024 - v1.1.0
             2. A setting to either stack online with Tatyana or offline if Melf is inactive.
         - Added a button in the Melf forecast window to calculate the success rate for the next 10000 resets.
     - Fixes:
-        - The script always goes back one zone afetr stacking online if the current zone has not been completed.
+        - The script always goes back one zone after stacking online if the current zone has not been completed.
         - The script doesn't throw an error when using an AHK version that doesn't have VerCompare() (1.1.36+).
 
 May 15, 2024 - v1.0.6

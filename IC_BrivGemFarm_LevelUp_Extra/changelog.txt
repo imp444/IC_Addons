@@ -1,3 +1,6 @@
+November 27, 2024 - v1.3.7
+    - While setting up the stack formation, the party automatically falls back one zone if it is under attack and can't swap to W.
+
 November 24, 2024 - v1.3.6
     - Fixed a bug when Briv is levelled before offline stacking.
 

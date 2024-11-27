@@ -152,7 +152,26 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SF.DirectedInput(,,inputValues)
                 counter++
             }
-            this.BGFLU_DoPartySetupMax(stackFormation)
+            ; Can't formation switch when under attack.
+            if (ElapsedTime > 1000 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
+            {
+                ; Find Briv's spot
+                spot := 0
+                for k, v in stackFormation
+                {
+                    if (v == 58)
+                    {
+                        spot := k
+                        break
+                    }
+                }
+                if (spot && g_SF.Memory.GetCurrentFormation()[spot] != 58)
+                    g_SF.FallBackFromZone()
+                else
+                    this.BGFLU_DoPartySetupMax(stackFormation)
+            }
+            else
+                this.BGFLU_DoPartySetupMax(stackFormation)
         }
         while (!this.BGFLU_DoPartySetupMax(stackFormation) AND (A_TickCount - StartTime) < 5000)
            Sleep, 30

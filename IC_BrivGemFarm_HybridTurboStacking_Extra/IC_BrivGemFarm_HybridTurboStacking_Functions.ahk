@@ -267,43 +267,11 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         return [skipValues[1] - 1, skipValues[1]]
     }
 
-    ; Hotswap to have different stacking formations.
-    GetFormationByFavoriteRemoveTatyanaWarden(favorite := 0)
-    {
-        slot := g_SF.Memory.GetSavedFormationSlotByFavorite(favorite)
-        formation := g_SF.Memory.GetFormationSaveBySlot(slot)
-        if (favorite == 2)
-        {
-            for k, v in formation
-            {
-                if (v == IC_BrivGemFarm_HybridTurboStacking_Functions.WARDEN_ID || v == IC_BrivGemFarm_HybridTurboStacking_Functions.TATYANA_ID)
-                {
-                    ; Champions will be on the field if already levelled.
-                    if (g_SF.Memory.ReadChampLvlByID(v) < 1)
-                        formation[k] := -1
-                }
-            }
-        }
-        return formation
-    }
+    ; Conditional stack formation
 
-    GetFormationByFavoriteRemoveMelf(favorite := 0)
+    SetRemovedIdsFromWFavorite(ids := "")
     {
-        slot := g_SF.Memory.GetSavedFormationSlotByFavorite(favorite)
-        formation := g_SF.Memory.GetFormationSaveBySlot(slot)
-        if (favorite == 2)
-        {
-            for k, v in formation
-            {
-                if (v == IC_BrivGemFarm_HybridTurboStacking_Functions.MELF_ID)
-                {
-                    ; Champions will be on the field if already levelled.
-                    if (g_SF.Memory.ReadChampLvlByID(v) < 1)
-                        formation[k] := -1
-                }
-            }
-        }
-        return formation
+        g_SharedData.BGFHTS_RemovedIdsFromWFavorite := ids
     }
 
     ; Heal

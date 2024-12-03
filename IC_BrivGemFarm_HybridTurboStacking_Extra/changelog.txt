@@ -1,3 +1,7 @@
+December 03, 2024 - v1.1.4
+    - Fixed several stacks prediction errors.
+    - The script immediately resumes to the main loop instead of waiting the end the 5-min timer if the party is resetting or the game is closed.
+
 December 03, 2024 - v1.1.3
     - Fixed a case of online stacking being interrupted when Briv had farmed Steelbones stacks beforehand.
 

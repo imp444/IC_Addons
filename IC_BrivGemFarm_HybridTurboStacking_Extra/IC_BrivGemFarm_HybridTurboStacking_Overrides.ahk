@@ -149,10 +149,11 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         if (predictStacks)
         {
             remainder := targetStacks - stacks
-            SBStacks := g_SF.Memory.ReadSBStacks()
-            while (SBStacks < remainder AND ElapsedTime < maxOnlineStackTime )
+            SBStacksFarmed := 0
+            SBStacksStart := g_SF.Memory.ReadSBStacks()
+            while (SBStacksFarmed < remainder AND ElapsedTime < maxOnlineStackTime )
             {
-                g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacks ) . "/" . targetStacks
+                g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacksFarmed ) . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
                 ; Warden ultimate
                 wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
@@ -160,7 +161,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
                 Sleep, 30
                 ElapsedTime := A_TickCount - StartTime
-                SBStacks := g_SF.Memory.ReadSBStacks()
+                SBStacksFarmed := g_SF.Memory.ReadSBStacks() - SBStacksStart
             }
         }
         else

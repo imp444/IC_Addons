@@ -175,8 +175,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         }
         modronReset := g_SF.Memory.GetModronResetArea()
         sbStacks := g_SF.Memory.ReadSBStacks()
-        currentZone := g_SF.Memory.ReadHighestZone()
-        highestZone := g_SF.Memory.ReadCurrentZone()
+        currentZone := g_SF.Memory.ReadCurrentZone()
+        highestZone := g_SF.Memory.ReadHighestZone()
         sprintStacks := g_SF.Memory.ReadHasteStacks()
         ; Party has not progressed to the next zone yet but Briv stacks were consumed.
         if (highestZone - currentZone > 1)

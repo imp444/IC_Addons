@@ -153,6 +153,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             SBStacksStart := g_SF.Memory.ReadSBStacks()
             while (SBStacksFarmed < remainder AND ElapsedTime < maxOnlineStackTime )
             {
+                if (g_SF.Memory.ReadCurrentZone() < 1)
+                    return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
                 g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacksFarmed ) . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
                 ; Warden ultimate
@@ -168,6 +170,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         {
             while ( stacks < targetStacks AND ElapsedTime < maxOnlineStackTime )
             {
+                if (g_SF.Memory.ReadCurrentZone() < 1)
+                    return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
                 g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
                 ; Warden ultimate

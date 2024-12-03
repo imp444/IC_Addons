@@ -1,3 +1,6 @@
+December 03, 2024 - v1.1.3
+    - Fixed a case of online stacking being interrupted when Briv had farmed Steelbones stacks beforehand.
+
 November 29, 2024 - v1.1.2
     - Melf, Tatyana and Warden don't require to be levelled up before offline stacking anymore.
 

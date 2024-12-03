@@ -132,8 +132,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
                 mod50values[A_Index] := (mod50Int & (2 ** (A_Index - 1))) != 0
         }
         ; Walk
-        Loop, % brivMinLevelArea - 1
-            ++currentZone > resetZone ? break : 1
+        currentZone := Max(currentZone, brivMinLevelArea)
         ; Jump
         while (currentZone < resetZone)
         {
@@ -141,10 +140,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
             mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)
             mod50Value := mod50values[mod50Index]
             move := mod50Value ? qVal : eVal
-            ; Update walk and metalborn jump counters
-            if (move == 1)
-                ++walks
-            else
+            if (move > 1)
                 startStacks := Round(startStacks * (currentZone < brivMetalbornArea ? 0.96 : 0.968))
             currentZone += move
         }

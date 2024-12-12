@@ -2,7 +2,7 @@ December 12, 2024 - v1.1.5
     - Stacks prediction handles the "Accurate Acrobatics" Briv feat that rounds down his jump amount.
     - Briv stacks gained while clearing the zone before stacking and setting up the stack formation are counted when stacks prediction is on.
     - The correct jump value for Briv is used when the 4J or 9J feat is equipped and Briv has a lower jump number.
-    - The correct value for SB stacks to farm stacks is shown when stacks prediction is off.
+    - The correct value for "SB stacks to farm for the next run" is shown when stacks prediction is off.
     - Max zone updated to 2501 for the Melf forecast.
     - The value of the current reset used for the Melf forecast is saved in case the game is closed.
 

@@ -25,6 +25,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
     Settings := ""
     TimerFunction := ObjBindMethod(this, "UpdateStatus")
     Forecast := ""
+    CurrentReset := 1
 
     Init()
     {
@@ -71,6 +72,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         }
         if (needSave)
             this.SaveSettings()
+        this.CurrentReset := settings.CurrentReset
         ; Set the state of GUI buttons with saved settings.
         g_HybridTurboStackingGui.UpdateGUISettings(settings)
     }
@@ -93,6 +95,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         settings.MelfActiveStrategy := 1
         settings.MelfInactiveStrategy := 1
         settings.PreferredBrivStackZones := 544790277504495
+        settings.CurrentReset := 1
         return settings
     }
 
@@ -119,6 +122,13 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
             GuiControl, ICScriptHub:Text, BGFHTS_StatusText, Waiting for Gem Farm to start
         }
         this.UpdateMelfForecast(true)
+    }
+
+    SaveGUISettings()
+    {
+        settings := this.Settings
+        settings.CurrentReset := this.CurrentReset
+        g_SF.WriteObjectToJSON(IC_BrivGemFarm_HybridTurboStacking_Functions.SettingsPath, settings)
     }
 
     Start()
@@ -191,9 +201,20 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         this.UpdateMelfForecast()
     }
 
-    UpdateMelfForecast(updateRange := false)
+    GetCurrentReset()
     {
         resets := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
+        if (resets > 0 && resets != this.CurrentReset)
+        {
+            this.CurrentReset := resets
+            this.SaveGUISettings()
+        }
+        return resets > 0 ? resets : this.CurrentReset
+    }
+
+    UpdateMelfForecast(updateRange := false)
+    {
+        resets := this.GetCurrentReset()
         if (resets == "")
             return
         g_HybridTurboStackingGui.UpdateResets(resets)

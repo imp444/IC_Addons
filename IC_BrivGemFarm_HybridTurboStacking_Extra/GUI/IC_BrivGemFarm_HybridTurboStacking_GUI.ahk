@@ -513,7 +513,8 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         settings := g_HybridTurboStacking.Settings
         minZone := settings.MelfMinStackZone
         maxZone := settings.MelfMaxStackZone
-        success := IC_BrivGemFarm_HybridTurboStacking_Melf.GetNumberOfSuccessesInRange(, next, minZone, maxZone)
+        resets := settings.CurrentReset
+        success := IC_BrivGemFarm_HybridTurboStacking_Melf.GetNumberOfSuccessesInRange(resets, next, minZone, maxZone)
         successStr := success . "/" . next
         GuiControl, IC_BrivGemFarm_HybridTurboStacking_Melf:, BGFHTS_SuccessManual, % successStr
     }

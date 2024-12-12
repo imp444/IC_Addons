@@ -53,7 +53,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         return this.CalculateAreaSkipValues(gild, ilvls, rarity)[1]
     }
 
-    CalculateAreaSkipValues(gild, ilvls, rarity)
+    CalculateAreaSkipValues(gild, ilvls, rarity, hasAccurateFeat := false)
     {
         baseEffect := 25
         ilvlMult := 1 + Max(ilvls - 1, 0) * 0.004
@@ -68,7 +68,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
                 skipChance *= 0.5
                 ++skipAmount
             }
-            skipChance := (skipChance - 0.5) / (1 - 0.5) * (1 - 0.01) + 0.01
+            if (hasAccurateFeat && skipChance < 1)
+                skipChance := 0
+            else
+                skipChance := (skipChance - 0.5) / (1 - 0.5) * (1 - 0.01) + 0.01
         }
         return [skipAmount, skipChance]
     }
@@ -99,8 +102,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
     ; Returns:    - int - Number of Briv Haste stacks left at the reset zone.
     CalcStacksLeftAtReset(mod50values, currentZone, resetZone, startStacks, skipQ, skipE, brivMinLevelArea := 1, brivMetalbornArea := 1)
     {
-        qVal := skipQ != "" ? skipQ + 1 : 1
-        eVal := skipE != "" ? skipE + 1 : 1
+        qVal := skipQ != "" ? Max(skipQ + 1, 1) : 1
+        eVal := skipE != "" ? Max(skipE + 1, 1) : 1
         if (!Isobject(mod50values))
         {
             mod50Int := mod50values
@@ -176,18 +179,22 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         if (g_SF.IsChampInFormation(heroID, formation))
         {
             feats := this.GetHeroFeatsInFormationFavorite(favoriteformationSlot, heroID)
-            has9JFeat := false
+            hasAccurateFeat := false
+            jumpFeatValue := 50
             for k, v in feats
             {
+                ; Accurate Acrobatics
+                if (v == 2062)
+                    hasAccurateFeat := true
                 ; 4J feat takes precedence over 9J feat
-                if (v == 791)
-                    return 4
+                else if (v == 791)
+                    jumpFeatValue := Min(4, jumpFeatValue)
                 else if (v == 2004)
-                    has9JFeat := true
-                if (has9JFeat)
-                    return 9
+                    jumpFeatValue := Min(9, jumpFeatValue)
             }
-            return this.GetBrivSkipValues()[1]
+            skipValues := this.GetBrivSkipValues(hasAccurateFeat)
+            skipValue := skipValues[2] > 0 ? skipValues[1] : skipValues[1] - 1
+            return Min(jumpFeatValue, skipValue)
         }
         else
             return 0
@@ -221,7 +228,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         return {gild:gild, enchant:enchant, rarity:rarity}
     }
 
-    GetBrivSkipValues()
+    GetBrivSkipValues(hasAccurateFeat := false)
     {
         loot := this.GetBrivLoot()
         gild := loot.gild
@@ -229,7 +236,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         rarity := loot.rarity
         if (gild == "" || enchant == "" || rarity == "")
             return ""
-        return this.CalculateAreaSkipValues(gild, enchant, rarity)
+        return this.CalculateAreaSkipValues(gild, enchant, rarity, hasAccurateFeat)
     }
 
     ; Conditional stack formation

@@ -210,7 +210,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         if (g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
         ; Update stats
-        g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
+        if (predictStacks)
+            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
         g_SharedData.BGFHTS_Status := "Online stacking done"
     }
 
@@ -404,7 +405,7 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         predictStacks := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive
         this.BGFHTS_StacksPredictionActive := predictStacks
         if (predictStacks)
-                g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
+            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
     }
 
     BGFHTS_CheckMelf()

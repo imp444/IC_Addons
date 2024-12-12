@@ -87,29 +87,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
 
     ; Stacks
 
-    ; Return the number of stacks needed to jump noMetalbornJumps + metalbornJumps times.
-    ; Parameters: - noMetalbornJumps:int - Number of times Briv jumps without Metalborn.
-    ;             - metalbornJumps:int - Number of times Briv jumps with Metalborn.
-    CalcBrivStacksNeeded(noMetalbornJumps, metalbornJumps)
-    {
-        stacks := (noMetalbornJumps + metalbornJumps > 0) * 50
-        ; Last jump is always with Metalborn unless Briv never gets to level 170
-        ; Metalborn calculations must apply last meaning backtracking starts with Metalborn
-        Loop, % (metalbornJumps > 0 ? metalbornJumps - 1 : metalbornJumps)
-        {
-            stacks := Ceil((stacks - 0.5) / 0.968)
-            if (stacks > 999999999999999)
-                return "Too many"
-        }
-        Loop, % (metalbornJumps > 0 ? noMetalbornJumps : noMetalbornJumps - 1)
-        {
-            stacks := Ceil((stacks - 0.5) / 0.96)
-            if (stacks > 999999999999999)
-                return "Too many"
-        }
-        return stacks
-    }
-
     ; Calculates the path from z1 to the reset area.
     ; Parameters: - mod50values:Array - Preferred Briv jump zones for the Q/E favorite formations.
     ;             - currentZone:int - Starting zone.
@@ -253,14 +230,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         if (gild == "" || enchant == "" || rarity == "")
             return ""
         return this.CalculateAreaSkipValues(gild, enchant, rarity)
-    }
-
-    GetTargetQSkipValues()
-    {
-        skipValues := this.GetBrivSkipValues()
-        if (skipValues[2] == 100)
-            return [skipValues[1]]
-        return [skipValues[1] - 1, skipValues[1]]
     }
 
     ; Conditional stack formation

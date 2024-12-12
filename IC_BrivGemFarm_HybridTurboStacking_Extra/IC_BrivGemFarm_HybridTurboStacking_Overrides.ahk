@@ -107,7 +107,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] && this.BGFHTS_PostponeStacking())
             return 0
         predictStacks := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive
-        stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed(predictStacks)
+        SBStacksStart := g_SF.Memory.ReadSBStacks()
+        stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? SBStacksStart : this.GetNumStacksFarmed(predictStacks)
         targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
         if (this.ShouldAvoidRestack(stacks, targetStacks))
             return
@@ -150,7 +151,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         {
             remainder := targetStacks - stacks
             SBStacksFarmed := 0
-            SBStacksStart := g_SF.Memory.ReadSBStacks()
             while (SBStacksFarmed < remainder AND ElapsedTime < maxOnlineStackTime )
             {
                 if (g_SF.Memory.ReadCurrentZone() < 1)

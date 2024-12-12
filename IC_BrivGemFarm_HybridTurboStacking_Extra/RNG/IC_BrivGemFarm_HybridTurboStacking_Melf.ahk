@@ -2,7 +2,7 @@
 
 Class IC_BrivGemFarm_HybridTurboStacking_Melf
 {
-    static MAX_ZONE := 2001
+    static MAX_ZONE := 2501
 
     GetCurrentEffectIndex()
     {
@@ -18,7 +18,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Melf
         return this.GetCurrentEffectIndex() == 0
     }
 
-    GetFirstSpawnMoreEffectRange(reset := "", min := 1, max := 2050)
+    GetFirstSpawnMoreEffectRange(reset := "", min := 1, max := 2550)
     {
         if (reset == "")
             reset := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
@@ -54,7 +54,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Melf
 		return result
     }
 
-    GetNumberOfSuccessesInRange(resets := "", next := 1000, min := 1, max := 2050)
+    GetNumberOfSuccessesInRange(resets := "", next := 1000, min := 1, max := 2550)
     {
         if (resets == "")
             resets := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()

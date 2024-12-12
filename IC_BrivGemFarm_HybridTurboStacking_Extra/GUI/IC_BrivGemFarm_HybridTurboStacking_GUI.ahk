@@ -464,7 +464,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         }
     }
 
-    UpdateForecast(data, min := 0, max := 2050, success := 0)
+    UpdateForecast(data, min := 0, max := 2550, success := 0)
     {
         controlID := "BGFHTS_MelfForecast"
         restore_gui_on_return := GUIFunctions.LV_Scope("IC_BrivGemFarm_HybridTurboStacking_Melf", controlID)

@@ -319,7 +319,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     UpdatePresetWarning(targetQ)
     {
         controlID := "BGFBFS_PresetWarningText"
-        targetSkipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivSkipConfig(1).AvailableJumps
+        targetSkipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivSkipConfig(1, true).AvailableJumps
         if ((detectedChance := this.DetectedSkipChance) != "" && detectedChance != 100)
         {
             warningText := "WARNING: Briv not at 100" . "%" . " skip chance."

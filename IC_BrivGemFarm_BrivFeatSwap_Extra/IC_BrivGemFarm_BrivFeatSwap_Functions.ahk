@@ -215,7 +215,7 @@ class IC_BrivGemFarm_BrivFeatSwap_Functions
         {
             if (favorite < 1)
                 return
-            if ((this.BrivSkipConfigByFavorite[favorite] == "" || refresh) && g_SF.Memory.ReadCurrentZone() != "")
+            if ((refresh || this.BrivSkipConfigByFavorite[favorite] == "") && g_SF.Memory.ReadCurrentZone() != "")
             {
                 skipValues := this.GetBrivSkipValues(favorite)
                 feats := this.GetHeroFeatsInFormationFavorite(favorite, this.BrivId)
@@ -225,11 +225,11 @@ class IC_BrivGemFarm_BrivFeatSwap_Functions
             return this.BrivSkipConfigByFavorite[favorite]
         }
 
-        CurrentFormationMatchesBrivConfig(favoriteFormationSlot)
+        CurrentFormationMatchesBrivConfig(favoriteFormationSlot, refresh := false)
         {
             if (g_SF.Memory.ReadResetting())
                 return true
-            config := this.GetBrivSkipConfig(favoriteFormationSlot)
+            config := this.GetBrivSkipConfig(favoriteFormationSlot, refresh)
             skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
             skipChance := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipChance()
             equalAmount := skipAmount == config.skipAmount
@@ -282,5 +282,56 @@ class IC_BrivGemFarm_BrivFeatSwap_Functions
                 }
             }
         }
+    }
+
+    CurrentFormationClickersMatchesFavorite(favorite, refresh := false)
+    {
+        if (g_SF.Memory.ReadResetting())
+            return true
+        if (favorite > 0)
+            return !(this.FormationHasClickers(favorite, refresh) ^ this.AnyClickersOnTheField())
+    }
+
+    FormationHasClickers(favorite, refresh := false)
+    {
+        static cacheByFavorite := []
+
+        if (favorite > 0)
+        {
+            numClickers := cacheByFavorite[favorite]
+            if (refresh || numClickers == "")
+            {
+                slot := g_SF.Memory.GetSavedFormationSlotByFavorite(favorite)
+                formation := g_SF.Memory.GetFormationFieldFamiliarsBySlot(slot)
+                ; If the formation has clickers, there is an extra < 0 id and the actual number of familiars is (size - 1)
+                numClickers := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].FormationSaveHandler.formationSavesV2[slot].Familiars["Clicks"].List.size.Read()
+                cacheByFavorite[favorite] := numClickers
+            }
+            return numClickers > 0
+        }
+        return false
+    }
+
+    AnyClickersOnTheField()
+    {
+        if (!IsObject(g_SF.Memory.GameManager.game.gameInstances.Controller.familiarDisplay))
+        {
+            g_SF.Memory.GameManager.game.gameInstances.Controller.familiarDisplay := New GameObjectStructure(g_SF.Memory.GameManager.game.gameInstances.Controller,"Int", [0x88])
+            g_SF.Memory.GameManager.game.gameInstances.Controller.familiarDisplay.clickerSlots := New GameObjectStructure(g_SF.Memory.GameManager.game.gameInstances.Controller.familiarDisplay,"List", [0x418])
+            g_SF.Memory.GameManager.game.gameInstances.Controller.familiarDisplay.clickerSlots._CollectionValType := "CrusadersGame.GameScreen.Familiars.FamiliarSlot"
+            g_SF.Memory.GameManager.game.gameInstances.Controller.familiarDisplay.clickerSlots.familiar := New GameObjectStructure(g_SF.Memory.GameManager.game.gameInstances.Controller.familiarDisplay.clickerSlots,"Int", [0x378])
+            g_SF.Memory.GameManager.game.gameInstances.ResetCollections()
+        }
+        size := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.familiarDisplay.clickerSlots.size.Read()
+        ; Sanity check, should be 6
+        if (size < 0 || size > 6)
+            return ""
+        Loop, %size%
+        {
+            familiar := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.familiarDisplay.clickerSlots[A_Index - 1].familiar.Read()
+            if (familiar)
+                return true
+        }
+        return false
     }
 }

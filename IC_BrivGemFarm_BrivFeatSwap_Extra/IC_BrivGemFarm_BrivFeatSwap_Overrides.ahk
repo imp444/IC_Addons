@@ -167,12 +167,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         if (formationFavoriteIndex == 1)
         {
             wrongSkipAmount := !IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(1)
-            return (wrongSkipAmount || postClickCancel) && this.UnBenchBrivConditions(this.Settings)
+            wrongFamiliars := !IC_BrivGemFarm_BrivFeatSwap_Functions.CurrentFormationClickersMatchesFavorite(1)
+            return (wrongSkipAmount || wrongFamiliars || postClickCancel) && this.UnBenchBrivConditions(this.Settings)
         }
         else if (formationFavoriteIndex == 3)
         {
             wrongSkipAmount := !IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(3)
-            return (wrongSkipAmount || postClickCancel) && this.BenchBrivConditions(this.Settings)
+            wrongFamiliars := !IC_BrivGemFarm_BrivFeatSwap_Functions.CurrentFormationClickersMatchesFavorite(3)
+            return (wrongSkipAmount || wrongFamiliars || postClickCancel) && this.BenchBrivConditions(this.Settings)
         }
         return false
     }

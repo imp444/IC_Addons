@@ -157,9 +157,9 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         if (this.GameIsReady())
         {
             this.GetModronResetArea()
-            skipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.GetBrivSkipValues()
+            skipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivSkipValues()
             skipAmount := skipValues[1]
-            skipChance := skipValues[2]
+            skipChance := skipValues[2] * 100
             noUpdate := skipAmount == this.DetectedSkipAmount && skipChance == this.DetectedSkipChance
             if (g_BrivFeatSwapGui.ToolTipAdded && noUpdate)
                 return
@@ -170,7 +170,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             if (skipChance == 100)
                 skipStr := Format("{:.2f}", skipChance) . "%"
             else
-                skipStr := Format("{:.5f}", skipChance) . "%"
+                skipStr := Format("{:.6f}", skipChance) . "%"
             str := "Briv skip: " . skipAmount . "J" . skipStr
             GuiControl, ICScriptHub:, BGFBFS_DetectedText, % str
             g_BrivFeatSwapGui.AddBrivSkipTooltip()
@@ -319,11 +319,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     UpdatePresetWarning(targetQ)
     {
         controlID := "BGFBFS_PresetWarningText"
-        targetSkipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.GetTargetQSkipValues()
+        targetSkipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivSkipConfig(1).AvailableJumps
         if ((detectedChance := this.DetectedSkipChance) != "" && detectedChance != 100)
         {
             warningText := "WARNING: Briv not at 100" . "%" . " skip chance."
-            loot := IC_BrivGemFarm_BrivFeatSwap_Functions.GetBrivLoot()
+            loot := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivLoot()
             if (loot.gild == 1)
                 warningText .= "`n(Shiny can't get perfect jump for even skip values)"
             GuiControl, ICScriptHub:, %controlID%, % warningText

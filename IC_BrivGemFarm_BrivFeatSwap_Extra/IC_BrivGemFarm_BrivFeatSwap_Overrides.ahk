@@ -163,15 +163,15 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     {
         postClickCancel := g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] && this.BGFBFS_IsFormationEmpty(this.Memory.GetCurrentFormation())
         currentSkip := g_SharedData.BGFBFS_UpdateSkipAmount()
+        currentZone := this.Memory.ReadCurrentZone()
         if (formationFavoriteIndex == 1)
         {
-            targetQ := g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ]
-            wrongSkipAmount := currentSkip != targetQ[1] && currentSkip != targetQ[2]
+            wrongSkipAmount := !IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(1)
             return (wrongSkipAmount || postClickCancel) && this.UnBenchBrivConditions(this.Settings)
         }
         else if (formationFavoriteIndex == 3)
         {
-            wrongSkipAmount := currentSkip != g_BrivUserSettingsFromAddons[ "BGFBFS_TargetE" ]
+            wrongSkipAmount := !IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(3)
             return (wrongSkipAmount || postClickCancel) && this.BenchBrivConditions(this.Settings)
         }
         return false
@@ -284,6 +284,9 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
             skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
         else
             skipAmount := 0
+        skipChance := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipChance()
+        if (skipChance == 0)
+            skipAmount -= 1
         ; Can't swap during reset
         if (g_SF.Memory.ReadResetting())
             return skipAmount
@@ -310,9 +313,6 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
         if (!IsObject(settings))
             return false
         g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ] := settings.Enabled
-        multiTargetQ := IC_BrivGemFarm_BrivFeatSwap_Functions.GetTargetQSkipValues()
-        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetQ" ] := multiTargetQ
-        g_BrivUserSettingsFromAddons[ "BGFBFS_TargetE" ] := settings.targetE
         g_BrivUserSettingsFromAddons[ "BGFBFS_Preset" ] := settings.Preset
         g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] := settings.MouseClick
     }

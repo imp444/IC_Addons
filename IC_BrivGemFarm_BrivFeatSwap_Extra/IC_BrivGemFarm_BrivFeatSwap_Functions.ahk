@@ -83,52 +83,204 @@ class IC_BrivGemFarm_BrivFeatSwap_Functions
         return (monitorCoordsLeft == x && monitorCoordsTop == y)
     }
 
-    GetBrivLoot()
-    {
-        BrivID := 58
-        BrivJumpSlot := 4
-        gild := g_SF.Memory.ReadHeroLootGild(BrivID, BrivJumpSlot)
-        enchant := Floor(g_SF.Memory.ReadHeroLootEnchant(BrivID, BrivJumpSlot))
-        rarity := g_SF.Memory.ReadHeroLootRarityValue(BrivID, BrivJumpSlot)
-        return {gild:gild, enchant:enchant, rarity:rarity}
-    }
+    ; Briv
 
-    GetBrivSkipValues()
+    class BrivFunctions
     {
-        loot := this.GetBrivLoot()
-        gild := loot.gild
-        enchant := loot.enchant
-        rarity := loot.rarity
-        if (gild == "" || enchant == "" || rarity == "")
-            return ""
-        return this.CalculateAreaSkipValues(gild, enchant, rarity)
-    }
+        static BrivId := 58
+        static BrivJumpSlot := 4
+        static UnnaturalHasteBaseEffect := 25
+        static WastingHastePercentOverride := 800
+        static StrategicStridePercentOverride := 25600
+        static WastingHasteId := 791
+        static StrategicStrideId := 2004
+        static AccurateAcrobaticsFeatId := 2062
+        static BrivSkipConfigByFavorite := []
 
-    CalculateAreaSkipValues(gild, enchant, rarity, decimals := 5)
-    {
-        baseEffect := 25
-        gildMult := (gild == 1) ? 1.5 : (gild == 2) ? 2 : 1
-        lootMultBonus := (1 + Max(enchant, 0) * 0.004) * gildMult
-        rarityMult := (rarity == 1) ? 0.1 : (rarity == 2) ? 0.3 : (rarity == 3) ? 0.5 : (rarity == 4) ? 1 : 0
-        skipChance := baseEffect * (1 + (lootMultBonus * rarityMult)) * 0.01
-        skipAmount := 1
-        if (skipChance > 1)
+        GetBrivLoot()
         {
-            while (skipChance > 1)
-            {
-                skipChance *= 0.5
-                ++skipAmount
-            }
-            skipChance := (skipChance - 0.5) / (1 - 0.5) * (1 - 0.01) + 0.01
+            BrivId := this.BrivId
+            BrivJumpSlot := this.BrivJumpSlot
+            gild := g_SF.Memory.ReadHeroLootGild(BrivId, BrivJumpSlot)
+            enchant := Floor(g_SF.Memory.ReadHeroLootEnchant(BrivId, BrivJumpSlot))
+            rarity := g_SF.Memory.ReadHeroLootRarityValue(BrivId, BrivJumpSlot)
+            if (gild == "" || enchant == "" || rarity == "")
+                return ""
+            return {gild:gild, enchant:enchant, rarity:rarity}
         }
-        return [skipAmount, Round(100 * skipChance, decimals)]
-    }
 
-    GetTargetQSkipValues()
-    {
-        skipValues := this.GetBrivSkipValues()
-        if (skipValues[2] == 100)
-            return [skipValues[1]]
-        return [skipValues[1] - 1, skipValues[1]]
+        GetHeroFeatsInFormationFavorite(formationFavorite, heroID)
+        {
+            if (heroID < 1)
+                return ""
+            slot := g_SF.Memory.GetSavedFormationSlotByFavorite(formationFavorite)
+            size := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].FormationSaveHandler.formationSavesV2[slot].Feats[heroID].List.size.Read()
+            ; Sanity check, should be < 4 but set to 6 in case of future feat num increase.
+            if (size < 0 || size > 6)
+                return ""
+            featList := []
+            Loop, %size%
+            {
+                value := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].FormationSaveHandler.formationSavesV2[slot].Feats[heroID].List[A_Index - 1].Read()
+                featList.Push(value)
+            }
+            return featList
+        }
+
+        GetBrivSkipValues(favoriteFormationSlot := "")
+        {
+            feats := ""
+            hasAccurateFeat := false
+            if (favoriteFormationSlot > 0)
+            {
+                formation := g_SF.Memory.GetFormationByFavorite(favoriteFormationSlot)
+                heroID := this.BrivId
+                if (g_SF.IsChampInFormation(heroID, formation))
+                {
+                    feats := this.GetHeroFeatsInFormationFavorite(favoriteFormationSlot, heroID)
+                    for k, v in feats
+                    {
+                        if (v == this.AccurateAcrobaticsFeatId)
+                            hasAccurateFeat := true
+                    }
+                }
+                else
+                    return [0, 0]
+            }
+            defaultSkipChance := this.GetDefaultBrivSkipChance(feats)
+            return this.CalculateAreaSkipValues(defaultSkipChance, hasAccurateFeat)
+        }
+
+        GetDefaultBrivSkipChance(feats := "")
+        {
+            ; Check for 4J or 9J feat
+            if (IsObject(feats))
+            {
+                hasFeatOverride := false
+                featOverridePercent := 1234567890
+                for k, v in feats
+                {
+                    ; 4J feat takes precedence over 9J feat
+                    if (v == this.WastingHasteId)
+                    {
+                        hasFeatOverride := true
+                        featOverridePercent := Min(this.WastingHastePercentOverride, featOverridePercent)
+                    }
+                    else if (v == this.StrategicStrideId)
+                    {
+                        hasFeatOverride := true
+                        featOverridePercent := Min(this.StrategicStridePercentOverride, featOverridePercent)
+                    }
+                }
+                if (hasFeatOverride)
+                    return featOverridePercent
+            }
+            ; Compute effect from loot
+            loot := this.GetBrivLoot()
+            if (loot == "")
+                return ""
+            gild := loot.gild
+            enchant := loot.enchant
+            rarity := loot.rarity
+            baseEffect := this.UnnaturalHasteBaseEffect
+            ilvlMult := 1 + Max(enchant, 0) * 0.004
+            rarityMult := (rarity == 0) ? 0 : (rarity == 1) ? 0.1 : (rarity == 2) ? 0.3 : (rarity == 3) ? 0.5 : (rarity == 4) ? 1 : 0
+            gildMult := (gild == 0) ? 1 : (gild == 1) ? 1.5 : (gild == 2) ? 2 : 1
+            skipChance := baseEffect * (1 + ilvlMult * rarityMult * gildMult)
+            return skipChance
+        }
+
+        CalculateAreaSkipValues(defaultPercent, hasAccurateFeat := false)
+        {
+            if (defaultPercent < this.UnnaturalHasteBaseEffect)
+                return ""
+            skipChance := 0.01 * defaultPercent
+            skipAmount := 1
+            if (skipChance > 1)
+            {
+                while (skipChance > 1)
+                {
+                    skipChance *= 0.5
+                    ++skipAmount
+                }
+                if (hasAccurateFeat && skipChance < 1)
+                    skipChance := 0
+                else
+                    skipChance := (skipChance - 0.5) / (1 - 0.5) * (1 - 0.01) + 0.01
+            }
+            return [skipAmount, skipChance]
+        }
+
+        GetBrivSkipConfig(favorite := "", refresh := false)
+        {
+            if (favorite < 1)
+                return
+            if ((this.BrivSkipConfigByFavorite[favorite] == "" || refresh) && g_SF.Memory.ReadCurrentZone() != "")
+            {
+                skipValues := this.GetBrivSkipValues(favorite)
+                feats := this.GetHeroFeatsInFormationFavorite(favorite, this.BrivId)
+                config := new this.BrivSkipConfig(skipValues[1], skipValues[2], feats)
+                this.BrivSkipConfigByFavorite[favorite] := config
+            }
+            return this.BrivSkipConfigByFavorite[favorite]
+        }
+
+        CurrentFormationMatchesBrivConfig(favoriteFormationSlot)
+        {
+            if (g_SF.Memory.ReadResetting())
+                return true
+            config := this.GetBrivSkipConfig(favoriteFormationSlot)
+            skipAmount := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount()
+            skipChance := ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipChance()
+            equalAmount := skipAmount == config.skipAmount
+            equalChance := config.IsPartialJump ? (0 < skipChance && skipChance < 1) : (skipChance == config.skipChance)
+            return equalAmount && equalChance
+        }
+
+        class BrivSkipConfig
+        {
+            SkipAmount := 0
+            SkipChance := 0
+            Feats := ""
+            ; Cached properties
+            4JFeat := false
+            9JFeat := false
+            AAFeat := false
+            AvailableJumps := ""
+
+            __New(skipAmount, skipChance, feats)
+            {
+                this.SkipAmount := skipAmount
+                this.SkipChance := skipChance
+                this.Feats := feats
+                for k, v in feats
+                {
+                    if (v == this.WastingHasteId)
+                        this.4JFeat := true
+                    else if (v == this.StrategicStrideId)
+                        this.9JFeat := true
+                    else if (v == this.AccurateAcrobaticsFeatId)
+                        this.AAFeat := true
+                }
+                ; Perfect jump or no Briv in formation
+                if (skipChance == 1 || skipAmount == 0)
+                    this.AvailableJumps := [skipAmount]
+                ; Round down to previous jump
+                ; nJ,0% := n(J - 1),100%
+                else if (skipChance == 0)
+                    this.AvailableJumps := [skipAmount - 1]
+                ; Partial jump
+                else
+                    this.AvailableJumps := [skipAmount - 1, skipAmount]
+            }
+
+            IsPartialJump
+            {
+                get
+                {
+                    return this.AvailableJumps.Length() == 2
+                }
+            }
+        }
     }
 }

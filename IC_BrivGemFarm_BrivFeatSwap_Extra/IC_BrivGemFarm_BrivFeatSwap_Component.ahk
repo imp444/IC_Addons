@@ -241,7 +241,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     SetupPresets() ; TODO: Proper preset settings
     {
         choices := "||5J/4J Tall Tales|6J/4J Resolve Amongst Chaos|6J/4J Tall Tales|7J/4J Tall Tales|8J/4J Tall Tales"
-        choices .= "|8J/4J Tall Tales + walk 1/2/3/4|9J/4J Tall Tales"
+        choices .= "|8J/4J Tall Tales + walk 1/2/3/4|8J/7J Tall Tales|9J/4J Tall Tales"
+        choices .= "|12J/11J Tall Tales|14J/9J Tall Tales|16J/15J Tall Tales"
         GuiControl, ICScriptHub:, BGFBFS_Preset, % "|" . choices
         ; Resize
         newWidth := IC_BrivGemFarm_BrivFeatSwap_GUI.DropDownSize(choices,,, 8)
@@ -290,8 +291,16 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
                 this.ApplyPresets(57952963557919, 8, 4)
             case "8J/4J Tall Tales + walk 1/2/3/4":
                 this.ApplyPresets(57952963557919, 8, 4)
+            case "8J/7J Tall Tales":
+                this.ApplyPresets(878610951932870, 8, 7)
             case "9J/4J Tall Tales":
                 this.ApplyPresets(35181131988031, 9, 4)
+            case "12J/11J Tall Tales")
+                this.ApplyPresets(554220480505760, 12, 11)
+            case "14J/9J Tall Tales")
+                this.ApplyPresets(1125899805626349, 14, 9)
+            case "16J/15J Tall Tales")
+                this.ApplyPresets(360709071052808, 16, 15)
             case default:
                 this.ApplyPresets(this.SavedPreferredAdvancedSettings, this.Settings.targetQ, this.Settings.targetE)
         }
@@ -322,10 +331,16 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         targetSkipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivSkipConfig(1, true).AvailableJumps
         if ((detectedChance := this.DetectedSkipChance) != "" && detectedChance != 100)
         {
-            warningText := "WARNING: Briv not at 100" . "%" . " skip chance."
-            loot := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivLoot()
-            if (loot.gild == 1)
-                warningText .= "`n(Shiny can't get perfect jump for even skip values)"
+            preset := this.GetPresetName()
+            if (preset == "8J/7J Tall Tales" || preset == "12J/11J Tall Tales" || preset == "14J/9J Tall Tales" || preset == "16J/15J Tall Tales")
+                warningText := ""
+            else
+            {
+                warningText := "WARNING: Briv not at 100" . "%" . " skip chance."
+                loot := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivLoot()
+                if (loot.gild == 1)
+                    warningText .= "`n(Shiny can't get perfect jump for even skip values)"
+            }
             GuiControl, ICScriptHub:, %controlID%, % warningText
             partialText := "(" . targetSkipValues[1] . "-" . targetSkipValues[2] . ")"
             GuiControl, ICScriptHub:, BrivFeatSwapQPartialText, % partialText

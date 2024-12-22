@@ -1,3 +1,10 @@
+December 22, 2024 - v1.6.0
+    - Fixed a wrong value displayed in the skip setup for Briv's chance to skip.
+    - Updated for Briv's 9J and Accurate Accrobatics feats.
+    - Added auto-detect for Briv jump ranges in Q/W/E formations.
+    - The script checks if familiars are on the field when switching to Q or E.
+    - Added 8J/7J, 12J/11J, 14J/9J and 16J/15J presets for TT.
+
 May 16, 2024 - v1.5.13
     - Updated mouse click instructions with the addition of Diana.
 

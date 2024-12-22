@@ -2,45 +2,57 @@
 
 <img alt="Briv" height="128" src="Images/Briv_portrait.png" width="128"/>
 
+## Table
+[Description](#description)  
+[Setup](#setup)  
+[Routes](#using-thellora)
+
 ___
 
-## Description:
+## Description
 This Addon will allow to use Briv in E formation, so you can take advantage of the "save feats with formation" feature
-in order to have a faster gem farm because you can hit more quick transitions (QT) during the run. During quick transitions,
-the champions stay in place instead of moving to the right of the screen after the area has been completed.
+in order to have a faster gem farm because you can hit more quick transitions (QT) during the run. If there is a quick transition  
+between two areas, the champions stay in place instead of walking to the right of the screen after the area has been completed.
 
 Briv's **Wasting Haste** feat (12500 gems) allows him to cap his **Unnatural haste** ability (level.80) at 800% (4J).
 
-![wasting_haste_feat](Images/wasting_haste.png)   
+![wasting_haste_feat](Images/wasting_haste.png)
 
-Using both Q and E formations you can alternate between jumping with Briv's current jump and jumping with 4J during the same adventure.  
+Briv's **Strategic Stride** feat (10000 corrupted gems) allows him to cap his **Unnatural haste** ability (level.80) at 25600% (9J).
 
-This means you will have to get Briv to **5J+** to be able to use this feature.  
-> Item level required (**Epic** slot 4): **Dull**:15501, **Shiny**: 10251, **Golden**:7626.
+![strategic_stride_feat](Images/strategic_stride.png)
+
+Briv's **Wasting Haste** feat (100000 Ruby Coins @ 1e12 Mirt influence) allows him to cap his **Unnatural haste** ability (level.80) at the
+previous perfect jump amount. For example, 10J1% (100% to 9J and 1% to 10J) gets rounded down to 9J with the feat.
+
+![accurate_accrobatics_feat](Images/accurate_accrobatics.png)
+
+Using both Q and E formations you can alternate between jumping with Briv's current jump and either 4J, 9J or perfect jump.
+
+>The 4J feat doesn't do anything if Briv is under 4J.  
+>The 9J feat doesn't do anything if Briv is under 9J.  
+>The Accurate Accobatics only works when Briv is not at perfect jump. **This means you need to stop at the perfect ilvl requirement minus one**.
+> E.g. to do 12J/11J, Briv's slot 4 needs to be at ilvl 1023625 GE, 1364917 SE or 2047500 dull.
 
 ___
 
-## Setup:
+## Setup
 
 1. Enable/Disable the Addon in **Addon Management** (Jigsaw puzzle piece in IC Script Hub) to turn it on/off. It should start/stop whenever you click on the main Briv Gem Farm tab.
 2. Set up your **Preferred Briv Jump Zones** in this addon's tab or in **Advanced Settings** tab (IC Script Hub) then save.
 You will have to manually save your profile in **Briv Gem Farm** tab.
-3. To prevent input spam, enter the number of skips Briv should do in Q/E in the text fields then save.
-
-![settings](Images/target_settings.png)
-
-4. If you have the LevelUp addon, you can set the BrivMinLevelArea setting to walk the first few zones.
+3. If you have the LevelUp addon, you can set the BrivMinLevelArea setting to walk the first few zones.
 
 ![levelup](Images/levelup_settings.png)
 
-For steps 2 to 4, you can also use one of the **presets** to autofill target Q/E and advanced settings.
+For steps 2 to 3, you can also use one of the **presets** to autofill advanced settings.
 
 ![presets](Images/presets.png) 
 
-5. Set up your Briv feats in **Specialization and Feat Choices** (save formation menu in the game).
+4. Set up your Briv feats in **Specialization and Feat Choices** (save formation menu in the game).
 Hit save for each formation. It is not recommended to save feats for other champions.
 
-6. Start **Briv Gem Farm** in IC Script Hub.
+5. Start **Briv Gem Farm** in IC Script Hub.
 
 To stop this addon from working (e.g. to farm chests in events), uncheck **Enabled** next to **Save** then **Save**.
 
@@ -50,7 +62,7 @@ To stop this addon from working (e.g. to farm chests in events), uncheck **Enabl
 
 ___
 
-## Recommended settings:
+## Recommended settings
 ### Specialization and Feat Choices
 #### (Q:nJ, E:4J)
 
@@ -68,7 +80,7 @@ You can fill the slots in W with feats such as HP or overwhelm to boost offline 
 * **RAC:** Resolve Amongst Chaos (Descent into Avernus)  
   (6J/4J route, if you somehow have far more Tiamat's favor than Corellon's.)
 
-#### Mouse click option 
+#### Mouse click option - Don't use it with Diana or Shandie
 
 Routes with 100%QT won't have Briv's jump animation during transitions.  
 For the routes that aren't 100%QT, you can use the option below to have the script click on the "Clear formation" button to cancel Briv's jump animation.  

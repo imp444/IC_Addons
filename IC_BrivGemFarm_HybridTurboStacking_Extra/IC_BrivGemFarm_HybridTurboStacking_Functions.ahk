@@ -358,14 +358,13 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
 
     ; Heal
 
-    ReadHealthPercent(champID := 58)
+    ReadHealthPercent(champID := 58, toPercent := true)
     {
         if (champID < 1)
             return ""
-        obj := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.HeroHandler.heroes[g_SF.Memory.GetHeroHandlerIndexByChampID(champID)].health.QuickClone()
-        ; lastHealthPercent
-        obj.FullOffsets[obj.FullOffsets.Length()] += 8
-        return 100 * obj.Read()
+        heroId := g_SF.Memory.GetHeroHandlerIndexByChampID(champID)
+        healthPercent := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.HeroHandler.heroes[heroId].lastHealthPercent.Read()
+        return toPercent ? 100 * healthPercent : healthPercent
     }
 
     HealHero(champID := 58)
@@ -391,7 +390,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
     {
         static lastPercent := ""
 
-        percent := Max(0, this.ReadHealthPercent())
+        brivId := this.BrivFunctions.BrivId
+        percent := Max(0, this.ReadHealthPercent(brivId))
         if (lastPercent > 0 && percent == 0)
         {
             g_SharedData.BGFHTS_BrivDeaths += 1
@@ -399,9 +399,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         }
         else if (percent > 0 && percent < g_BrivUserSettingsFromAddons[ "BGFHTS_BrivAutoHeal" ])
         {
-            if (IsObject(IC_BrivGemFarm_LevelUp_Class) && !IC_BrivGemFarm_LevelUp_Class.BGFLU_CanAffordUpgrade(58))
+            if (IsObject(IC_BrivGemFarm_LevelUp_Class) && !IC_BrivGemFarm_LevelUp_Class.BGFLU_CanAffordUpgrade(brivId))
                 return
-            this.HealHero()
+            this.HealHero(brivId)
             g_SharedData.BGFHTS_BrivHeals += 1
         }
         lastPercent := percent

@@ -24,6 +24,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
 
     ConvertBitfieldToArray(value)
     {
+        if (IsObject(value))
+            return value
         array := []
         Loop, 50
             array.Push((value & (2 ** (A_Index - 1))) != 0)
@@ -67,6 +69,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
     {
         qVal := skipQ != "" ? Max(skipQ + 1, 1) : 1
         eVal := skipE != "" ? Max(skipE + 1, 1) : 1
+        brivMinLevelArea := brivMinLevelArea > 0 ? brivMinLevelArea : 1
+        brivMetalbornArea := brivMetalbornArea > 0 ? brivMetalbornArea : 1
         if (!Isobject(mod50values))
         {
             mod50Int := mod50values
@@ -75,6 +79,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
                 mod50values[A_Index] := (mod50Int & (2 ** (A_Index - 1))) != 0
         }
         ; Walk
+        ; This assumes Briv won't be levelled before brivMinLevelArea
         currentZone := Max(currentZone, brivMinLevelArea)
         ; Jump
         while (currentZone < resetZone)
@@ -92,18 +97,12 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
 
     ; Predicts the number of Briv haste stacks after the next reset.
     ; After resetting, Briv's Steelborne stacks are added to the remaining Haste stacks.
-    PredictStacks(addSBStacks := true, refreshCache := false)
+    ; It is expected Briv gets levelled with Unnatural Haste since if Briv does not jump, he will not lose stacks and if
+    ; he already has enough haste stacks for a full run, stacking never happens.
+    ; It is expected Briv gets levelled with Metalborn as online stacking can happen anywhere up to the Modron reset zone.
+    PredictStacks(addSBStacks := true, checkUpgrades := false, refreshCache := false)
     {
         preferred := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
-        if (IsObject(IC_BrivGemFarm_LevelUp_Component) || IsObject(IC_BrivGemFarm_LevelUp_Class))
-        {
-            brivMinlevelArea := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]
-            brivMetalbornArea := brivMinlevelArea
-        }
-        else
-        {
-            brivMinlevelArea := brivMetalbornArea := 1
-        }
         skipQ := this.BrivFunctions.GetBrivSkipConfig(1, refreshCache).HighestAvailableJump
         skipE := this.BrivFunctions.GetBrivSkipConfig(3, refreshCache).HighestAvailableJump
         modronReset := g_SF.Memory.GetModronResetArea()
@@ -114,11 +113,65 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         ; Party has not progressed to the next zone yet but Briv stacks were consumed.
         if (highestZone - currentZone > 1)
             currentZone := highestZone
+        ; Find the zone where Briv gets levelled to level 80+
+        if (IsObject(g_BrivGemFarm_LevelUp)|| IsObject(IC_BrivGemFarm_LevelUp_Class))
+        {
+            if (IsObject(g_BrivGemFarm_LevelUp))
+            {
+                brivMinlevelArea := g_BrivGemFarm_LevelUp.Settings.BrivMinLevelArea
+                brivLevelingZones:= g_BrivGemFarm_LevelUp.Settings.BrivLevelingZones
+            }
+            else
+            {
+                brivMinlevelArea := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]
+                brivLevelingZones := g_BrivUserSettingsFromAddons[ "BGFLU_BrivLevelingZones" ]
+            }
+            actualZone := this.FindActualBrivMinLevelingZone(brivMinlevelArea, brivLevelingZones)
+            if (actualZone == -1)
+                brivMinlevelArea := modronReset
+            else
+                brivMinlevelArea := actualZone
+            if (currentZone < brivMinlevelArea && this.BrivFunctions.ReadUnnaturalHastePurchased())
+                brivMinlevelArea := currentZone
+            brivMetalbornArea := brivMinlevelArea
+        }
+        else
+            brivMinlevelArea := brivMetalbornArea := 1
+        ; Check current Briv upgrades
+        if (checkUpgrades)
+        {
+            if (currentZone > brivMinlevelArea && !this.BrivFunctions.ReadUnnaturalHastePurchased())
+                brivMinlevelArea := modronReset
+            if (!this.BrivFunctions.ReadMetalbornPurchased())
+                brivMetalbornArea := modronReset
+        }
         ; This assumes Briv has gained more than 48 stacks ever.
         stacksAtReset := Max(48, this.CalcStacksLeftAtReset(preferred, currentZone, modronReset, sprintStacks, skipQ, skipE, brivMinlevelArea, brivMetalbornArea))
         if (addSBStacks)
             stacksAtReset += sbStacks
         return stacksAtReset
+    }
+
+    FindActualBrivMinLevelingZone(brivMinlevelArea := 1, brivLevelingZones := "")
+    {
+        if (brivLevelingZones)
+        {
+            firstArea := Mod(brivMinlevelArea, 50) == 0 ? 50 : Mod(brivMinlevelArea, 50)
+            brivLevelingZones := this.ConvertBitfieldToArray(brivLevelingZones)
+            repeatingNum := brivLevelingZones.Length()
+            Loop, % repeatingNum - firstArea + 1
+            {
+                area := firstArea + A_Index - 1
+                if (brivLevelingZones[area] == 1)
+                    return brivMinlevelArea + A_Index - 1
+            }
+            Loop, % firstArea - 1
+            {
+                if (brivLevelingZones[A_Index] == 1)
+                    return brivMinlevelArea + (repeatingNum - firstArea) + A_Index
+            }
+        }
+        return -1
     }
 
     PredictStacksActive
@@ -141,8 +194,20 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         static WastingHasteId := 791
         static StrategicStrideId := 2004
         static AccurateAcrobaticsFeatId := 2062
+        static UnnaturalHasteId := 3452
+        static MetalbornId := 3455
         static BrivSkipConfigByFavorite := []
         static BrivSkipValues := ""
+
+        ReadUnnaturalHastePurchased()
+        {
+            return g_SF.Memory.ReadHeroUpgradeIsPurchased(this.BrivId, this.UnnaturalHasteId)
+        }
+
+        ReadMetalbornPurchased()
+        {
+            return g_SF.Memory.ReadHeroUpgradeIsPurchased(this.BrivId, this.MetalbornId)
+        }
 
         GetBrivLoot()
         {

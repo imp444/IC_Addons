@@ -186,6 +186,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
 
     class BrivFunctions
     {
+        static Version := "1.0.1"
         static BrivId := 58
         static BrivJumpSlot := 4
         static UnnaturalHasteBaseEffect := 25
@@ -207,6 +208,15 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         ReadMetalbornPurchased()
         {
             return g_SF.Memory.ReadHeroUpgradeIsPurchased(this.BrivId, this.MetalbornId)
+        }
+
+        ReadSkipStacks()
+        {
+            size := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.areaSkipHandler.skipStacks.size.Read()
+            ; Sanity check, should be 2 for v601
+            if (size > 10)
+                return ""
+            return g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.areaSkipHandler.skipStacks.Queue[size - 1].size.Read()
         }
 
         GetBrivLoot()

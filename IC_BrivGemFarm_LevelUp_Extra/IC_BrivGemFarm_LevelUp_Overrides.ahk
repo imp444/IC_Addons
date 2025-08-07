@@ -667,7 +667,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             this.LevelChampByID(47, 120, 7000, "")
         ; Make sure the ability handler has the correct base address.
         ; It can change on game restarts or modron resets.
-        this.Memory.ActiveEffectKeyHandler.Refresh()
+        this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Shandie.TimeScaleWhenNotAttackedHandler.EffectKeyString)
         timeScale := this.Memory.ReadTimeScaleMultiplier()
         timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
         ; 30s seconds without the feat, 10s with the feat.
@@ -708,7 +708,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     {
         ; Make sure the ability handler has the correct base address.
         ; It can change on game restarts or modron resets.
-        this.Memory.ActiveEffectKeyHandler.Refresh()
+        this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Thellora.ThelloraPlateausOfUnicornRunHandler.EffectKeyString)
         if (!this.ShouldRushWait())
             return
         this.ToggleAutoProgress( 0, false, true )

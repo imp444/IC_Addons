@@ -183,7 +183,7 @@ class IC_RNGWaitingRoom_Functions
             size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
             if (size == "" && this.IsEllyWickOnTheField())
             {
-                g_SF.Memory.ActiveEffectKeyHandler.Refresh()
+                g_SF.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.EffectKeyString)
                 size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
             }
             return size == "" ? 0 : size

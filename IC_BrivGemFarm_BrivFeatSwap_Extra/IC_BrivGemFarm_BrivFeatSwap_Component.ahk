@@ -45,12 +45,9 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         {
             if (!settings.HasKey("Enabled"))
                 settings.Enabled := true
-            if (!settings.HasKey("MouseClick"))
-                settings.MouseClick := false
             GuiControl, ICScriptHub:, BGFBFS_Enabled, % settings.Enabled
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ, % settings.targetQ
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % settings.targetE
-            GuiControl, ICScriptHub:, BGFBFS_MouseClick, % settings.MouseClick
             ; Fix preset settings from version v1.2.0
             settings.Preset == "5J/4J" ? settings.Preset := "5J/4J Tall Tales" : ""
             settings.Preset == "8J/4J" ? settings.Preset := "8J/4J Tall Tales" : ""
@@ -75,15 +72,13 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         this.TimerFunctions := {}
         fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
-        this.TimerFunctions[fncToCallOnTimer] := 1000
+        this.TimerFunctions[fncToCallOnTimer] := 15000
     }
 
     Start()
     {
         for k,v in this.TimerFunctions
-        {
             SetTimer, %k%, %v%, 0
-        }
     }
 
     Stop()
@@ -123,7 +118,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             else
                 GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Disabled
         }
-        catch
+        catch err
         {
             GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Waiting for Gem Farm to start
         }
@@ -187,8 +182,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         settings := this.Settings
         GuiControlGet, enabled, ICScriptHub:, BGFBFS_Enabled
         settings.Enabled := enabled
-        GuiControlGet, mouseClick, ICScriptHub:, BGFBFS_MouseClick
-        settings.MouseClick := mouseClick
         settings.Preset := this.GetPresetName()
         this.SaveMod50Preset()
         if (IsObject(g_BrivGemFarm_LevelUp))
@@ -636,25 +629,4 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
         return currentArea
     }
-
-    ; Enables/disables mouse clicks.
-    ; Can only be turned on when this addon's tab is active.
-    ToggleClicks()
-    {
-        GuiControlGet, currentTab, ICScriptHub:, ModronTabControl, Tab
-        activeTab := (currentTab == "Briv Feat Swap") && WinActive("IC Script Hub")
-        mouseClick := this.Settings.MouseClick
-        if ((!mouseClick && activeTab) || mouseClick)
-        {
-            GuiControl, ICScriptHub:, BGFBFS_MouseClick, % !mouseClick
-            BrivGemFarm_BrivFeatSwap_Save()
-        }
-    }
-}
-
-Hotkey, ^!x, BGFBFS_ToggleClicks
-
-BGFBFS_ToggleClicks()
-{
-    g_BrivFeatSwap.ToggleClicks()
 }

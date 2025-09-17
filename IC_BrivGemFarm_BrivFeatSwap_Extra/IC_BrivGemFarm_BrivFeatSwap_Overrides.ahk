@@ -51,16 +51,6 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
 
         return 0
     }
-
-    ; Stops progress and switches to appropriate party to prepare for stacking Briv's SteelBones.
-    StackFarmSetup(params*)
-    {
-        this.base.StackFarmSetup(params*)
-        if (!g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ])
-            return
-        if (g_SF.IsCurrentFormation(g_SF.Memory.GetFormationByFavorite(2)))
-            g_SharedData.BGFBFS_UpdateSkipAmount(2)
-    }
 }
 
 ; Overrides IC_BrivSharedFunctions_Class.SetFormation()
@@ -77,26 +67,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
             this.Settings := settings
         ; Not refreshed if for DoDashWait() is skipped
         if (ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.ReadSkipAmount() == "")
-            this.Memory.ActiveEffectKeyHandler.Refresh()
+            this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Briv.BrivUnnaturalHasteHandler.EffectKeyString)   
         currentZone := this.Memory.ReadCurrentZone()
         ;bench briv if jump animation override is added to list and it isn't a quick transition (reading ReadFormationTransitionDir makes sure QT isn't read too early)
-        ; Using click on "Clear Formation" to clear champions out the formation
-        currentFormation := this.Memory.GetCurrentFormation()
-        mouseClickEnabled := g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ]
-        if (mouseClickEnabled)
-        {
-            if (!this.BGFBFS_IsFormationEmpty(currentFormation))
-            {
-                if (this.Memory.ReadTransitionOverrideSize() == 1 AND this.Memory.ReadTransitionDirection() != 2 AND this.Memory.ReadFormationTransitionDir() == 3)
-                    return this.BGFBFS_MouseClickCancel(currentZone)
-            }
-            else if (this.Memory.ReadTransitionOverrideSize() == 1)
-                return
-        }
         ;check to bench briv
         if (this.BGFBFS_ShouldSwitchFormation(3))
         {
             this.DirectedInput(,,["{e}"]*)
+            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
             g_SharedData.BGFBFS_UpdateSkipAmount(3)
             return
         }
@@ -104,19 +82,21 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         if (this.BGFBFS_ShouldSwitchFormation(1))
         {
             this.DirectedInput(,,["{q}"]*)
+            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
             g_SharedData.BGFBFS_UpdateSkipAmount(1)
             return
         }
         ; Prevent incorrect read if Briv is the only champion leveled in Q/E (e.g. using "Level Briv/Shandie to MinLevel first" LevelUp addon option)
         if (currentZone == 1)
             return
-        isFormation2 := this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2))
+        isFormation2 := this.Memory.ReadMostRecentFormationFavorite() == 2
         isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( this.Memory.ReadCurrentZone(), 50) == 0 ? 50 : Mod( this.Memory.ReadCurrentZone(), 50)] == 0
         ; check to swap briv from favorite 2 to favorite 3 (W to E)
         if (isFormation2 AND isWalkZone)
         {
             g_SharedData.BGFBFS_UpdateSkipAmount(2)
             this.DirectedInput(,,["{e}"]*)
+            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
             return
         }
         ; check to swap briv from favorite 2 to favorite 1 (W to Q)
@@ -124,6 +104,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
         {
             g_SharedData.BGFBFS_UpdateSkipAmount(2)
             this.DirectedInput(,,["{q}"]*)
+            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
             return
         }
     }
@@ -161,21 +142,10 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     ; Params: formationFavoriteIndex:int - 1:Q, 2:W, 3:E.
     BGFBFS_ShouldSwitchFormation(formationFavoriteIndex)
     {
-        postClickCancel := g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] && this.BGFBFS_IsFormationEmpty(this.Memory.GetCurrentFormation())
-        currentSkip := g_SharedData.BGFBFS_UpdateSkipAmount()
-        currentZone := this.Memory.ReadCurrentZone()
         if (formationFavoriteIndex == 1)
-        {
-            wrongSkipAmount := !IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(1)
-            wrongFamiliars := !IC_BrivGemFarm_BrivFeatSwap_Functions.CurrentFormationClickersMatchesFavorite(1)
-            return (wrongSkipAmount || wrongFamiliars || postClickCancel) && this.UnBenchBrivConditions(this.Settings)
-        }
+            return (!IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(1) && this.UnBenchBrivConditions(this.Settings))
         else if (formationFavoriteIndex == 3)
-        {
-            wrongSkipAmount := !IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(3)
-            wrongFamiliars := !IC_BrivGemFarm_BrivFeatSwap_Functions.CurrentFormationClickersMatchesFavorite(3)
-            return (wrongSkipAmount || wrongFamiliars || postClickCancel) && this.BenchBrivConditions(this.Settings)
-        }
+            return (!IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(3) && this.BenchBrivConditions(this.Settings))
         return false
     }
 
@@ -183,72 +153,9 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_BrivSharedFun
     BGFBFS_IsFormationEmpty(formation)
     {
         for k, v in formation
-        {
             if (v != -1)
                 return false
-        }
         return true
-    }
-
-    ; Functions used to click clear formation, to cancel Briv's jump animation.
-
-    BGFBFS_MouseClickCancel(currentZone := 1)
-    {
-        static coords := ""
-
-        if (currentZone == 1 || coords == "")
-            coords := this.BGFBFS_GetClickCoords()
-        exeName := IC_BrivGemFarm_BrivFeatSwap_Functions.GetExeName()
-        WinActivate, ahk_exe %exeName%
-        xClick := coords[1]
-        yClick := coords[2]
-        MouseClick, Left, xClick, yClick, 1, 0
-    }
-
-    BGFBFS_GetClickCoords()
-    {
-        xOffset := yOffset := 0
-        ; Fullscreen
-        if (IC_BrivGemFarm_BrivFeatSwap_Functions.IsGameFullScreen())
-        {
-            exeName := IC_BrivGemFarm_BrivFeatSwap_Functions.GetExeName()
-            WinActivate, ahk_exe %exeName%
-            WinGetPos, x, y, w, h, ahk_exe %exeName%
-            ; Find if the game resolution is set to tall or wide
-            midWidthPos := Round(x + w / 2)
-            midHeightPos := Round(y + h / 2)
-            PixelGetColor, colorW, midWidthPos, 0
-            PixelGetColor, colorH, 0, midHeightPos
-            color := 0
-            step := 10
-            ; Tall
-            if (colorW > 0 && colorH == 0)
-            {
-                While (color == 0 && xOffset < w)
-                {
-                    PixelGetColor, color, xOffset, 0
-                    xOffset += step
-                }
-                xOffset -= step
-            }
-            ; Wide
-            else if (colorW == 0 && colorH > 0)
-            {
-                While (color == 0 && yOffset < h)
-                {
-                    PixelGetColor, color, 0, yOffset
-                    yOffset += step
-                }
-                yOffset -= step
-                yOffset := -yOffset
-            }
-            winBottom := y + h
-        }
-        else
-            winBottom := g_SF.Memory.ReadScreenHeight()
-        xClick := xOffset + 24
-        yClick := winBottom + yOffset - 24
-        return [xClick, yClick]
     }
 }
 
@@ -316,6 +223,5 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Class extends IC_SharedData_Clas
             return false
         g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ] := settings.Enabled
         g_BrivUserSettingsFromAddons[ "BGFBFS_Preset" ] := settings.Preset
-        g_BrivUserSettingsFromAddons[ "BGFBFS_MouseClick" ] := settings.MouseClick
     }
 }

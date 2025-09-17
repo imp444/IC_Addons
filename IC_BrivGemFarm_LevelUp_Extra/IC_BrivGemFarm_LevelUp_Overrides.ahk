@@ -22,7 +22,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_ServerCall.UpdatePlayServer()
         g_SF.ResetServerCall()
         g_SF.PatronID := g_SF.Memory.ReadPatronID()
-        this.LastStackSuccessArea := g_UserSettings [ "StackZone" ]
+        this.LastStackSuccessArea := g_BrivUserSettings [ "StackZone" ]
         this.StackFailAreasThisRunTally := {}
         g_SF.GameStartFormation := g_BrivUserSettings[ "BrivJumpBuffer" ] > 0 ? 3 : 1
         g_SaveHelper.Init() ; slow call, loads briv dictionary (3+s)
@@ -143,8 +143,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         counter := 0
         sleepTime := 50
         g_SharedData.LoopString := "Setting stack farm formation."
-        stackFormation := g_SF.Memory.GetFormationByFavorite(2)
-        while (!g_SF.IsCurrentFormation(stackFormation) AND ElapsedTime < 5000 )
+        while (!(g_SF.Memory.ReadMostRecentFormationFavorite() == 2) AND ElapsedTime < 5000 )
         {
             ElapsedTime := A_TickCount - StartTime
             if (ElapsedTime > (counter * sleepTime)) ; input limiter..
@@ -155,23 +154,14 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             ; Can't formation switch when under attack.
             if (ElapsedTime > 1000 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
             {
-                ; Find Briv's spot
-                spot := 0
-                for k, v in stackFormation
-                {
-                    if (v == 58)
-                    {
-                        spot := k
-                        break
-                    }
-                }
-                if (spot && g_SF.Memory.GetCurrentFormation()[spot] != 58)
+                if (!(g_SF.Memory.ReadMostRecentFormationFavorite() == 2) OR g_SF.Memory.ReadChampBenchedByID(58))
                     g_SF.FallBackFromZone()
                 else
                     this.BGFLU_DoPartySetupMax(stackFormation)
             }
             else
                 this.BGFLU_DoPartySetupMax(stackFormation)
+            Sleep, 20
         }
         while (!this.BGFLU_DoPartySetupMax(stackFormation) AND (A_TickCount - StartTime) < 5000)
            Sleep, 30
@@ -465,7 +455,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     {
         setting := g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ]
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-            return Max(setting, g_SF.Memory.ReadHighestZone())
+            return Max(setting, g_SF.Memory.ReadHighestZone()+100)
         return Max(1, setting)
     }
 
@@ -970,16 +960,6 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
 ; Overrides IC_MemoryFunctions_Class.ReadChampSeatByID()
 class IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Class extends IC_MemoryFunctions_Class
 {
-    ReadChampSeatByID(ChampID := 0)
-    {
-        static champSeatByID := {}
-
-        seat := champSeatByID[ChampID]
-        if (seat == "")
-            champSeatByID[ChampID] := seat := base.ReadChampSeatByID(ChampID)
-        return seat
-    }
-
     ; Next upgrade = -100
     BGFLU_ReadLevelUpAmount()
     {

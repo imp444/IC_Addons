@@ -64,7 +64,7 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
                 g_SharedData.TargetStacks := this.TargetStacks := g_SF.CalculateBrivStacksToReachNextModronResetZone(worstCase) + 50 ; 50 stack safety net
                 this.LeftoverStacks := g_SF.CalculateBrivStacksLeftAtTargetZone(g_SF.Memory.ReadCurrentZone(), g_SF.Memory.GetModronResetArea() + 1, worstCase)
                 ; Don't reset last stack success area if 3 or more runs have failed to stack.
-                this.LastStackSuccessArea := this.StackFailAreasTally[g_UserSettings [ "StackZone" ]] < this.MaxStackRestartFails ? g_UserSettings [ "StackZone" ] : this.LastStackSuccessArea
+                this.LastStackSuccessArea := this.StackFailAreasTally[g_UserSettings [ "StackZone" ]] < this.MaxStackRestartFails ? g_BrivUserSettings [ "StackZone" ] : this.LastStackSuccessArea
                 this.StackFailAreasThisRunTally := {}
                 this.StackFailRetryAttempt := 0
                 StartTime := g_PreviousZoneStartTime := A_TickCount
@@ -208,26 +208,9 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Cla
 {
     RestartAdventure( reason := "" )
     {
-            g_SharedData.LoopString := "ServerCall: Restarting adventure"
-            this.CloseIC( reason )
             g_SharedData.RNGWR_Elly.Reset()
             g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
-            if (this.sprint != "" AND this.steelbones != "" AND (this.sprint + this.steelbones) < 190000)
-            {
-                response := g_serverCall.CallPreventStackFail(this.sprint + this.steelbones)
-            }
-            else if (this.sprint != "" AND this.steelbones != "")
-            {
-                response := g_serverCall.CallPreventStackFail(this.sprint + this.steelbones)
-                g_SharedData.LoopString := "ServerCall: Restarting with >190k stacks, some stacks lost."
-            }
-            else
-            {
-                g_SharedData.LoopString := "ServerCall: Restarting adventure (no manual stack conv.)"
-            }
-            response := g_ServerCall.CallEndAdventure()
-            response := g_ServerCall.CallLoadAdventure( this.CurrentAdventure )
-            g_SharedData.TriggerStart := true
+            base.RestartAdventure()
     }
 
     DirectedInput(hold := 1, release := 1, s* )

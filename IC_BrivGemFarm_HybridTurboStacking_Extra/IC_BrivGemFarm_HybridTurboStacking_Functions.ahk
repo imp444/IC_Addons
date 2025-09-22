@@ -127,48 +127,11 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         return startStacks
     }
 
-    ; Predicts the number of Briv haste stacks after the next reset.
-    ; After resetting, Briv's Steelborne stacks are added to the remaining Haste stacks.
-    PredictStacks(addSBStacks := true, refreshCache := false)
-    {
-        static skipQ
-        static skipE
-
-        preferred := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
-        if (IsObject(IC_BrivGemFarm_LevelUp_Component) || IsObject(IC_BrivGemFarm_LevelUp_Class))
-        {
-            brivMinlevelArea := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]
-            brivMetalbornArea := brivMinlevelArea
-        }
-        else
-        {
-            brivMinlevelArea := brivMetalbornArea := 1
-        }
-        if (refreshCache || skipQ == "" || skipE == "" || skipQ == 0 && skipE == 0)
-        {
-            skipQ := this.GetBrivSkipValue(1)
-            skipE := this.GetBrivSkipValue(3)
-        }
-        modronReset := g_SF.Memory.GetModronResetArea()
-        sbStacks := g_SF.Memory.ReadSBStacks()
-        currentZone := g_SF.Memory.ReadCurrentZone()
-        highestZone := g_SF.Memory.ReadHighestZone()
-        sprintStacks := g_SF.Memory.ReadHasteStacks()
-        ; Party has not progressed to the next zone yet but Briv stacks were consumed.
-        if (highestZone - currentZone > 1)
-            currentZone := highestZone
-        ; This assumes Briv has gained more than 48 stacks ever.
-        stacksAtReset := Max(48, this.CalcStacksLeftAtReset(preferred, currentZone, modronReset, sprintStacks, skipQ, skipE, brivMinlevelArea, brivMetalbornArea))
-        if (addSBStacks)
-            stacksAtReset += sbStacks
-        return stacksAtReset
-    }
-
     PredictStacksActive
     {
         get
         {
-            return !g_BrivUserSettings[ "AutoCalculateBrivStacks" ] && !g_BrivUserSettings[ "IgnoreBrivHaste" ]
+            return !g_BrivUserSettings[ "IgnoreBrivHaste" ]
         }
     }
 
@@ -289,7 +252,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         }
         else if (percent > 0 && percent < g_BrivUserSettingsFromAddons[ "BGFHTS_BrivAutoHeal" ])
         {
-            if (IsObject(IC_BrivGemFarm_LevelUp_Class) && !IC_BrivGemFarm_LevelUp_Class.BGFLU_CanAffordUpgrade(58))
+            if (IsObject(IC_BrivGemFarm_LevelUp_Class) && !IC_BrivGemFarm_LevelUp_Class.BGFLU_CanAffordUpgrade(ActiveEffectKeySharedFunctions.Briv.HeroID))
                 return
             this.HealHero()
             g_SharedData.BGFHTS_BrivHeals += 1

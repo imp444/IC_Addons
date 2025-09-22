@@ -1,14 +1,15 @@
 ; Overrides IC_BrivGemFarm_Class.TestForSteelBonesStackFarming()
 ; Overrides IC_BrivGemFarm_Class.ShouldOfflineStack()
+; Overrides IC_BrivGemFarm_Class.GemFarmResetSetup()
 ; Overrides IC_BrivGemFarm_Class.GetNumStacksFarmed()
-; Overrides IC_BrivGemFarm_Class.StackFarm()
+; Overrides IC_BrivGemFarm_Class.StackRestart()
 ; Overrides IC_BrivGemFarm_Class.StackNormal()
 class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
 {
     static WARDEN_ID := 36
     static MELF_ID := 59
-;    BGFHTS_DelayedOffline := false
-;    BGFHTS_LastOfflineReset := 0
+   BGFHTS_DelayedOffline := false
+   BGFHTS_LastOfflineReset := 0
 
     ; Stacking offline uses g_BrivUserSettings[ "StackZone" ].
     ; While online uses BGFHTS_MelfMinStackZone.
@@ -33,16 +34,16 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
     ; Determines if offline stacking is expected with current settings and conditions.
     ShouldOfflineStack()
     {
+        shouldOfflineStack := base.ShouldOfflineStack()
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
-            return base.ShouldOfflineStack()
+            return shouldOfflineStack
         ; If no Melf +spawn effect until reset, stack offline.
         range := g_SharedData.BGFHTS_CurrentRunStackRange
         if ((range[1] == "" || range[2] == "") && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
             return true
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunDelayOffline" ])
-            return base.ShouldOfflineStack()
+            return shouldOfflineStack
         ; Delay offline until last restart for multiple runs.
-        shouldOfflineStack := base.ShouldOfflineStack()
         targetStacks := g_BrivUserSettings[ "TargetStacks" ]
         combinedStacks := g_SF.Memory.ReadHasteStacks() + g_SF.Memory.ReadSBStacks()
         if (shouldOfflineStack)
@@ -64,6 +65,13 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         return shouldOfflineStack && !this.BGFHTS_DelayedOffline
     }
 
+    GemFarmResetSetup(formationModron := "", doBasePartySetup := False)
+    {
+            g_SharedData.BGFHTS_UpdateMelfStackZoneAfterReset()
+            this.BGFHTS_UpdateMelfStackZoneAfterReset(true)
+            return base.GemFarmResetSetup(formationModron := "", doBasePartySetup)
+    }
+
     GetNumStacksFarmed(afterReset := false)
     {
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
@@ -80,21 +88,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return g_SF.Memory.ReadSBStacks() + 48
     }
 
-    StackFarm()
+    StackRestart()
     {
-        if (this.ShouldOfflineStack())
-        {
-            ; Remove Warden, Melf and Tatyana
-            IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
-            this.StackRestart()
-        }
-        else
-            this.StackNormal()
-        ; SetFormation needs to occur before dashwait in case game erronously placed party on boss zone after stack restart
-        g_SF.SetFormation(g_BrivUserSettings)
-        if (g_SF.ShouldDashWait())
-            g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
-        g_SF.ToggleAutoProgress( 1 )
+        IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
+        base.StackRestart()
     }
 
     ; Tries to complete the zone before online stacking.
@@ -108,10 +105,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return 0
         predictStacks := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive
         SBStacksStart := g_SF.Memory.ReadSBStacks()
-        stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? SBStacksStart : this.GetNumStacksFarmed(predictStacks)
-        targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
+        stacks := this.GetNumStacksFarmed(predictStacks)
+        targetStacks := g_BrivUserSettings[ "TargetStacks" ]
         if (this.ShouldAvoidRestack(stacks, targetStacks))
-            return
+            return 0
         ; Check if offline stack is needed
         isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
         if (this.BGFHTS_DelayedOffline || !isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
@@ -131,7 +128,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         if (!isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 1)
             removedIds := [59] ; Melf
         else if (isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfActiveStrategy" ] == 1)
-            removedIds := [36, 97] ; Warden/Tatyana
+            removedIds := [36] ; Warden/Tatyana
         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite(removedIds)
         this.StackFarmSetup()
         ; Start online stacking
@@ -180,7 +177,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
                 Sleep, 30
                 ElapsedTime := A_TickCount - StartTime
-                stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed()
+                stacks := this.GetNumStacksFarmed()
             }
         }
         ; Turn off Briv auto-heal
@@ -191,7 +188,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             this.RestartAdventure( "Online stacking took too long (> " . (maxOnlineStackTime / 1000) . "s) - z[" . g_SF.Memory.ReadCurrentZone() . "].")
             this.SafetyCheck()
             g_PreviousZoneStartTime := A_TickCount
-            return
+            return ""
         }
         ; Update stats
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ])
@@ -213,8 +210,12 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         if (predictStacks)
             g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
         g_SharedData.BGFHTS_Status := "Online stacking done"
+        return ""
     }
+}
 
+class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_Class
+{
     BGFHTS_WaitForZoneCompleted(maxTime := 3000)
     {
         g_SF.SetFormation(g_BrivUserSettings)
@@ -228,7 +229,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         {
             quest := g_SF.Memory.ReadQuestRemaining()
             g_SharedData.BGFHTS_Status := "Stacking: Waiting for area completion " . quest
-            g_SF.SetFormation(g_BrivUserSettings)
+            if(ElapsedTime > maxTime / 2)
+                g_SF.SetFormation(g_BrivUserSettings, forceCheck := True)
+            else
+                g_SF.SetFormation(g_BrivUserSettings)
             Sleep, 30
             ElapsedTime := A_TickCount - StartTime
         }
@@ -299,31 +303,24 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
 ; Overrides IC_MemoryFunctions_Class.GetFormationByFavorite()
 class IC_BrivGemFarm_HybridTurboStacking_IC_MemoryFunctions_Class extends IC_MemoryFunctions_Class
 {
-    GetFormationByFavorite(favorite := 0)
+    GetFormationByFavorite(favorite := 0 )
     {
-        slot := g_SF.Memory.GetSavedFormationSlotByFavorite(favorite)
-        formation := g_SF.Memory.GetFormationSaveBySlot(slot)
-        if (favorite == 2)
-        {
+        version := this.GameManager.game.gameInstances[this.GameInstance].FormationSaveHandler.formationSavesV2.__version.Read()
+        if (this.FormationFavorites[favorite] != "" AND  favorite == this.GameManager.game.gameInstances[this.GameInstance].FormationSaveHandler.formationSavesV2[this.FormationFavorites[favorite]].Favorite.Read())
+            return this.GetFormationSaveBySlot(this.FormationFavoriteSlots[favorite]) 
+        slot := this.GetSavedFormationSlotByFavorite(favorite)
+        formation := this.GetFormationSaveBySlot(slot)
+        if (favorite == 2) ; don't test stack formation for champions are still benched.
             for k, v in formation
-            {
                 for _, champID in g_SharedData.BGFHTS_RemovedIdsFromWFavorite
-                {
                     if (v == champID)
-                    {
-                        ; Champions will be on the field if already levelled.
-                        if (g_SF.Memory.ReadChampLvlByID(v) < 1)
-                            formation[k] := -1
-                    }
-                }
-            }
-        }
+                        if (g_SF.Memory.ReadChampBenchedByID(v)) 
+                            formation[k] := g_SF.Memory.ReadChampBenchedByID(v) -2
         return formation
     }
 }
 
-; Extends IC_SharedData_Class
-class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedData_Class
+class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Added_Class ;Added to IC_SharedData_Class
 {
 ;    BGFHTS_CurrentRunStackRange := ""
 ;    BGFHTS_PreviousStackZone := 0
@@ -375,22 +372,13 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] := settings.MelfInactiveStrategy
         mod50Zones := IC_BrivGemFarm_HybridTurboStacking_Functions.GetPreferredBrivStackZones(settings.PreferredBrivStackZones)
         g_BrivUserSettingsFromAddons[ "BGFHTS_PreferredBrivStackZones" ] := mod50Zones
-        ; Melf
-        fncToCallOnTimer := this.BGFHTS_TimerFunction
-        if (settings.Enabled && settings.100Melf)
-        {
-            SetTimer, %fncToCallOnTimer%, 1000, 0
-            this.BGFHTS_UpdateMelfStackZoneAfterReset(true)
-        }
-        else
-            SetTimer, %fncToCallOnTimer%, Off
     }
 
     BGFHTS_UpdateMelfStackZoneAfterReset(forceUpdate := false)
     {
         static lastResets := 0
 
-        resets := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
+        resets := g_SF.Memory.ReadResetsTotal()
         if (forceUpdate || resets > lastResets || !IsObject(this.BGFHTS_CurrentRunStackRange))
         {
             this.BGFHTS_Status := ""
@@ -400,17 +388,9 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         this.BGFHTS_UpdateStacksPredict()
     }
 
-    BGFHTS_UpdateStacksPredict()
-    {
-        predictStacks := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive
-        this.BGFHTS_StacksPredictionActive := predictStacks
-        if (predictStacks)
-            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
-    }
-
     BGFHTS_CheckMelf()
     {
-        resets := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
+        resets := g_SF.Memory.ReadResetsTotal()
         maxZone := g_SF.Memory.GetModronResetArea() - 1
         currentZone := g_SF.Memory.ReadCurrentZone()
         ; Modron reset happened but currentZone hasn't been reset to 1 yet.
@@ -421,4 +401,13 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Class extends IC_SharedDa
         this.BGFHTS_CurrentRunStackRange := range ? range : ["", ""]
         return range
     }
+
+    BGFHTS_UpdateStacksPredict()
+    {
+        predictStacks := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive
+        this.BGFHTS_StacksPredictionActive := predictStacks
+        if (predictStacks)
+            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
+    }
+
 }

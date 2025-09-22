@@ -30,7 +30,6 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
     Init()
     {
         g_HybridTurboStackingGui.Init()
-        ; Read settings
         this.LoadSettings()
         ; Update loop
         g_BrivFarmAddonStartFunctions.Push(ObjBindMethod(this, "Start"))
@@ -42,33 +41,16 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
     LoadSettings()
     {
         needSave := false
-        default := this.GetNewSettings()
+        default := this.GetDefaultSettings()
         this.Settings := settings := g_SF.LoadObjectFromJSON(IC_BrivGemFarm_HybridTurboStacking_Functions.SettingsPath)
         if (!IsObject(settings))
-        {
-            this.Settings := settings := default
-            needSave := true
-        }
+            needSave := true, (this.Settings := settings := default)
         else
         {
-            ; Delete extra settings
-            for k, v in settings
-            {
-                if (!default.HasKey(k))
-                {
-                    settings.Delete(k)
-                    needSave := true
-                }
-            }
-            ; Add missing settings
-            for k, v in default
-            {
-                if (!settings.HasKey(k) || settings[k] == "")
-                {
-                    settings[k] := default[k]
-                    needSave := true
-                }
-            }
+            postDelSettings := g_SF.DeleteExtraSettings(settings, default)
+            needSave := (postDelSettings != "")
+            if (needSave)
+                settings := postDelSettings
         }
         if (needSave)
             this.SaveSettings()
@@ -77,8 +59,9 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         g_HybridTurboStackingGui.UpdateGUISettings(settings)
     }
 
+
     ; Returns an object with default values for all settings.
-    GetNewSettings()
+    GetDefaultSettings()
     {
         settings := {}
         settings.Enabled := false
@@ -203,7 +186,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
 
     GetCurrentReset()
     {
-        resets := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
+        resets := g_SF.Memory.ReadResetsTotal()
         if (resets > 0 && resets != this.CurrentReset)
         {
             this.CurrentReset := resets

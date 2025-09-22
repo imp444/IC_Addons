@@ -19,10 +19,7 @@ class IC_RNGWaitingRoom_Functions
         return value == 1 ? "" : "s"
     }
 
-    ReadResets()
-    {
-        return g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.StatHandler.Resets.Read()
-    }
+
 
     GetExeName()
     {
@@ -65,7 +62,7 @@ class IC_RNGWaitingRoom_Functions
         Start()
         {
             fncToCallOnTimer := this.LoopTimer
-            SetTimer, %fncToCallOnTimer%, 20, 0
+            SetTimer, %fncToCallOnTimer%, 200, 0
             this.MainLoop()
         }
 
@@ -405,10 +402,12 @@ class IC_RNGWaitingRoom_Functions
     GetIntitialFormation()
     {
         formation := g_SF.BGFLU_GetDefaultFormation()
-        ; Use DM if in modron formation.
-        heroID := 99
-        if (g_SF.IsChampInFormation(heroID, g_SF.Memory.GetActiveModronFormation()))
-            formation.Push(heroID)
+        ; Use extra champions if they're in the modron formation.
+        heroIDs := [99,59,97,165] ; DM / Melf / Tatyana / Baldric
+        modronFormation := g_SF.Memory.GetActiveModronFormation()
+        for k,heroID in heroIDs
+            if (g_SF.IsChampInFormation(heroID, modronFormation))
+                formation.Push(heroID)
         return formation
     }
 }

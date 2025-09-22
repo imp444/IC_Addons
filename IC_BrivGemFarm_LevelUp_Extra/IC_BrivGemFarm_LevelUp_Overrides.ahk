@@ -1,149 +1,94 @@
-; Overrides IC_BrivGemFarm_Class.GemFarm()
+; Overrides IC_BrivGemFarm_Class.GemFarmDoZone()
+; Overrides IC_BrivGemFarm_Class.GemFarmPreLoopSetup()
+; Overrides IC_BrivGemFarm_Class.GemFarmResetSetup()
+; Overrides IC_BrivGemFarm_Class.GemFarmDoNonModronActions()
 ; Overrides IC_BrivGemFarm_Class.StackFarmSetup()
 class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 {
     ;=====================================================
     ;Primary Functions for Briv Gem Farm
     ;=====================================================
-    ;The primary loop for gem farming using Briv and modron.
-    GemFarm()
+    GemFarmDoZone()
     {
-        static lastResetCount := 0
-        g_SharedData.TriggerStart := true
-        g_SF.Hwnd := WinExist("ahk_exe " . g_UserSettings[ "ExeName"])
-        existingProcessID := g_UserSettings[ "ExeName"]
-        Process, Exist, %existingProcessID%
-        g_SF.PID := ErrorLevel
-        Process, Priority, % g_SF.PID, High
-        g_SF.Memory.OpenProcessReader()
-        if (g_SF.VerifyAdventureLoaded() < 0)
-            return
-        g_SF.CurrentAdventure := g_SF.Memory.ReadCurrentObjID()
-        g_ServerCall.UpdatePlayServer()
-        g_SF.ResetServerCall()
-        g_SF.PatronID := g_SF.Memory.ReadPatronID()
-        this.LastStackSuccessArea := g_BrivUserSettings [ "StackZone" ]
-        this.StackFailAreasThisRunTally := {}
-        g_SF.GameStartFormation := g_BrivUserSettings[ "BrivJumpBuffer" ] > 0 ? 3 : 1
-        g_SaveHelper.Init() ; slow call, loads briv dictionary (3+s)
-        formationModron := g_SF.Memory.GetActiveModronFormation()
-        if (this.PreFlightCheck() == -1) ; Did not pass pre flight check.
-            return -1
-        g_PreviousZoneStartTime := A_TickCount
-        g_SharedData.StackFail := 0
-        g_SF.BGFLU_CalcLastUpgradeLevels()
-        g_SharedData.BGFLU_UpdateSettingsFromFile(true)
-        loop
+        this.DoKeySpam := False
+        base.GemFarmDoZone()
+    }
+    
+    GemFarmPreLoopSetup()
+    {
+        isFailed := base.GemFarmPreLoopSetup(True)
+        if(!isFailed)
         {
-            g_SharedData.LoopString := "Main Loop"
-            CurrentZone := g_SF.Memory.ReadCurrentZone()
-            if (CurrentZone == "" AND !g_SF.SafetyCheck() ) ; Check for game closed
-                g_SF.ToggleAutoProgress( 1, false, true ) ; Turn on autoprogress after a restart
-            g_SF.SetFormation(g_BrivUserSettings)
-            if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
-            {
-                g_SharedData.BGFLU_SetStatus()
-                g_SharedData.BGFLU_SaveFormations()
-                g_SharedData.SwapsMadeThisRun := 0
-                g_SharedData.BossesHitThisRun := 0
-                g_SF.ToggleAutoProgress( 0, false, true )
-                g_SharedData.StackFail := this.CheckForFailedConv()
-                g_SF.WaitForFirstGold()
-                setupMaxDone := false
-                setupFailedConversionDone := true
-                this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ])
-                lastResetCount := g_SF.Memory.ReadResetsCount()
-                g_SF.Memory.ActiveEffectKeyHandler.Refresh()
-                worstCase := g_BrivUserSettings[ "AutoCalculateWorstCase" ]
-                g_SharedData.TargetStacks := this.TargetStacks := g_SF.CalculateBrivStacksToReachNextModronResetZone(worstCase) + 50 ; 50 stack safety net
-                this.LeftoverStacks := g_SF.CalculateBrivStacksLeftAtTargetZone(g_SF.Memory.ReadCurrentZone(), g_SF.Memory.GetModronResetArea() + 1, worstCase)
-                ; Don't reset last stack success area if 3 or more runs have failed to stack.
-                this.LastStackSuccessArea := this.StackFailAreasTally[g_UserSettings [ "StackZone" ]] < this.MaxStackRestartFails ? g_UserSettings [ "StackZone" ] : this.LastStackSuccessArea
-                this.StackFailAreasThisRunTally := {}
-                this.StackFailRetryAttempt := 0
-                StartTime := g_PreviousZoneStartTime := A_TickCount
-                PreviousZone := 1
-                g_SharedData.TriggerStart := false
-                g_SharedData.LoopString := "Main Loop"
-            }
-            if (g_SharedData.StackFail != 2)
-                g_SharedData.StackFail := Max(this.TestForSteelBonesStackFarming(), g_SharedData.StackFail)
-            if (g_SharedData.StackFail == 2 OR g_SharedData.StackFail == 4 OR g_SharedData.StackFail == 6 ) ; OR g_SharedData.StackFail == 3
-                g_SharedData.TriggerStart := true
-            if (!Mod( g_SF.Memory.ReadCurrentZone(), 5 ) AND Mod( g_SF.Memory.ReadHighestZone(), 5 ) AND !g_SF.Memory.ReadTransitioning())
-                g_SF.ToggleAutoProgress( 1, true ) ; Toggle autoprogress to skip boss bag
-            if (g_SF.Memory.ReadResetting())
-                this.ModronResetCheck()
-            else
-            {
-                needToStack := this.BGFLU_NeedToStack()
-                ; Level up Briv to MaxLevel after stacking
-                if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
-                    setupMaxDone := false
-                ; Check for failed stack conversion
-                if (g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
-                    setupFailedConversionDone := false
-                if (!setupMaxDone)
-                    setupMaxDone := this.BGFLU_DoPartySetupMax() ; Level up all champs to the specified max level
-                else if (!setupFailedConversionDone)
-                    setupFailedConversionDone := this.BGFLU_DoPartySetupFailedConversion() ; Level up all champs to soft cap (including Briv if option checked)
-                if (g_SharedData.BGFLU_UpdateMaxLevels)
-                {
-                    setupMaxDone := false
-                    g_SharedData.BGFLU_UpdateMaxLevels := false
-                    ; Stop click spam
-                    if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
-                        g_SF.BGFLU_StopSpamClickDamage()
-                }
-                ; Click damage
-                if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-                    g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
-            }
-            if (CurrentZone > PreviousZone ) ; needs to be greater than because offline could stacking getting stuck in descending zones.
-            {
-                PreviousZone := CurrentZone
-                if ((!Mod( g_SF.Memory.ReadCurrentZone(), 5 )) AND (!Mod( g_SF.Memory.ReadHighestZone(), 5)))
-                {
-                    g_SharedData.TotalBossesHit++
-                    g_SharedData.BossesHitThisRun++
-                }
-                lastModronResetZone := g_SF.ModronResetZone
-                g_SF.InitZone( ["{ClickDmg}"] )
-                if (g_SF.ModronResetZone != lastModronResetZone)
-                {
-                    worstCase := g_BrivUserSettings[ "AutoCalculateWorstCase" ]
-                    g_SharedData.TargetStacks := this.TargetStacks := g_SF.CalculateBrivStacksToReachNextModronResetZone(worstCase) + 50 ; 50 stack safety net
-                    this.LeftoverStacks := g_SF.CalculateBrivStacksLeftAtTargetZone(this.Memory.ReadCurrentZone(), this.Memory.GetModronResetArea() + 1, worstCase)
-                }
-                g_SF.ToggleAutoProgress( 1 )
-                continue
-            }
-            g_SF.ToggleAutoProgress( 1 )
-            if (g_SF.CheckifStuck())
-            {
-                g_SharedData.TriggerStart := true
-                g_SharedData.StackFail := StackFailStates.FAILED_TO_PROGRESS ; 3
-                g_SharedData.StackFailStats.TALLY[g_SharedData.StackFail] += 1
-            }
-            Sleep, 20 ; here to keep the script responsive.
+            g_SF.BGFLU_CalcLastUpgradeLevels()
+            g_SharedData.BGFLU_UpdateSettingsFromFile(true)
         }
+        return isFailed
+    }
+
+    GemFarmResetSetup(formationModron := "", doBasePartySetup := False)
+    {
+        g_SharedData.BGFLU_SetStatus()
+        g_SharedData.BGFLU_SaveFormations()
+        this.SetupMaxDone := false
+        this.SetupFailedConversionDone := true
+        doBasePartySetup := False
+        resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
+        this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ])
+        return resetsCount
+    }
+
+    GemFarmDoNonModronActions()
+    {
+        needToStack := this.BGFLU_NeedToStack()
+        ; Level up Briv to MaxLevel after stacking
+        if (!needToStack AND g_SF.Memory.ReadChampLvlByID(ActiveEffectKeySharedFunctions.Briv.HeroID) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
+            this.SetupMaxDone := false
+        ; Check for failed stack conversion
+        if (g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
+            this.SetupFailedConversionDone := false
+        if (!this.SetupMaxDone)
+            this.SetupMaxDone := this.BGFLU_DoPartySetupMax() ; Level up all champs to the specified max level
+        else if (!this.SetupFailedConversionDone)
+            this.SetupFailedConversionDone := this.BGFLU_DoPartySetupFailedConversion() ; Level up all champs to soft cap (including Briv if option checked)
+        if (g_SharedData.BGFLU_UpdateMaxLevels)
+        {
+            this.SetupMaxDone := false
+            g_SharedData.BGFLU_UpdateMaxLevels := false
+            ; Stop click spam
+            if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
+                g_SF.BGFLU_StopSpamClickDamage()
+        }
+        ; Click damage
+        if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
+            g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
     }
 
     ; Stops progress and switches to appropriate party to prepare for stacking Briv's SteelBones.
     StackFarmSetup()
     {
         if (!g_SF.KillCurrentBoss() ) ; Previously/Alternatively FallBackFromBossZone()
-            g_SF.FallBackFromBossZone()
+            g_SF.FallBackFromBossZone() ; Boss kill Timeout
         inputValues := "{w}" ; Stack farm formation hotkey
         g_SF.DirectedInput(,, inputValues )
+        keyspam := this.BGFLU_GetMinLevelingKeyspam(g_SF.Memory.GetFormationByFavorite(2))
         g_SF.WaitForTransition( inputValues )
+        g_SF.DirectedInput(,, keyspam*)
         g_SF.ToggleAutoProgress( 0 , false, true )
         StartTime := A_TickCount
         ElapsedTime := 0
         counter := 0
         sleepTime := 50
         g_SharedData.LoopString := "Setting stack farm formation."
-        while (!(g_SF.Memory.ReadMostRecentFormationFavorite() == 2) AND ElapsedTime < 5000 )
+        stackFormation := g_SF.Memory.GetFormationByFavorite(2)
+        isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND g_SF.IsCurrentFormation(stackFormation)
+        if (!isFormation2)
+        {
+            g_SF.DirectedInput(,,inputValues)
+            isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2
+            if(!isFormation2 AND g_SF.IsCurrentFormation(stackFormation))
+                isFormation2 := True
+        }
+        while (!g_SF.IsCurrentFormation(stackFormation) AND ElapsedTime < 5000 )
         {
             ElapsedTime := A_TickCount - StartTime
             if (ElapsedTime > (counter * sleepTime)) ; input limiter..
@@ -154,7 +99,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             ; Can't formation switch when under attack.
             if (ElapsedTime > 1000 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
             {
-                if (!(g_SF.Memory.ReadMostRecentFormationFavorite() == 2) OR g_SF.Memory.ReadChampBenchedByID(58))
+                if ( g_SF.Memory.ReadChampBenchedByID(ActiveEffectKeySharedFunctions.Briv.HeroID) OR !(g_SF.Memory.ReadMostRecentFormationFavorite() == 2))
                     g_SF.FallBackFromZone()
                 else
                     this.BGFLU_DoPartySetupMax(stackFormation)
@@ -167,7 +112,10 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
            Sleep, 30
         return
     }
+}
 
+class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
+{
     /*  BGFLU_DoPartySetupMin - When gem farm is started or an adventure is reloaded, this is called to set up the primary party.
                           This will only level champs to the minium target specified in BrivGemFarm_LevelUp_Settings.json.
                           This will not level champs whose minimum level is set to 0.
@@ -313,13 +261,9 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             formation := champIDs
         }
         for k, champID in formation
-        {
             if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")))
-            {
                 if this.BGFLU_CanAffordUpgrade(champID)
                     keyspam.Push(this.BGFLU_GetFKey(champID))
-            }
-        }
         return keyspam
     }
 
@@ -333,7 +277,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         static champIDs := [47, 83, 91, 128, 28, 75, 59, 148, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139]
 
         levelBriv := true ; Return value
-        if (this.BGFLU_ChampUnderTargetLevel(58, this.BGFLU_GetTargetLevel(58, "Min")))
+        if (this.BGFLU_ChampUnderTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, this.BGFLU_GetTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, "Min")))
         {
             if (this.BGFLU_AllowBrivLeveling()) ; Level Briv to be able to skip areas
                 this.BGFLU_DoPartySetupMin(true)
@@ -462,9 +406,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     ; Returns true if stacking Briv is necessary during this run.
     BGFLU_NeedToStack()
     {
-        stacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? g_SF.Memory.ReadSBStacks() : this.GetNumStacksFarmed()
-        targetStacks := g_BrivUserSettings[ "AutoCalculateBrivStacks" ] ? (this.TargetStacks - this.LeftoverStacks) : g_BrivUserSettings[ "TargetStacks" ]
-        return stacks < targetStacks
+        stacks := this.GetNumStacksFarmed()
+        return stacks < g_BrivUserSettings[ "TargetStacks" ]
     }
 
     ; List of conditions that enable or disable Briv leveling.
@@ -487,7 +430,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
         mod50Index := Mod(highestZone, 50) == 0 ? 50 : Mod(highestZone, 50)
         mod50Zones := g_BrivUserSettingsFromAddons[ "BGFLU_BrivLevelingZones" ]
-        if (mod50Zones[mod50Index] == 0 && this.BGFLU_ChampUnderTargetLevel(58, 80))
+        if (mod50Zones[mod50Index] == 0 && this.BGFLU_ChampUnderTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, 80))
             return false
         return true
     }
@@ -495,7 +438,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     ; Returns the list of champion IDs sorted by cheapast upgrade first.
     ; Params: champIDs:array - List of champion IDs.
     ;         num:int - Number of champions that need to be returned.
-    ; TODO: Improve speed of g_SF.Memory.BGFLU_ReadLevelUpCostBySeat().
     BGFLU_GetCheapeastUpgrade(champIDs, num := 1)
     {
         if (num == 1 && champIDs.Length() == num)
@@ -507,7 +449,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             if (champID < 1)
                 continue
             seat := g_SF.Memory.ReadChampSeatByID(champID)
-            cost := g_SF.Memory.BGFLU_ReadLevelUpCostBySeat(seat)
+            cost := g_SF.Memory.ReadLevelUpCostBySeat(seat)
             i := IC_BrivGemFarm_LevelUp_Functions.ConvertNumberStringToInt(cost)
             costs[i] := champID
         }
@@ -561,7 +503,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         if (champID < 1)
             return false
         seat := g_SF.Memory.ReadChampSeatByID(champID)
-        cost := g_SF.Memory.BGFLU_ReadLevelUpCostBySeat(seat)
+        cost := g_SF.Memory.ReadLevelUpCostBySeat(seat)
         gold := g_SF.Memory.ReadGoldString()
         compareIntCost := IC_BrivGemFarm_LevelUp_Functions.ConvertNumberStringToInt(cost)
         compareIntGold := IC_BrivGemFarm_LevelUp_Functions.ConvertNumberStringToInt(gold)
@@ -573,55 +515,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 ; Overrides IC_BrivSharedFunctions_Class.DoDashWait()
 ; Overrides IC_BrivSharedFunctions_Class.DoRushWait()
 ; Overrides IC_BrivSharedFunctions_Class.InitZone()
-class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
+class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
-;    BGFLU_LastUpgradeLevelByID := ""
-
-    BGFLU_GetZ1FormationKey()
-    {
-        z1Formation := g_BrivUserSettingsFromAddons[ "BGFLU_FavoriteFormationZ1" ]
-        if (z1Formation == "")
-            z1Formation := "q"
-        StringLower, z1Formation, z1Formation
-        return z1Formation
-    }
-
-    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
-    BGFLU_LoadZ1Formation()
-    {
-        if (this.Memory.ReadCurrentZone() == 1)
-            this.DirectedInput(,, "{" . this.BGFLU_GetZ1FormationKey() . "}")
-        else ; Switch to E formation if necessary
-            this.SetFormation(g_BrivUserSettings)
-    }
-
-    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
-    BGFLU_GetDefaultFormation()
-    {
-        currentZone := this.Memory.ReadCurrentZone()
-        if (currentZone == 1)
-        {
-            Switch this.BGFLU_GetZ1FormationKey()
-            {
-                case "q":
-                    slot := 1
-                case "w":
-                    slot := 2
-                case "e":
-                    slot := 3
-                default:
-                    slot := 1
-            }
-        }
-        else
-        {
-            settings := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
-            mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)
-            slot := settings[mod50Index] ? 1 : 3
-        }
-        ; Without empty slots
-        return this.Memory.GetFormationSaveBySlot(this.Memory.GetSavedFormationSlotByFavorite(slot), true)
-    }
 
     WaitForFirstGold( maxLoopTime := 30000 )
     {
@@ -648,20 +543,19 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
 
     DoDashWait( DashWaitMaxZone := 2000 )
     {
+        static minDashLevel := 120
         if (this.IsDashActive())
             return
         this.ToggleAutoProgress( 0, false, true )
         this.BGFLU_LoadZ1Formation()
-        ; Level shandie
-        if (this.Memory.ReadChampLvlByID(47) < 120)
-            this.LevelChampByID(47, 120, 7000, "")
+        this.LevelChampByID(ActiveEffectKeySharedFunctions.Shandie.HeroID, minDashLevel, 7000, "")
         ; Make sure the ability handler has the correct base address.
         ; It can change on game restarts or modron resets.
         this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Shandie.TimeScaleWhenNotAttackedHandler.EffectKeyString)
         timeScale := this.Memory.ReadTimeScaleMultiplier()
         timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
         ; 30s seconds without the feat, 10s with the feat.
-        timeout := this.BGFLU_SecondWindActive() ? 10000 : 30000
+        timeout := this.IsSecondWindActive() ? 10000 : 30000
         estimate := (timeout / timeScale)
         StartTime := A_TickCount
         ElapsedTime := 0
@@ -677,16 +571,15 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
             ElapsedTime := A_TickCount - StartTime
             g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
-            Sleep, 30
-            if (this.Memory.ReadTransitioning())
-                estimate += 30
+			percentageReducedSleep := Max(Floor((1-(ElapsedTime/estimate))*estimate/10 + 15), 15)
+            Sleep, %percentageReducedSleep%
         }
         g_PreviousZoneStartTime := A_TickCount
     }
 
     BGFLU_SecondWindActive()
     {
-        feats := this.Memory.BGFLU_GetHeroFeats(47)
+        feats := this.Memory.GetHeroFeats(47)
         for k, v in feats
             if (v == 1035)
                 return true
@@ -744,6 +637,56 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
         g_PreviousZoneStartTime := A_TickCount
         Critical, Off
     }
+}
+class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunctions_Class
+{
+;    BGFLU_LastUpgradeLevelByID := ""
+
+    BGFLU_GetZ1FormationKey()
+    {
+        z1Formation := g_BrivUserSettingsFromAddons[ "BGFLU_FavoriteFormationZ1" ]
+        if (z1Formation == "")
+            z1Formation := "q"
+        z1Formation := Format("{:L}", z1Formation)
+        return z1Formation
+    }
+
+    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
+    BGFLU_LoadZ1Formation()
+    {
+        if (this.Memory.ReadCurrentZone() == 1)
+            this.DirectedInput(,, "{" . this.BGFLU_GetZ1FormationKey() . "}")
+        else ; Switch to E formation if necessary
+            this.SetFormation(g_BrivUserSettings)
+    }
+
+    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
+    BGFLU_GetDefaultFormation()
+    {
+        currentZone := this.Memory.ReadCurrentZone()
+        if (currentZone == 1)
+        {
+            Switch this.BGFLU_GetZ1FormationKey()
+            {
+                case "q":
+                    slot := 1
+                case "w":
+                    slot := 2
+                case "e":
+                    slot := 3
+                default:
+                    slot := 1
+            }
+        }
+        else
+        {
+            settings := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
+            mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)
+            slot := settings[mod50Index] ? 1 : 3
+        }
+        ; Without empty slots
+        return this.Memory.GetFormationSaveBySlot(this.Memory.GetSavedFormationSlotByFavorite(slot), true)
+    }
 
     ; LevelUp click damage.
     ; Depending on the <NoCtrlKeypress> setting, uses either in-game settings or x100.
@@ -760,13 +703,13 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
             return true
         if (clickLevel > 0)
         {
-            if (this.Memory.BGFLU_ReadClickLevel() >= clickLevel)
+            if (this.Memory.ReadClickLevel() >= clickLevel)
                 return true
             if (numClicks == 1)
                 return this.BGFLU_LevelClickDamage(1)
             StartTime := A_TickCount
             ElapsedTime := 0
-            while (this.Memory.BGFLU_ReadClickLevel() < clickLevel && ElapsedTime < timeout)
+            while (this.Memory.ReadClickLevel() < clickLevel && ElapsedTime < timeout)
             {
                 ; Stop leveling up if not enough gold for a full upgrade.
                 maxAmount := g_SF.Memory.BGFLU_ReadClickLevelUpAllowed()
@@ -845,8 +788,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_BrivSharedFunction
     }
 }
 
-; Extends IC_SharedData_Class
-class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
+class IC_BrivGemFarm_LevelUp_IC_SharedData_Added_Class ; Added to IC_SharedData_Class
 {
 ;    BGFLU_Status := ""
 ;    BGFLU_UpdateMaxLevels := false ; Update max level immediately
@@ -958,7 +900,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Class extends IC_SharedData_Class
 }
 
 ; Overrides IC_MemoryFunctions_Class.ReadChampSeatByID()
-class IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Class extends IC_MemoryFunctions_Class
+class IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Added_Class ; Added to IC_MemoryFunctions_Class
 {
     ; Next upgrade = -100
     BGFLU_ReadLevelUpAmount()
@@ -967,40 +909,9 @@ class IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Class extends IC_MemoryFunctions
         return value == "" ? 100 : value
     }
 
-    BGFLU_ReadLevelUpCostBySeat(seat)
-    {
-        static boxsBySeat := {}
-
-        if ((box := boxsBySeat[seat]) == "")
-            boxsBySeat[seat] := box := this.GameManager.game.gameInstances[this.GameInstance].Screen.uiController.bottomBar.heroPanel.heroBoxsBySeat[seat]
-        return box.levelUpButtonDisplay.lastCostText.Read()
-    }
-
-    BGFLU_ReadClickLevel()
-    {
-        return this.GameManager.game.gameInstances[this.GameInstance].ClickLevel.Read()
-    }
-
     BGFLU_ReadClickLevelUpAllowed()
     {
         value := this.GameManager.game.gameInstances[this.GameInstance].Screen.uiController.bottomBar.heroPanel.clickDamageBox.maxLevelUpAllowed.Read()
         return value == "" ? 1 : value
-    }
-
-    BGFLU_GetHeroFeats(heroID)
-    {
-        if (heroID < 1)
-            return ""
-        size := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.FeatHandler.heroFeatSlots[heroID].List.size.Read()
-        ; Sanity check, should be < 4 but set to 6 in case of future feat num increase.
-        if (size < 0 || size > 6)
-            return ""
-        featList := []
-        Loop, %size%
-        {
-            value := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.FeatHandler.heroFeatSlots[heroID].List[A_Index - 1].ID.Read()
-            featList.Push(value)
-        }
-        return featList
     }
 }

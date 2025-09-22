@@ -42,33 +42,16 @@ Class IC_RNGWaitingRoom_Component
     LoadSettings()
     {
         needSave := false
-        default := this.GetNewSettings()
+        default := this.GetDefaultSettings()
         this.Settings := settings := g_SF.LoadObjectFromJSON(this.Functions.SettingsPath)
         if (!IsObject(settings))
-        {
-            this.Settings := settings := default
-            needSave := true
-        }
+            needSave := true, (this.Settings := settings := default)
         else
         {
-            ; Delete extra settings
-            for k, v in settings
-            {
-                if (!default.HasKey(k))
-                {
-                    settings.Delete(k)
-                    needSave := true
-                }
-            }
-            ; Add missing settings
-            for k, v in default
-            {
-                if (!settings.HasKey(k) || settings[k] == "")
-                {
-                    settings[k] := default[k]
-                    needSave := true
-                }
-            }
+            postDelSettings := g_SF.DeleteExtraSettings(settings, default)
+            needSave := (postDelSettings != "")
+            if (needSave)
+                settings := postDelSettings
         }
         if (needSave)
             this.SaveSettings()
@@ -77,7 +60,7 @@ Class IC_RNGWaitingRoom_Component
     }
 
     ; Returns an object with default values for all settings.
-    GetNewSettings()
+    GetDefaultSettings()
     {
         settings := {}
         settings.EllywickGFEnabled := true

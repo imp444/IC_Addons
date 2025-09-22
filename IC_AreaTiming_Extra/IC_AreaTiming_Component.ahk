@@ -41,7 +41,7 @@ Class IC_AreaTiming_Component
         this.Settings := settings := g_SF.LoadObjectFromJSON(this.SettingsPath)
         if (!IsObject(settings))
         {
-            settings := this.GetNewSettings()
+            settings := this.GetDefaultSettings()
             this.Settings := settings
             this.SaveSettings()
         }
@@ -65,7 +65,7 @@ Class IC_AreaTiming_Component
     }
 
     ; Returns an object with default values for all settings.
-    GetNewSettings()
+    GetDefaultSettings()
     {
         settings := {}
         settings.BrivGemFarmSync := false

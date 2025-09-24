@@ -599,6 +599,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
         Critical, Off
     }
 }
+
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunctions_Class
 {
 ;    BGFLU_LastUpgradeLevelByID := ""
@@ -666,7 +667,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivShare
                 ; Stop leveling up if not enough gold for a full upgrade.
                 maxAmount := g_SF.Memory.BGFLU_ReadClickLevelUpAllowed()
                 this.BGFLU_LevelClickDamage(1)
-                levelUpAmount := g_SF.Memory.BGFLU_ReadLevelUpAmount()
+                levelUpAmount := g_SF.Memory.ReadLevelUpAmount()
                 if (levelUpAmount > 1 && maxAmount < levelUpAmount)
                     return true
                 ElapsedTime := A_TickCount - StartTime
@@ -851,16 +852,8 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Added_Class ; Added to IC_SharedData_
     }
 }
 
-; Overrides IC_MemoryFunctions_Class.ReadChampSeatByID()
 class IC_BrivGemFarm_LevelUp_IC_MemoryFunctions_Added_Class ; Added to IC_MemoryFunctions_Class
 {
-    ; Next upgrade = -100
-    BGFLU_ReadLevelUpAmount()
-    {
-        value := this.GameManager.game.gameInstances[this.GameInstance].Screen.uiController.bottomBar.levelUpAmount.Read()
-        return value == "" ? 100 : value
-    }
-
     BGFLU_ReadClickLevelUpAllowed()
     {
         value := this.GameManager.game.gameInstances[this.GameInstance].Screen.uiController.bottomBar.heroPanel.clickDamageBox.maxLevelUpAllowed.Read()

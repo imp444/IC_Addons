@@ -19,12 +19,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         FileAppend, %addonLoc%, %g_BrivFarmModLoc%
     }
 
-    ReadLevelUpAmount()
-    {
-        value := g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.levelUpAmount.Read()
-        return value == "" ? 100 : value
-    }
-
     ConvertBitfieldToArray(value)
     {
         array := []
@@ -64,7 +58,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Functions
         if (champID < 1)
             return ""
         ; x10 = full heal
-        if (this.ReadLevelUpAmount() != 10)
+        if (g_SF.Memory.ReadLevelUpAmount() != 10)
             g_SF.DirectedInput(, release := 0, "{Shift}") ;keysdown
         keys := ["{Shift}", "{F" . g_SF.Memory.ReadChampSeatByID(champID) . "}"]
         g_SF.DirectedInput(, release := 0, keys*) ;keysdown

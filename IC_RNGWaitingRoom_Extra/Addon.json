@@ -18,5 +18,11 @@
             "Name":"BrivGemFarm LevelUp",
             "Version":"v1.3.4"
         }
+    ],
+    "LoadAfter" : [
+        {
+			"Name":"BrivGemFarm HybridTurboStacking",
+			"Version":"v1.1.5"
+        }
     ]
 }

@@ -14,5 +14,11 @@
             "Name":"Briv Gem Farm",
             "Version":"v1.5.5"
         }
+    ],
+    "LoadAfter" : [
+        {
+            "Name":"BrivGemFarm LevelUp",
+            "Version":"v1.3.4"
+        }
     ]
 }

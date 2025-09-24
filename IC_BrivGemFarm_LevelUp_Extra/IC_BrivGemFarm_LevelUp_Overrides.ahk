@@ -275,7 +275,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     {
         ; Speed champions without Briv
         static champIDs := [47, 83, 91, 128, 28, 75, 59, 148, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139]
-
+        static levelupx10 := {} ; Not implemented yet
+        static levelupx25 := {}
         levelBriv := true ; Return value
         if (this.BGFLU_ChampUnderTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, this.BGFLU_GetTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, "Min")))
         {
@@ -293,17 +294,9 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
             formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
         else
-        {
             for k, champID in champIDs
-            {
-                if (g_SF.IsChampInFormation(champID, formation))
-                {
-                    targetLevel := this.BGFLU_GetTargetLevel(champID)
-                    if (this.BGFLU_LevelUpChamp(champID, targetLevel))
-                        return false
-                }
-            }
-        }
+                if (g_SF.IsChampInFormation(champID, formation) AND this.BGFLU_LevelUpChamp(champID, this.BGFLU_GetTargetLevel(champID)))
+                    return false
         ; Complete leveling
         for k, champID in formation
         {
@@ -339,14 +332,9 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
             formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
         for k, champID in formation
-        {
             if (g_SF.IsChampInFormation(champID, formation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ]))
-            {
-                lastUpgrade := g_SF.BGFLU_GetLastUpgradeLevel(champID)
-                if (this.BGFLU_LevelUpChamp(champID, lastUpgrade))
+                if (this.BGFLU_LevelUpChamp(champID, g_SF.BGFLU_GetLastUpgradeLevel(champID)))
                     return false
-            }
-        }
         g_SharedData.BGFLU_SetStatus("Finished leveling champions.")
         return true
     }
@@ -399,7 +387,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     {
         setting := g_BrivUserSettingsFromAddons[ "BGFLU_MinClickDamage" ]
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-            return Max(setting, g_SF.Memory.ReadHighestZone()+100)
+            return Max(setting, ((highestLvl := g_SF.Memory.ReadHighestZone()) > 1000 ? highestLvl + 100 : highestLvl))
         return Max(1, setting)
     }
 

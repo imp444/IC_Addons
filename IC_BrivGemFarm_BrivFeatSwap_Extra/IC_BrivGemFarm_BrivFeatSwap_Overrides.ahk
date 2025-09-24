@@ -89,9 +89,9 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Added_Class
     BGFBFS_ShouldSwitchFormation(formationFavoriteIndex)
     {
         if (formationFavoriteIndex == 1)
-            return (!IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(1) && this.UnBenchBrivConditions(this.Settings))
+            return (!IC_BrivGemFarm_Class.BrivFunctions.CurrentFormationMatchesBrivConfig(1) && this.UnBenchBrivConditions(this.Settings))
         else if (formationFavoriteIndex == 3)
-            return (!IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.CurrentFormationMatchesBrivConfig(3) && this.BenchBrivConditions(this.Settings))
+            return (!IC_BrivGemFarm_Class.BrivFunctions.CurrentFormationMatchesBrivConfig(3) && this.BenchBrivConditions(this.Settings))
         return false
     }
 

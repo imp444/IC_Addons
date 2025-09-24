@@ -1,16 +1,9 @@
 ; Test to see if BrivGemFarm addon is available.
-if(IsObject(IC_BrivGemFarm_Component))
-{
-    IC_BrivGemFarm_HybridTurboStacking_Functions.InjectAddon()
-    global g_HybridTurboStacking := new IC_BrivGemFarm_HybridTurboStacking_Component
-    global g_HybridTurboStackingGui := new IC_BrivGemFarm_HybridTurboStacking_GUI
-    g_HybridTurboStacking.Init()
-}
-else
-{
-    GuiControl, ICScriptHub:Text, BGFHTS_StatusText, WARNING: This addon needs IC_BrivGemFarm enabled.
-    return
-}
+
+IC_BrivGemFarm_HybridTurboStacking_Functions.InjectAddon()
+global g_HybridTurboStacking := new IC_BrivGemFarm_HybridTurboStacking_Component
+global g_HybridTurboStackingGui := new IC_BrivGemFarm_HybridTurboStacking_GUI
+g_HybridTurboStacking.Init()
 
 /*  IC_BrivGemFarm_HybridTurboStacking_Component
 
@@ -59,7 +52,6 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         g_HybridTurboStackingGui.UpdateGUISettings(settings)
     }
 
-
     ; Returns an object with default values for all settings.
     GetDefaultSettings()
     {
@@ -73,7 +65,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
         settings.MultirunDelayOffline := true
         settings.100Melf := false
         settings.MelfMinStackZone := g_BrivUserSettings[ "StackZone" ] + 1
-        last := IC_BrivGemFarm_HybridTurboStacking_Functions.GetLastSafeStackZone()
+        last := IC_BrivGemFarm_Class.BrivFunctions.GetLastSafeStackZone()
         settings.MelfMaxStackZone := last != "" ? last : 1949
         settings.MelfActiveStrategy := 1
         settings.MelfInactiveStrategy := 1

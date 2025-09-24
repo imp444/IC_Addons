@@ -38,7 +38,7 @@ class IC_RNGWaitingRoom_Added_Class ; Added to IC_BrivGemFarm_LevelUp_Class
         lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         ; Set formation
-        g_SF.BGFLU_LoadZ1Formation()
+        g_SF.LoadFormationForZ1()
         if (!lowFavorMode)
             keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
         StartTime := A_TickCount, ElapsedTime := 0
@@ -68,7 +68,7 @@ class IC_RNGWaitingRoom_Added_Class ; Added to IC_BrivGemFarm_LevelUp_Class
             ; Level up speed champions once
             g_SF.DirectedInput(,, maxKeyspam*)
             ; Set formation
-            g_SF.BGFLU_LoadZ1Formation()
+            g_SF.LoadFormationForZ1()
             Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
             ElapsedTime := A_TickCount - StartTime
             if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
@@ -126,7 +126,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
             while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
             {
                 if (!g_SharedData.RNGWR_LockFormationSwitch)
-                    g_SF.BGFLU_LoadZ1Formation()
+                    g_SF.LoadFormationForZ1()
                     g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
                     this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
                     numMelee := g_SF.Memory.ReadNumAttackingMonstersReached()

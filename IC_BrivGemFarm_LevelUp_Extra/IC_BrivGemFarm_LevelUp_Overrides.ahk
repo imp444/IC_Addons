@@ -137,7 +137,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         ; Set formation
-        g_SF.BGFLU_LoadZ1Formation()
+        g_SF.LoadFormationForZ1()
         if (!lowFavorMode)
             keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
         StartTime := A_TickCount, ElapsedTime := 0
@@ -167,7 +167,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             ; Level up speed champions once
             g_SF.DirectedInput(,, maxKeyspam*)
             ; Set formation
-            g_SF.BGFLU_LoadZ1Formation()
+            g_SF.LoadFormationForZ1()
             Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
             ElapsedTime := A_TickCount - StartTime
             if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
@@ -511,70 +511,31 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     }
 }
 
-; Overrides IC_BrivSharedFunctions_Class.WaitForFirstGold()
-; Overrides IC_BrivSharedFunctions_Class.DoDashWait()
 ; Overrides IC_BrivSharedFunctions_Class.DoRushWait()
 ; Overrides IC_BrivSharedFunctions_Class.InitZone()
+; Overrides IC_SharedFunctions_Class.DoDashWaitingIdling()
+; Overrides IC_SharedFunctions_Class.LoadFormationForZ1()
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
-
-    WaitForFirstGold( maxLoopTime := 30000 )
+    DoDashWaitingIdling(startTime := 1, estimate := 1)
     {
-        g_SharedData.LoopString := "Waiting for first gold"
-        StartTime := A_TickCount
-        ElapsedTime := 0
-        counter := 0
-        sleepTime := 33
-        this.BGFLU_LoadZ1Formation()
-        gold := this.ConvQuadToDouble( this.Memory.ReadGoldFirst8Bytes(), this.Memory.ReadGoldSecond8Bytes() )
-        while ( gold == 0 AND ElapsedTime < maxLoopTime )
-        {
-            ElapsedTime := A_TickCount - StartTime
-            if( ElapsedTime > (counter * sleepTime)) ; input limiter..
-            {
-                this.BGFLU_LoadZ1Formation()
-                counter++
-            }
-            gold := this.ConvQuadToDouble( this.Memory.ReadGoldFirst8Bytes(), this.Memory.ReadGoldSecond8Bytes() )
-            Sleep, 20
-        }
-        return gold
+        this.ToggleAutoProgress(0)
+        this.LoadFormationForZ1()
+        g_BrivGemFarm.BGFLU_DoPartySetupMax()
+        this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
+        ElapsedTime := A_TickCount - StartTime
+        g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
+        percentageReducedSleep := Max(Floor((1-(ElapsedTime/estimate))*estimate/10 + 15), 15)
+        Sleep, %percentageReducedSleep%
     }
 
-    DoDashWait( DashWaitMaxZone := 2000 )
+    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
+    LoadFormationForZ1()
     {
-        static minDashLevel := 120
-        if (this.IsDashActive())
-            return
-        this.ToggleAutoProgress( 0, false, true )
-        this.BGFLU_LoadZ1Formation()
-        this.LevelChampByID(ActiveEffectKeySharedFunctions.Shandie.HeroID, minDashLevel, 7000, "")
-        ; Make sure the ability handler has the correct base address.
-        ; It can change on game restarts or modron resets.
-        this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Shandie.TimeScaleWhenNotAttackedHandler.EffectKeyString)
-        timeScale := this.Memory.ReadTimeScaleMultiplier()
-        timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
-        ; 30s seconds without the feat, 10s with the feat.
-        timeout := this.IsSecondWindActive() ? 10000 : 30000
-        estimate := (timeout / timeScale)
-        StartTime := A_TickCount
-        ElapsedTime := 0
-        ; Loop escape conditions:
-        ;   does full timeout duration
-        ;   past highest accepted dashwait triggering area
-        ;   dash is active, dash.GetScaleActive() toggles to true when dash is active and returns "" if fails to read.
-        while ( ElapsedTime < timeout AND this.Memory.ReadCurrentZone() < DashWaitMaxZone AND !this.IsDashActive() )
-        {
-            this.ToggleAutoProgress(0)
-            this.BGFLU_LoadZ1Formation()
-            g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
-            ElapsedTime := A_TickCount - StartTime
-            g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
-			percentageReducedSleep := Max(Floor((1-(ElapsedTime/estimate))*estimate/10 + 15), 15)
-            Sleep, %percentageReducedSleep%
-        }
-        g_PreviousZoneStartTime := A_TickCount
+        if (this.Memory.ReadCurrentZone() == 1)
+            this.DirectedInput(,, "{" . this.BGFLU_GetZ1FormationKey() . "}")
+        else ; Switch to E formation if necessary
+            this.SetFormation(g_BrivUserSettings)
     }
 
     BGFLU_SecondWindActive()
@@ -608,7 +569,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
         while (ElapsedTime < timeout && this.ShouldRushWait())
         {
             this.ToggleAutoProgress(0)
-            this.BGFLU_LoadZ1Formation()
+            this.LoadFormationForZ1()
             g_BrivGemFarm.BGFLU_DoPartySetupMax()
             this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
             ElapsedTime := A_TickCount - StartTime
@@ -649,15 +610,6 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivShare
             z1Formation := "q"
         z1Formation := Format("{:L}", z1Formation)
         return z1Formation
-    }
-
-    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
-    BGFLU_LoadZ1Formation()
-    {
-        if (this.Memory.ReadCurrentZone() == 1)
-            this.DirectedInput(,, "{" . this.BGFLU_GetZ1FormationKey() . "}")
-        else ; Switch to E formation if necessary
-            this.SetFormation(g_BrivUserSettings)
     }
 
     ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.

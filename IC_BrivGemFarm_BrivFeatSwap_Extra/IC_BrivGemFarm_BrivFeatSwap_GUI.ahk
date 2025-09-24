@@ -358,7 +358,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         GuiControlGet, visible, ICScriptHub:Visible, BGFBFS_DetectedText
         if (!visible)
             return
-        loot := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivLoot()
+        loot := IC_BrivGemFarm_Class.BrivFunctions.GetBrivLoot()
         gild := loot.gild
         enchant := loot.enchant
         rarity := loot.rarity

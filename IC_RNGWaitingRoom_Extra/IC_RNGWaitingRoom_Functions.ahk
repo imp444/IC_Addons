@@ -19,8 +19,6 @@ class IC_RNGWaitingRoom_Functions
         return value == 1 ? "" : "s"
     }
 
-
-
     GetExeName()
     {
         default := "IdleDragons.exe"

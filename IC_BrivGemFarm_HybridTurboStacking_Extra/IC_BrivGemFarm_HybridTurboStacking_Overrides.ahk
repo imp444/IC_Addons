@@ -78,9 +78,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return base.GetNumStacksFarmed()
         if (base.ShouldOfflineStack())
             this.ShouldOfflineStack()
-        if (afterReset || IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive)
+        if (afterReset || IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
         {
-            stacksAfterReset := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
+            stacksAfterReset := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks()
             g_SharedData.BGFHTS_SBStacksPredict := stacksAfterReset
             return stacksAfterReset
         }
@@ -103,7 +103,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Melf stacking
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] && this.BGFHTS_PostponeStacking())
             return 0
-        predictStacks := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive
+        predictStacks := IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive()
         SBStacksStart := g_SF.Memory.ReadSBStacks()
         stacks := this.GetNumStacksFarmed(predictStacks)
         targetStacks := g_BrivUserSettings[ "TargetStacks" ]
@@ -208,7 +208,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
         ; Update stats
         if (predictStacks)
-            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
+            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks()
         g_SharedData.BGFHTS_Status := "Online stacking done"
         return ""
     }
@@ -281,7 +281,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         }
         stackZone := range[1]
         ; Stack immediately to prevent resetting before stacking.
-        if (currentZone > IC_BrivGemFarm_HybridTurboStacking_Functions.GetLastSafeStackZone())
+        if (currentZone > IC_BrivGemFarm_Class.BrivFunctions.GetLastSafeStackZone())
             return false
         if (stackZone)
         {
@@ -404,10 +404,10 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Added_Class ;Added to IC_
 
     BGFHTS_UpdateStacksPredict()
     {
-        predictStacks := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacksActive
+        predictStacks := IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive()
         this.BGFHTS_StacksPredictionActive := predictStacks
         if (predictStacks)
-            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_HybridTurboStacking_Functions.PredictStacks()
+            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks()
     }
 
 }

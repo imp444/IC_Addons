@@ -40,7 +40,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; If no Melf +spawn effect until reset, stack offline.
         range := g_SharedData.BGFHTS_CurrentRunStackRange
         if ((range[1] == "" || range[2] == "") && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
-            return true
+            return True
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunDelayOffline" ])
             return shouldOfflineStack
         ; Delay offline until last restart for multiple runs.
@@ -48,19 +48,21 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         combinedStacks := g_SF.Memory.ReadHasteStacks() + g_SF.Memory.ReadSBStacks()
         if (shouldOfflineStack)
         {
-            lastOfflineReset := this.BGFHTS_LastOfflineReset
             resetCount := g_SF.Memory.ReadResetsCount()
+            if (lastOfflineReset == resetCount)
+                return False
+            lastOfflineReset := this.BGFHTS_LastOfflineReset
             this.BGFHTS_LastOfflineReset := resetCount
             if (!this.BGFHTS_DelayedOffline && combinedStacks >= targetStacks && resetCount != lastOfflineReset)
             {
-                this.BGFHTS_DelayedOffline := true
-                return false
+                this.BGFHTS_DelayedOffline := True
+                return False
             }
         }
         if (this.BGFHTS_DelayedOffline && combinedStacks < targetStacks)
         {
-            this.BGFHTS_DelayedOffline := false
-            return true
+            this.BGFHTS_DelayedOffline := False
+            return True
         }
         return shouldOfflineStack && !this.BGFHTS_DelayedOffline
     }
@@ -91,7 +93,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
     StackRestart()
     {
         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
-        base.StackRestart()
+        ; Just restart the game when hybrid turbo, don't wait
+        base.CloseIC( "FORT Restart" )
+        base.SafetyCheck()
+        ; base.StackRestart()
     }
 
     ; Tries to complete the zone before online stacking.
@@ -136,6 +141,20 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ElapsedTime := 0
         g_SharedData.LoopString := "Stack Normal"
         usedWardenUlt := false
+        levelBrivZone := g_SF.Memory.ReadCurrentZone()
+        levelBrivSomeMore := levelBrivZone >= 1100
+        amountToLevelBriv := 0
+        if (levelBrivSomeMore)
+        {
+            if (levelBrivZone >= 1400)
+                amountToLevelBriv := 695
+            else if (levelBrivZone >= 1300)
+                amountToLevelBriv := 575
+            else if (levelBrivZone >= 1200)
+                amountToLevelBriv := 455
+            else
+                amountToLevelBriv := 340
+        }
         ; Turn on Briv auto-heal
         autoHeal := g_BrivUserSettingsFromAddons[ "BGFHTS_BrivAutoHeal" ] > 0
         if (autoHeal)
@@ -154,6 +173,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
                     return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
                 g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacksFarmed ) . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
+                if (levelBrivSomeMore)
+                    this.BGFLU_LevelUpChamp(58, amountToLevelBriv)
                 ; Warden ultimate
                 wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
                 if (!usedWardenUlt && wardenThreshold > 0)
@@ -171,6 +192,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
                     return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
                 g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
+                if (levelBrivSomeMore)
+                    this.BGFLU_LevelUpChamp(58, amountToLevelBriv)
                 ; Warden ultimate
                 wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
                 if (!usedWardenUlt && wardenThreshold > 0)

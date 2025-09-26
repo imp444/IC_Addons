@@ -83,6 +83,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         if (afterReset || IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
         {
             stacksAfterReset := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks()
+            stacksAfterReset := g_SF.BrivHasThunderStep() ? stacksAfterReset * 1.2 : stacksAfterReset
+            ; thunderstep recalc.
             g_SharedData.BGFHTS_SBStacksPredict := stacksAfterReset
             return stacksAfterReset
         }
@@ -101,7 +103,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
 
     ; Tries to complete the zone before online stacking.
     ; TODO:: Update target stacks if Thellora doesn't have enough stacks for the next run.
-    StackNormal(maxOnlineStackTime := 300000)
+    StackNormal(maxOnlineStackTime := 300000, targetStackModifier := 0)
     {
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
             return base.StackNormal(maxOnlineStackTime)
@@ -111,7 +113,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         predictStacks := IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive()
         SBStacksStart := g_SF.Memory.ReadSBStacks()
         stacks := this.GetNumStacksFarmed(predictStacks)
-        targetStacks := g_BrivUserSettings[ "TargetStacks" ]
+        targetStacks := g_BrivUserSettings[ "TargetStacks" ] + targetStackModifier
         if (this.ShouldAvoidRestack(stacks, targetStacks))
             return 0
         ; Check if offline stack is needed
@@ -179,6 +181,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
                 wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
                 if (!usedWardenUlt && wardenThreshold > 0)
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
+                if (g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
+                    this.StackFarmSetup()
+                else if (SBStacksFarmed < (remainder / 10) and ElapsedTime > 10000 ) ; not gaining stacks 
+                    this.StackFarmSetup()
                 Sleep, 30
                 ElapsedTime := A_TickCount - StartTime
                 SBStacksFarmed := g_SF.Memory.ReadSBStacks() - SBStacksStart

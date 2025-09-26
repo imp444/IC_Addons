@@ -112,22 +112,15 @@ Class IC_RNGWaitingRoom_Component
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
             if (SharedRunData.RNGWR_Running == "")
-            {
                 this.Stop()
-            }
-            else if (SharedRunData.RNGWR_Running)
+            else if (SharedRunData.RNGWR_Running AND SharedRunData.RNGWR_GemFarmEnabled)
             {
-                if (SharedRunData.RNGWR_GemFarmEnabled)
-                {
                     status := SharedRunData.RNGWR_Status
                     str := "Running" . (status != "" ? " - " . status : "")
                     GuiControl, ICScriptHub:Text, RNGWR_StatusText, % str
                     stats := SharedRunData.RNGWR_GetStats()
                     g_RNGWaitingRoomGui.UpdateGUI(stats)
-                }
-                else
-                    GuiControl, ICScriptHub:Text, RNGWR_StatusText, Disabled
-
+                    return
             }
             else
                 GuiControl, ICScriptHub:Text, RNGWR_StatusText, Disabled

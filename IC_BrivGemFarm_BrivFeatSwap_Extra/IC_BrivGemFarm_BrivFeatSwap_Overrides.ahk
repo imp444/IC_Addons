@@ -1,6 +1,16 @@
+
+; Overrides IC_BrivGemFarm_Class.GemFarmPreLoopSetup()
 ; Overrides IC_BrivGemFarm_Class.TestEFormation()
 class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
 {
+    ; Enables featswap after other setup settings
+    GemFarmPreLoopSetup()
+    {
+        errLevel := base.GemFarmPreLoopSetup()   
+        g_BrivUserSettings[ "FeatSwapEnabled" ] := g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ] 
+        return errLevel
+    }
+
     ; Tests to make sure Gem Farm is properly set up before attempting to run and Briv is in E formation.
     TestEFormation()
     {
@@ -166,6 +176,5 @@ class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Added_Class ;Added to IC_SharedD
             return false
         g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ] := settings.Enabled
         g_BrivUserSettingsFromAddons[ "BGFBFS_Preset" ] := settings.Preset
-        g_BrivGemFarm.Settings[ "FeatSwapEnabled" ] := g_BrivUserSettingsFromAddons[ "BGFBFS_Enabled" ]
     }
 }

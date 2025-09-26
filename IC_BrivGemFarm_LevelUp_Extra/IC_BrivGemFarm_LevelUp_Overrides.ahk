@@ -98,12 +98,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             }
             ; Can't formation switch when under attack.
             if (ElapsedTime > 1000 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
-            {
-                if ( g_SF.Memory.ReadChampBenchedByID(ActiveEffectKeySharedFunctions.Briv.HeroID) OR !(g_SF.Memory.ReadMostRecentFormationFavorite() == 2))
-                    g_SF.FallBackFromZone()
-                else
-                    this.BGFLU_DoPartySetupMax(stackFormation)
-            }
+                g_SF.FallBackFromZone()
             else
                 this.BGFLU_DoPartySetupMax(stackFormation)
             Sleep, 20

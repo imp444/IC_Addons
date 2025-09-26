@@ -530,36 +530,16 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
         return false
     }
 
-    ; Wait for Thellora to activate her Rush ability.
-    DoRushWait()
+    DoRushWaitIdling(StartTime, estimate)
     {
-        ; Make sure the ability handler has the correct base address.
-        ; It can change on game restarts or modron resets.
-        this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Thellora.ThelloraPlateausOfUnicornRunHandler.EffectKeyString)
-        if (!this.ShouldRushWait())
-            return
-        this.ToggleAutoProgress( 0, false, true )
-        StartTime := A_TickCount
-        ElapsedTime := 0
-        timeScale := this.Memory.ReadTimeScaleMultiplier()
-        timeScale := timeScale < 1 ? 1 : timeScale ; time scale should never be less than 1
-        timeout := 8000 ; 8s seconds
-        estimate := (timeout / timeScale)
-        ; Loop escape conditions:
-        ;   does full timeout duration
-        ;   past highest accepted rushwait triggering area
-        ;   rush is active
-        while (ElapsedTime < timeout && this.ShouldRushWait())
-        {
-            this.ToggleAutoProgress(0)
-            this.LoadFormationForZ1()
-            g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
-            ElapsedTime := A_TickCount - StartTime
-            g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
-            Sleep, 30
-        }
-        g_PreviousZoneStartTime := A_TickCount
+        this.ToggleAutoProgress(0)
+        this.LoadFormationForZ1()
+        g_BrivGemFarm.BGFLU_DoPartySetupMax()
+        this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
+        ElapsedTime := A_TickCount - StartTime
+        g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
+        Sleep, 30
+        return ElapsedTime
     }
 
     ; Does once per zone tasks like pressing leveling keys

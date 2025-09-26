@@ -105,34 +105,16 @@ Class IC_ProcessAffinity_Component
         this.Start()
     }
 
-    ; Adds timed functions to be run when briv gem farm is started
+    ; Adds timed functions to be run when briv gem farm is started or stopped
     CreateTimedFunctions()
     {
-        this.TimerFunctions := {}
-        fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
-        this.TimerFunctions[fncToCallOnTimer] := 1000
-        g_BrivFarmAddonStartFunctions.Push(ObjBindMethod(this, "Start"))
-        g_BrivFarmAddonStopFunctions.Push(ObjBindMethod(this, "Stop"))
+        fncToCallOnTimer := ObjBindMethod(this, "UpdateStatusStart")
+        g_BrivFarmComsObj.OneTimeRunAtStartFunctions[fncToCallOnTimer] := -1
+        fncToCallOnTimer := ObjBindMethod(this, "UpdateStatusStop")
+        g_BrivFarmComsObj.OneTimeRunAtEndFunctions[fncToCallOnTimer] := -1
     }
 
-    Start()
-    {
-        for k,v in this.TimerFunctions
-            SetTimer, %k%, %v%, 0
-    }
-
-    Stop()
-    {
-        for k,v in this.TimerFunctions
-        {
-            SetTimer, %k%, Off
-            SetTimer, %k%, Delete
-        }
-        GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Waiting for Gem Farm to start
-        GuiControl, ICScriptHub:Hide, ProcessAffinityStatusWarning
-    }
-
-    UpdateStatus()
+    UpdateStatusStart()
     {
         try ; avoid thrown errors when comobject is not available.
         {
@@ -141,16 +123,19 @@ Class IC_ProcessAffinity_Component
             {
                 this.Stop()
                 GuiControl, ICScriptHub:Show, ProcessAffinityStatusWarning
+                GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Not Running
                 str := "ProcessAffinity addon was loaded after Briv Gem Farm started.`n"
                 MsgBox, % str . "If you want it enabled, press Stop/Start to retry."
             }
             else
                 GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Running
         }
-        catch
-        {
-            GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Waiting for Gem Farm to start
-        }
+    }
+
+    UpdateStatusStop()
+    {
+        GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Waiting for Gem Farm to start
+        GuiControl, ICScriptHub:Hide, ProcessAffinityStatusWarning
     }
 
     ; Builds checkboxes for CoreAffinity

@@ -127,7 +127,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (forceBrivShandie || currentZone == 1)
             g_SF.ToggleAutoProgress( 0, false, true )
         g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
-        formation := g_SF.BGFLU_GetDefaultFormation()
+        formation := g_SF.GetInitialFormation()
         ; If low favor mode is active, cheapeast upgrade first
         lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
@@ -146,7 +146,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             if (currentZone < g_SF.Memory.ReadCurrentZone())
             {
                 currentZone := g_SF.Memory.ReadCurrentZone()
-                formation := g_SF.BGFLU_GetDefaultFormation()
+                formation := g_SF.GetInitialFormation()
             }
             if (lowFavorMode)
             {
@@ -173,15 +173,20 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         remainingTime := timeout - ElapsedTime
         if (forceBrivShandie AND remainingTime > 0)
             return this.BGFLU_DoPartySetupMin(false, remainingTime)
+        this.BGFLU_DoPartyWaits()
+        ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
+        if (currentZone == 1 || g_SharedData.TriggerStart)
+            g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
+        g_SF.ToggleAutoProgress( 1, false, true )
+    }
+
+    BGFLU_DoPartyWaits()
+    {
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
         if (g_SF.IsChampInFormation(139, formation))
             g_SF.DoRushWait()
-        ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
-        if (currentZone == 1 || g_SharedData.TriggerStart)
-            g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
-        g_SF.ToggleAutoProgress( 1, false, true )
     }
 
     ; Returns a list of FKeys that are spammed during min leveling.
@@ -281,7 +286,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 levelBriv := false
         }
         if (!formation)
-            formation := g_SF.BGFLU_GetDefaultFormation()
+            formation := g_SF.GetInitialFormation()()
         else
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         ; Speed champions are leveled up first (without Briv)
@@ -321,7 +326,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     BGFLU_DoPartySetupFailedConversion(formation := "")
     {
         if (!formation)
-            formation := g_SF.BGFLU_GetDefaultFormation()
+            formation := g_SF.GetInitialFormation()()
         else
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
@@ -494,12 +499,41 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     }
 }
 
+; Overrides IC_BrivSharedFunctions_Class.GetInitialFormation()
 ; Overrides IC_BrivSharedFunctions_Class.DoRushWait()
 ; Overrides IC_BrivSharedFunctions_Class.InitZone()
 ; Overrides IC_SharedFunctions_Class.DoDashWaitingIdling()
 ; Overrides IC_SharedFunctions_Class.LoadFormationForZ1()
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
+    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
+    GetInitialFormation()
+    {
+        currentZone := this.Memory.ReadCurrentZone()
+        if (currentZone == 1)
+        {
+            Switch this.BGFLU_GetZ1FormationKey()
+            {
+                case "q":
+                    slot := 1
+                case "w":
+                    slot := 2
+                case "e":
+                    slot := 3
+                default:
+                    slot := 1
+            }
+        }
+        else
+        {
+            settings := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
+            mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)
+            slot := settings[mod50Index] ? 1 : 3
+        }
+        ; Without empty slots
+        return this.Memory.GetFormationSaveBySlot(this.Memory.GetSavedFormationSlotByFavorite(slot), true)
+    }
+
     DoDashWaitingIdling(startTime := 1, estimate := 1)
     {
         this.ToggleAutoProgress(0)
@@ -574,34 +608,6 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivShare
             z1Formation := "q"
         z1Formation := Format("{:L}", z1Formation)
         return z1Formation
-    }
-
-    ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
-    BGFLU_GetDefaultFormation()
-    {
-        currentZone := this.Memory.ReadCurrentZone()
-        if (currentZone == 1)
-        {
-            Switch this.BGFLU_GetZ1FormationKey()
-            {
-                case "q":
-                    slot := 1
-                case "w":
-                    slot := 2
-                case "e":
-                    slot := 3
-                default:
-                    slot := 1
-            }
-        }
-        else
-        {
-            settings := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
-            mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)
-            slot := settings[mod50Index] ? 1 : 3
-        }
-        ; Without empty slots
-        return this.Memory.GetFormationSaveBySlot(this.Memory.GetSavedFormationSlotByFavorite(slot), true)
     }
 
     ; LevelUp click damage.

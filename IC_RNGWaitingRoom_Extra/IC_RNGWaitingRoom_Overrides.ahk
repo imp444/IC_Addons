@@ -1,7 +1,8 @@
 ; Overrides IC_BrivGemFarm_LevelUp_Class.GemFarmShouldSetFormation()
 ; Overrides IC_BrivGemFarm_LevelUp_Class.GemFarmResetSetup()
+; Overrides IC_BrivGemFarm_LevelUp_Added_Class.BGFLU_DoPartyWaits()
 class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
-{    
+{
     GemFarmShouldSetFormation()
     {
         ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
@@ -21,64 +22,11 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
         ; Allow formation switch on startup
         g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun ; Allow formation switch on startup
         g_SharedData.RNGWR_Elly.Reset()
-        return base.GemFarmResetSetup(formationModron := "", doBasePartySetup)
+        return base.GemFarmResetSetup(formationModron, doBasePartySetup)
     }
-}
 
-class IC_RNGWaitingRoom_Added_Class ; Added to IC_BrivGemFarm_LevelUp_Class
-{    
-    BGFLU_DoPartySetupMin(forceBrivShandie := false, timeout := "")
+    BGFLU_DoPartyWaits()
     {
-        currentZone := g_SF.Memory.ReadCurrentZone()
-        if (forceBrivShandie || currentZone == 1)
-            g_SF.ToggleAutoProgress( 0, false, true )
-        g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
-        formation := IC_RNGWaitingRoom_Functions.GetIntitialFormation()
-        ; If low favor mode is active, cheapeast upgrade first
-        lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
-        ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
-        ; Set formation
-        g_SF.LoadFormationForZ1()
-        if (!lowFavorMode)
-            keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
-        StartTime := A_TickCount, ElapsedTime := 0
-        if (timeout == "")
-            timeout := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ]
-        timeout := timeout == "" ? 5000 : timeout
-        index := 0
-        while(keyspam.Length() != 0 AND ElapsedTime < timeout)
-        {
-            ; Update formation on zone change
-            if (currentZone < g_SF.Memory.ReadCurrentZone())
-            {
-                currentZone := g_SF.Memory.ReadCurrentZone()
-                formation := IC_RNGWaitingRoom_Functions.GetIntitialFormation()
-            }
-            if (lowFavorMode)
-            {
-                formationInOrder := this.BGFLU_OrderByCheapeastUpgrade(formation)
-                keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivShandie)
-            }
-            else
-                keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
-            ; Maximum number of champions leveled up every loop
-            maxKeyspam := []
-            Loop % Min(g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ], keyspam.Length())
-                maxKeyspam.Push(keyspam[A_Index])
-            ; Level up speed champions once
-            g_SF.DirectedInput(,, maxKeyspam*)
-            ; Set formation
-            g_SF.LoadFormationForZ1()
-            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
-            ElapsedTime := A_TickCount - StartTime
-            if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-                g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
-            g_SF.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
-        }
-        this.DirectedInput(hold := 0,, keyspam*) ; keysup
-        remainingTime := timeout - ElapsedTime
-        if (forceBrivShandie AND remainingTime > 0)
-            return this.BGFLU_DoPartySetupMin(false, remainingTime)
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
@@ -86,30 +34,39 @@ class IC_RNGWaitingRoom_Added_Class ; Added to IC_BrivGemFarm_LevelUp_Class
             g_SF.RNGWR_DoEllyWait()
         if (g_SF.IsChampInFormation(139, formation))
             g_SF.DoRushWait()
-        ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
-        if (currentZone == 1 || g_SharedData.TriggerStart)
-            g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
-        g_SF.ToggleAutoProgress( 1, false, true )
     }
 }
 
+; Overrides IC_BrivGemFarm_LevelUp_SharedFunctions_Class.GetInitialFormation()
 ; Overrides IC_BrivSharedFunctions_Class.RestartAdventure()
 ; Overrides IC_BrivSharedFunctions_Class.DirectedInput()
 class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
+    GetInitialFormation()
+    {
+        formation := base.GetInitialFormation()
+        ; Use extra champions if they're in the modron formation.
+        heroIDs := [99,59,97,165] ; DM / Melf / Tatyana / Baldric
+        modronFormation := g_SF.Memory.GetActiveModronFormation()
+        for k,heroID in heroIDs
+            if (g_SF.IsChampInFormation(heroID, modronFormation))
+                formation.Push(heroID)
+        return formation
+    }
+
     RestartAdventure( reason := "" )
     {
             g_SharedData.RNGWR_Elly.Reset()
             g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
-            base.RestartAdventure()
+            base.RestartAdventure(reason)
     }
 
-    DirectedInput(hold := 1, release := 1, s* )
+    DirectedInput(hold := 1, release := 1, values* )
     {
         ; Remove Thellora
         if (hold && g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SharedData.RNGWR_LockFormationSwitch)
-            values := IC_RNGWaitingRoom_Functions.RemoveThelloraKeyFromInputValues(values)
-        base.DirectedInput(hold := 1, release := 1, values )
+            values := IC_RNGWaitingRoom_Functions.EllywickHandlerHandlerSingle.RemoveThelloraKeyFromInputValues(values)
+        base.DirectedInput(hold, release, values* )
     }
 }
 

@@ -396,16 +396,4 @@ class IC_RNGWaitingRoom_Functions
         heroID := ActiveEffectKeySharedFunctions.Thellora.HeroID
         return g_SF.IsChampInFormation(heroID, formationFavorite)
     }
-
-    GetIntitialFormation()
-    {
-        formation := g_SF.BGFLU_GetDefaultFormation()
-        ; Use extra champions if they're in the modron formation.
-        heroIDs := [99,59,97,165] ; DM / Melf / Tatyana / Baldric
-        modronFormation := g_SF.Memory.GetActiveModronFormation()
-        for k,heroID in heroIDs
-            if (g_SF.IsChampInFormation(heroID, modronFormation))
-                formation.Push(heroID)
-        return formation
-    }
 }

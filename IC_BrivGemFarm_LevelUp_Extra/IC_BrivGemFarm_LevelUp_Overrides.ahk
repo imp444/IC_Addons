@@ -286,7 +286,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 levelBriv := false
         }
         if (!formation)
-            formation := g_SF.GetInitialFormation()()
+            formation := g_SF.GetInitialFormation()
         else
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         ; Speed champions are leveled up first (without Briv)
@@ -326,7 +326,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     BGFLU_DoPartySetupFailedConversion(formation := "")
     {
         if (!formation)
-            formation := g_SF.GetInitialFormation()()
+            formation := g_SF.GetInitialFormation()
         else
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])

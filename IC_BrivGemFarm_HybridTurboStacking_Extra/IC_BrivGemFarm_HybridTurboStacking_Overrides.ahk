@@ -98,7 +98,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Just restart the game when hybrid turbo, don't wait
         base.CloseIC( "FORT Restart" )
         base.SafetyCheck()
-        ; base.StackRestart()
+        base.StackRestart()
     }
 
     ; Tries to complete the zone before online stacking.

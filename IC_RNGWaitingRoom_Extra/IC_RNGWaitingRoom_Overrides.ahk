@@ -25,7 +25,7 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
         return base.GemFarmResetSetup(formationModron, doBasePartySetup)
     }
 
-    BGFLU_DoPartyWaits()
+    BGFLU_DoPartyWaits(formation)
     {
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())
@@ -65,7 +65,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_SharedFunctions_Class
     {
         ; Remove Thellora
         if (hold && g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SharedData.RNGWR_LockFormationSwitch)
-            values := IC_RNGWaitingRoom_Functions.EllywickHandlerHandlerSingle.RemoveThelloraKeyFromInputValues(values)
+            values := IC_RNGWaitingRoom_Functions.RemoveThelloraKeyFromInputValues(values)
         base.DirectedInput(hold, release, values* )
     }
 }
@@ -74,7 +74,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
 {
     RNGWR_DoEllyWait()
     {
-        this.Memory.ActiveEffectKeyHandler.Refresh()
+        this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.EffectKey)
         if (g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())
         {
             timeout := 60000

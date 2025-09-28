@@ -173,14 +173,14 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         remainingTime := timeout - ElapsedTime
         if (forceBrivShandie AND remainingTime > 0)
             return this.BGFLU_DoPartySetupMin(false, remainingTime)
-        this.BGFLU_DoPartyWaits()
+        this.BGFLU_DoPartyWaits(formation)
         ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
         if (currentZone == 1 || g_SharedData.TriggerStart)
             g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
         g_SF.ToggleAutoProgress( 1, false, true )
     }
 
-    BGFLU_DoPartyWaits()
+    BGFLU_DoPartyWaits(formation)
     {
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())

@@ -118,7 +118,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return 0
         ; Check if offline stack is needed
         isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
-        if (this.BGFHTS_DelayedOffline || !isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
+        if (this.BGFHTS_DelayedOffline || ((!isMelfActive) && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2))
         {
             this.BGFHTS_DelayedOffline := false
             IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])

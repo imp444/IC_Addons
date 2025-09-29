@@ -96,9 +96,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
     {
         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
         ; Just restart the game when hybrid turbo, don't wait
-        base.CloseIC( "FORT Restart" )
-        base.SafetyCheck()
-        base.StackRestart()
+        g_SF.CloseIC( "FORT Restart" )
+        g_SF.SafetyCheck()
+        g_SF.AlreadyOfflineStackedThisRun := True
+        ;base.StackRestart()
     }
 
     ; Tries to complete the zone before online stacking.

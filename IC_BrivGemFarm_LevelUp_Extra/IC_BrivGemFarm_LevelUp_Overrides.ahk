@@ -275,11 +275,12 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     {
         ; Speed champions without Briv
         static champIDs := [47, 83, 91, 128, 28, 75, 59, 148, 115, 52, 102, 125, 89, 114, 98, 79, 81, 95, 56, 139]
-        static levelupx10 := {} ; Not implemented yet
-        static levelupx25 := {}
+        levelupx10 := {} ; Not implemented yet
+        levelupx25 := {}
         levelBriv := true ; Return value
         if (this.BGFLU_ChampUnderTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, this.BGFLU_GetTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, "Min")))
         {
+            levelBriv := false
             if (this.BGFLU_AllowBrivLeveling()) ; Level Briv to be able to skip areas
                 this.BGFLU_DoPartySetupMin(true)
             else
@@ -295,12 +296,55 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
         else
             for k, champID in champIDs
-                if (g_SF.IsChampInFormation(champID, formation) AND this.BGFLU_LevelUpChamp(champID, this.BGFLU_GetTargetLevel(champID)))
+                ;if (g_SF.IsChampInFormation(champID, formation) AND this.BGFLU_LevelUpChamp(champID, this.BGFLU_GetTargetLevel(champID)))
+                    ;return false
+                if (g_SF.IsChampInFormation(champID, formation))
+                {
+                    targetLevel := this.BGFLU_GetTargetLevel(champID)
+                    targetLevelMod := Mod(this.BGFLU_GetTargetLevel(champID), 100)
+                    if (targetLevelMod > 0 && this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
+                    {
+                        levelupx25[champId] := targetLevel
+                        targetLevel := targetLevel - targetLevelMod
+                    }
+                    if (champID == this.SelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && this.BGFLU_LevelUpChamp(champID, targetLevel))
+                        return false
+                }
+        ; Now do x25 levelling.
+        if (this.ArrSize(levelupx25) > 0)
+        {
+            levelBriv := false
+            this.ToggleControl(true) ; To go back to x10 - change to ToggleShift
+            for champID, targetLevel in levelupx25
+            {
+                champSeat := g_SF.Memory.ReadChampSeatByID(champID)
+                champIDInSeat := this.SelectedChampIDBySeat(champSeat)
+                if (champID != champIDInSeat)
+                    continue
+                if (this.BGFLU_LevelUpChamp(champID, targetLevel))
+                {
+                    this.ToggleControl()
                     return false
+                }
+            }
+            this.ToggleControl()
+        }
+        else
+            levelBriv := true                    
         ; Complete leveling
         for k, champID in formation
         {
+            champSeat := g_SF.Memory.ReadChampSeatByID(champID)
+            champIDInSeat := this.SelectedChampIDBySeat(champSeat)
+            if (champID != champIDInSeat)
+                continue
             targetLevel := this.BGFLU_GetTargetLevel(champID)
+            targetLevelMod := Mod(targetLevel, 100)
+            if (targetLevelMod > 0 && this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
+            {
+                levelupx25[champId] := targetLevel
+                targetLevel := targetLevel - targetLevelMod
+            }
             ; Briv
             if (champID == 58)
             {
@@ -316,6 +360,48 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (levelBriv)
             g_SharedData.BGFLU_SetStatus("All champions leveled up.")
         return levelBriv
+    }
+
+        
+    ToggleShift(shiftKeyDown := false)
+    {
+        g_SF.DirectedInput(shiftKeyDown ? 1 : 0, shiftKeyDown ? 0 : 1, "{Shift}")
+        startTime:=A_TickCount
+        elapsedTime:=0
+        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=shiftKeyDown AND elapsedTime < 100) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
+        {
+            Sleep 1
+            elapsedTime:=A_TickCount - startTime
+        }
+    }
+    
+    ToggleControl(controlKeyDown := false)
+    {
+        g_SF.DirectedInput(controlKeyDown ? 1 : 0, controlKeyDown ? 0 : 1, "{RCtrl}")
+        startTime:=A_TickCount
+        elapsedTime:=0
+        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=controlKeyDown AND elapsedTime < 100) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
+        {
+            Sleep 1
+            elapsedTime:=A_TickCount - startTime
+        }
+    }
+    
+    SelectedChampIDBySeat(seat)
+    {
+        return g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[seat - 1].hero.def.ID.Read()
+    }
+    
+    ArrSize(arr)
+    {
+        if (IsObject(arr))
+        {
+            CDP_currArrSize := arr.MaxIndex()
+            if (CDP_currArrSize == "")
+                return 0
+            return CDP_currArrSize
+        }
+        return 0
     }
 
     /*  BGFLU_DoPartySetupFailedConversion - Level up all champs to soft cap after a failed conversion.

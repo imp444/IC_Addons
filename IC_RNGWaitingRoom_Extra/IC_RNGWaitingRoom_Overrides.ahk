@@ -7,7 +7,7 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
     {
         ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
         EllywickEnabled := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ]
-        if (EllywickEnabled && g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > lastResetCount)
+        if (EllywickEnabled && g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > this.LastResetCount)
         {
             g_SharedData.RNGWR_Elly.Reset()
             g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun

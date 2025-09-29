@@ -311,7 +311,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         }
         stackZone := range[1]
         ; Stack immediately to prevent resetting before stacking.
-        if (currentZone > IC_BrivGemFarm_Class.BrivFunctions.GetLastSafeStackZone())
+        if (currentZone > IC_BrivGemFarm_Class.BrivFunctions.GetLastSafeStackZone() && currentZone > range[2])
             return false
         if (stackZone)
         {

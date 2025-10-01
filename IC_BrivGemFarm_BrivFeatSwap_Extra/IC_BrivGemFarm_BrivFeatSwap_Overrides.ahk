@@ -12,7 +12,7 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
     }
 
     ; Tests to make sure Gem Farm is properly set up before attempting to run and Briv is in E formation.
-    TestEFormation()
+    TestEFormation(txtCheck := "")
     {
         formationE := g_SF.FindChampIDinSavedFavorite( ActiveEffectKeySharedFunctions.Briv.HeroID, favorite := 3, includeChampion := True )
         if (formationE == -1 AND this.RunChampionInFormationTests(ActiveEffectKeySharedFunctions.Briv.HeroID, favorite := 3, includeChampion := True, txtCheck) == -1)

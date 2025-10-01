@@ -71,7 +71,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
     {
             g_SharedData.BGFHTS_UpdateMelfStackZoneAfterReset()
             this.BGFHTS_UpdateMelfStackZoneAfterReset(true)
-            return base.GemFarmResetSetup(formationModron := "", doBasePartySetup)
+            return base.GemFarmResetSetup(formationModron, doBasePartySetup)
     }
 
     GetNumStacksFarmed(afterReset := false)

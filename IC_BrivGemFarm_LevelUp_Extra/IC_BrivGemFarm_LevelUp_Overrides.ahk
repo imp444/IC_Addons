@@ -32,8 +32,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         this.SetupMaxDone := false
         this.SetupFailedConversionDone := true
         doBasePartySetup := False
-        resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
         this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ])
+        resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
         return resetsCount
     }
 
@@ -132,7 +132,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         ; Set formation
-        g_SF.LoadFormationForZ1()
+        if (currentZone == 1)
+            g_SF.LoadFormationForZ1()
         if (!lowFavorMode)
             keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
         StartTime := A_TickCount, ElapsedTime := 0
@@ -601,23 +602,23 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
             Switch this.BGFLU_GetZ1FormationKey()
             {
                 case "q":
-                    slot := 1
+                    favorite := 1
                 case "w":
-                    slot := 2
+                    favorite := 2
                 case "e":
-                    slot := 3
+                    favorite := 3
                 default:
-                    slot := 1
+                    favorite := 1
             }
         }
         else
         {
             settings := g_BrivUserSettings[ "PreferredBrivJumpZones" ]
             mod50Index := Mod(currentZone, 50) == 0 ? 50 : Mod(currentZone, 50)
-            slot := settings[mod50Index] ? 1 : 3
+            favorite := settings[mod50Index] ? 1 : 3
         }
         ; Without empty slots
-        return this.Memory.GetFormationSaveBySlot(this.Memory.GetSavedFormationSlotByFavorite(slot), true)
+        return this.Memory.GetFormationSaveBySlot(this.Memory.GetSavedFormationSlotByFavorite(favorite), true)
     }
 
     DoDashWaitingIdling(startTime := 1, estimate := 1)

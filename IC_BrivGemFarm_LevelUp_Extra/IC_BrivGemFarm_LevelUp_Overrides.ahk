@@ -133,7 +133,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         ; Set formation
         if (currentZone == 1)
-            g_SF.LoadFormationForZ1()
+            g_SF.SetFormationForZ1()
         if (!lowFavorMode)
             keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
         StartTime := A_TickCount, ElapsedTime := 0
@@ -163,7 +163,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             ; Level up speed champions once
             g_SF.DirectedInput(,, maxKeyspam*)
             ; Set formation
-            g_SF.LoadFormationForZ1()
+            g_SF.SetFormationForZ1()
             Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
             ElapsedTime := A_TickCount - StartTime
             if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
@@ -590,7 +590,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 ; Overrides IC_BrivSharedFunctions_Class.DoRushWait()
 ; Overrides IC_BrivSharedFunctions_Class.InitZone()
 ; Overrides IC_SharedFunctions_Class.DoDashWaitingIdling()
-; Overrides IC_SharedFunctions_Class.LoadFormationForZ1()
+; Overrides IC_SharedFunctions_Class.SetFormationForZ1()
 class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
     ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
@@ -624,7 +624,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
     DoDashWaitingIdling(startTime := 1, estimate := 1)
     {
         this.ToggleAutoProgress(0)
-        this.LoadFormationForZ1()
+        this.SetFormationForZ1()
         g_BrivGemFarm.BGFLU_DoPartySetupMax()
         this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
         ElapsedTime := A_TickCount - StartTime
@@ -634,7 +634,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
     }
 
     ; Special case for Thellora+Briv combined jump on z1 if z1 is set to walk in advanced settings.
-    LoadFormationForZ1()
+    SetFormationForZ1()
     {
         if (this.Memory.ReadCurrentZone() == 1)
             this.DirectedInput(,, "{" . this.BGFLU_GetZ1FormationKey() . "}")
@@ -654,7 +654,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
     DoRushWaitIdling(StartTime, estimate)
     {
         this.ToggleAutoProgress(0)
-        this.LoadFormationForZ1()
+        this.SetFormationForZ1()
         g_BrivGemFarm.BGFLU_DoPartySetupMax()
         this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
         ElapsedTime := A_TickCount - StartTime

@@ -83,7 +83,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
             while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
             {
                 if (!g_SharedData.RNGWR_LockFormationSwitch)
-                    g_SF.LoadFormationForZ1()
+                    g_SF.SetFormationForZ1()
                     g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
                     this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
                     numMelee := g_SF.Memory.ReadNumAttackingMonstersReached()

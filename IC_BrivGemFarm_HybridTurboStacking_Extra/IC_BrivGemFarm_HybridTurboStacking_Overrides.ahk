@@ -100,7 +100,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         g_SF.CloseIC( "FORT Restart" )
         g_SF.SafetyCheck()
         g_SF.AlreadyOfflineStackedThisRun := True
-        ;base.StackRestart()
     }
 
     ; Tries to complete the zone before online stacking.

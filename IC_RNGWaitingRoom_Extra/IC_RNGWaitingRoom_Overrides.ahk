@@ -19,10 +19,10 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
 
     GemFarmResetSetup(formationModron := "", doBasePartySetup := False)
     {
-        ; Allow formation switch on startup
-        g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun ; Allow formation switch on startup
+        resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
+        g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
         g_SharedData.RNGWR_Elly.Reset()
-        return base.GemFarmResetSetup(formationModron, doBasePartySetup)
+        return resetsCount
     }
 
     BGFLU_DoPartyWaits(formation)
@@ -75,6 +75,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
     RNGWR_DoEllyWait()
     {
         this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.EffectKey)
+        g_SharedData.RNGWR_Elly.Start()
         if (g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())
         {
             timeout := 60000
@@ -95,6 +96,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
             if (ElapsedTime >= timeout)
                 g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
         }
+        g_SharedData.RNGWR_Elly.Stop()
         ; Unlock formation switch
         g_SharedData.RNGWR_FirstRun := false
         g_SharedData.RNGWR_LockFormationSwitch := false
@@ -132,7 +134,6 @@ class IC_RNGWaitingRoom_IC_SharedData_Added_Class ; Added to IC_SharedData_Class
         this.RNGWR_ResetStats()
         this.RNGWR_Elly := new IC_RNGWaitingRoom_Functions.EllywickHandlerHandler
         this.RNGWR_UpdateSettingsFromFile()
-        this.RNGWR_Elly.Start()
     }
 
     RNGWR_UpdateStats(bonusGems := 0, redraws := 0, success := true)

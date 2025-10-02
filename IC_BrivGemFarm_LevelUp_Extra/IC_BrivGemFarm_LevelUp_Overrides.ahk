@@ -21,6 +21,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             g_SF.BGFLU_CalcLastUpgradeLevels()
             g_SharedData.BGFLU_UpdateSettingsFromFile(true)
+            g_SharedData.BGFLU_SaveFormations()
         }
         return isFailed
     }
@@ -28,12 +29,10 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     GemFarmResetSetup(formationModron := "", doBasePartySetup := False)
     {
         g_SharedData.BGFLU_SetStatus()
-        g_SharedData.BGFLU_SaveFormations()
         this.SetupMaxDone := false
         this.SetupFailedConversionDone := true
         doBasePartySetup := False
-        this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ])
-        resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
+        resetsCount := base.GemFarmResetSetup(formationModron, false)
         return resetsCount
     }
 
@@ -129,18 +128,40 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
         formation := g_SF.GetInitialFormation()
         ; If low favor mode is active, cheapeast upgrade first
-        lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
+        lowFavorMode := 
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         ; Set formation
         if (currentZone == 1)
             g_SF.SetFormationForZ1()
-        if (!lowFavorMode)
-            keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
+        if (!g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
+            results := this.BGFLU_DoPartySetupMinLoop_NoLowFavor(formation, forceBrivShandie, timeout, currentZone)
+        else
+            remainingTime := timeout
+        if (IsObject(results))
+        {
+            remainingTime := results[1]
+            keyspam := results[2]
+            maxKeySpam := results[3]
+        }
+        g_SF.DirectedInput(hold := 0,, keyspam*) ; keysup
+        if (forceBrivShandie AND remainingTime > 0)
+            return this.BGFLU_DoPartySetupMin(false, remainingTime)
+        this.BGFLU_DoPartyWaits(formation)
+        ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
+        if (currentZone == 1 || g_SharedData.TriggerStart)
+            g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
+        g_SF.ToggleAutoProgress( 1, false, true )
+        return results
+    }
+
+    BGFLU_DoPartySetupMinLoop_NoLowFavor(formation, forceBrivShandie := false, timeout := "", currentZone := 1)
+    {
         StartTime := A_TickCount, ElapsedTime := 0
         if (timeout == "")
             timeout := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ]
         timeout := timeout == "" ? 5000 : timeout
-        index := 0
+        keyspam := {}
+        keyspam.Push(1)
         while(keyspam.Length() != 0 AND ElapsedTime < timeout)
         {
             ; Update formation on zone change
@@ -149,7 +170,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 currentZone := g_SF.Memory.ReadCurrentZone()
                 formation := g_SF.GetInitialFormation()
             }
-            if (lowFavorMode)
+            if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
             {
                 formationInOrder := this.BGFLU_OrderByCheapeastUpgrade(formation)
                 keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivShandie)
@@ -170,15 +191,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
             g_SF.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
         }
-        this.DirectedInput(hold := 0,, keyspam*) ; keysup
-        remainingTime := timeout - ElapsedTime
-        if (forceBrivShandie AND remainingTime > 0)
-            return this.BGFLU_DoPartySetupMin(false, remainingTime)
-        this.BGFLU_DoPartyWaits(formation)
-        ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
-        if (currentZone == 1 || g_SharedData.TriggerStart)
-            g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
-        g_SF.ToggleAutoProgress( 1, false, true )
+        return [timeout - ElapsedTime, keyspam, maxKeySpam]
     }
 
     BGFLU_DoPartyWaits(formation)

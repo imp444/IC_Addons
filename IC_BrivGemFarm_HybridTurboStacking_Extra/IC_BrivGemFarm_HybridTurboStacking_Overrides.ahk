@@ -69,9 +69,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
 
     GemFarmResetSetup(formationModron := "", doBasePartySetup := False)
     {
+            resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
             g_SharedData.BGFHTS_UpdateMelfStackZoneAfterReset()
             this.BGFHTS_UpdateMelfStackZoneAfterReset(true)
-            return base.GemFarmResetSetup(formationModron, doBasePartySetup)
+            return resetsCount
     }
 
     GetNumStacksFarmed(afterReset := false)
@@ -116,7 +117,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         stacks := this.GetNumStacksFarmed(predictStacks)
         targetStacks := g_BrivUserSettings[ "TargetStacks" ] + targetStackModifier
         if (this.ShouldAvoidRestack(stacks, targetStacks))
+        {
+            g_SharedData.LoopString .= " - Rejected by HybridTurbo"
             return 0
+        }
         ; Check if offline stack is needed
         isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
         if (this.BGFHTS_DelayedOffline || ((!isMelfActive) && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2))
@@ -336,16 +340,17 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_MemoryFunctions_Class extends IC_Mem
     GetFormationByFavorite(favorite := 0 )
     {
         version := this.GameManager.game.gameInstances[this.GameInstance].FormationSaveHandler.formationSavesV2.__version.Read()
-        if (this.FormationFavorites[favorite] != "" AND  favorite == this.GameManager.game.gameInstances[this.GameInstance].FormationSaveHandler.formationSavesV2[this.FormationFavorites[favorite]].Favorite.Read())
-            return this.GetFormationSaveBySlot(this.FormationFavoriteSlots[favorite]) 
-        slot := this.GetSavedFormationSlotByFavorite(favorite)
-        formation := this.GetFormationSaveBySlot(slot)
+        if (this.FavoriteFormations[favorite] != "" AND version != "" AND version == this.LastFormationSavesVersion[formation])
+            return this.FavoriteFormations[favorite] 
+        formation := this.GetFormationSaveBySlot(,,favorite)
         if (favorite == 2) ; don't test stack formation for champions are still benched.
             for k, v in formation
                 for _, champID in g_SharedData.BGFHTS_RemovedIdsFromWFavorite
                     if (v == champID)
-                        if (g_SF.Memory.ReadChampBenchedByID(v)) 
-                            formation[k] := g_SF.Memory.ReadChampBenchedByID(v) -2
+                        if (g_SF.Memory.ReadChampBenchedByID(v) < 1) 
+                            formation[k] := - 1
+        this.FavoriteFormations[favorite] := formation.Clone()
+        this.LastFormationSavesVersion[formation] := version                            
         return formation
     }
 }

@@ -20,7 +20,7 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
     GemFarmResetSetup(formationModron := "", doBasePartySetup := False)
     {
         resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
-        g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
+        g_SharedData.RNGWR_LockFormationSwitch := g_SharedData.RNGWR_FirstRun
         g_SharedData.RNGWR_Elly.Reset()
         return resetsCount
     }

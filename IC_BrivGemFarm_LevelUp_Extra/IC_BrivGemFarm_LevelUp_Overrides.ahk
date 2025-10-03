@@ -32,7 +32,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         this.SetupMaxDone := false
         this.SetupFailedConversionDone := true
         doBasePartySetup := False
-        resetsCount := base.GemFarmResetSetup(formationModron, false)
+        this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ])
+        resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
         return resetsCount
     }
 
@@ -128,7 +129,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
         formation := g_SF.GetInitialFormation()
         ; If low favor mode is active, cheapeast upgrade first
-        lowFavorMode := 
+        lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
         ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
         ; Set formation
         if (currentZone == 1)

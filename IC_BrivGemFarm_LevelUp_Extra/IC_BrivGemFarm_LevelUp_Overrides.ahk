@@ -8,10 +8,10 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     ;=====================================================
     ;Primary Functions for Briv Gem Farm
     ;=====================================================
-    GemFarmDoZone()
+    GemFarmDoZone(formationModron := "")
     {
         this.DoKeySpam := False
-        base.GemFarmDoZone()
+        base.GemFarmDoZone(formationModron)
     }
     
     GemFarmPreLoopSetup()

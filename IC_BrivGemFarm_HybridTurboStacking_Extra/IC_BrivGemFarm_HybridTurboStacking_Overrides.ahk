@@ -19,6 +19,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return base.TestForSteelBonesStackFarming()
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ])
             return base.TestForSteelBonesStackFarming()
+        if (!Mod( g_SF.Memory.ReadCurrentZone(), 5)) ; melf stacking + land on boss zone = do not stack here.
+            return 0
         ; If no Melf +spawn effect until reset, stack offline.
         range := g_SharedData.BGFHTS_CurrentRunStackRange
         if (range[1] == "" || range[2] == "")

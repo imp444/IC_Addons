@@ -85,7 +85,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             this.ShouldOfflineStack()
         if (afterReset || IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
         {
-            stacksAfterReset := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks()
+            stacksAfterReset := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks(,,True)
             stacksAfterReset := g_SF.BrivHasThunderStep() ? stacksAfterReset * 1.2 : stacksAfterReset
             ; thunderstep recalc.
             g_SharedData.BGFHTS_SBStacksPredict := stacksAfterReset
@@ -107,7 +107,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
 
     ; Tries to complete the zone before online stacking.
     ; TODO:: Update target stacks if Thellora doesn't have enough stacks for the next run.
-    StackNormal(maxOnlineStackTime := 300000, targetStackModifier := 0)
+    StackNormal(maxOnlineStackTime := 300000, targetStacks := 0)
     {
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
             return base.StackNormal(maxOnlineStackTime)
@@ -117,7 +117,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         predictStacks := IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive()
         SBStacksStart := g_SF.Memory.ReadSBStacks()
         stacks := this.GetNumStacksFarmed(predictStacks)
-        targetStacks := g_BrivUserSettings[ "TargetStacks" ] + targetStackModifier
+        targetStacks := targetStacks ? targetStacks : g_BrivUserSettings[ "TargetStacks" ]
         if (this.ShouldAvoidRestack(stacks, targetStacks))
         {
             g_SharedData.LoopString .= " - Rejected by HybridTurbo"

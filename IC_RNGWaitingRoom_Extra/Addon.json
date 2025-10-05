@@ -21,8 +21,12 @@
     ],
     "LoadAfter" : [
         {
-			"Name":"BrivGemFarm HybridTurboStacking",
-			"Version":"v1.1.5"
+            "Name":"BrivGemFarm HybridTurboStacking",
+            "Version":"v1.1.5"
+        },
+        {
+            "Name":"BrivGemFarm Briv Feat Swap",
+            "Version": "v1.6.1"
         }
     ]
 }

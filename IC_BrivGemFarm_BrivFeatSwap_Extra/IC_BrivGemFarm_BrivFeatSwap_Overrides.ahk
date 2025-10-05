@@ -40,7 +40,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         ;check to bench briv
         if (this.BGFBFS_ShouldSwitchFormation(3))
         {
-            if (this.Memory.ReadNumAttackingMonstersReached() > 10 || this.Memory.ReadNumRangedAttackingMonsters())
+            if (currentZone != 1 AND (this.Memory.ReadNumAttackingMonstersReached() > 10 || this.Memory.ReadNumRangedAttackingMonsters()))
                 this.FallBackFromZone(2000)
             base.DirectedInput(,,["{e}"]*)  ; try to switch before checking monsters to not get stuck on boss fallback.
             Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
@@ -50,7 +50,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         ;check to unbench briv
         if (this.BGFBFS_ShouldSwitchFormation(1))
         {
-            if (this.Memory.ReadNumAttackingMonstersReached() > 10 || this.Memory.ReadNumRangedAttackingMonsters())
+            if (currentZone != 1 AND (this.Memory.ReadNumAttackingMonstersReached() > 10 || this.Memory.ReadNumRangedAttackingMonsters()))
                 this.FallBackFromZone(2000)
             base.DirectedInput(,,["{q}"]*)
             Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]

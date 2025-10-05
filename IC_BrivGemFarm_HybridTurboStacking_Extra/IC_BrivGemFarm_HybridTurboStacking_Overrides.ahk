@@ -19,6 +19,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return base.TestForSteelBonesStackFarming()
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ])
             return base.TestForSteelBonesStackFarming()
+        if (g_SF.Memory.ReadHasteStacks() < 50)
+            return base.TestForSteelBonesStackFarming()
         if (!Mod( g_SF.Memory.ReadCurrentZone(), 5)) ; melf stacking + land on boss zone = do not stack here.
             return 0
         ; If no Melf +spawn effect until reset, stack offline.
@@ -107,20 +109,20 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
 
     ; Tries to complete the zone before online stacking.
     ; TODO:: Update target stacks if Thellora doesn't have enough stacks for the next run.
-    StackNormal(maxOnlineStackTime := 300000, targetStacks := 0)
+    StackNormal(maxOnlineStackTime := 300000, targetStacks := 0, ignoreMelf := False)
     {
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
             return base.StackNormal(maxOnlineStackTime)
         ; Melf stacking
-        if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] && this.BGFHTS_PostponeStacking())
+        if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] && this.BGFHTS_PostponeStacking() && !ignoreMelf)
             return 0
         predictStacks := IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive()
         SBStacksStart := g_SF.Memory.ReadSBStacks()
         stacks := this.GetNumStacksFarmed(predictStacks)
         targetStacks := targetStacks ? targetStacks : g_BrivUserSettings[ "TargetStacks" ]
-        if (this.ShouldAvoidRestack(stacks, targetStacks))
+        if (this.ShouldAvoidRestack(stacks, targetStacks) AND !ignoreMelf)
         {
-            g_SharedData.LoopString .= " - Rejected by HybridTurbo"
+            g_SharedData.LoopString .= " - Rejected by HybridTurbo. Already Stacked"
             return 0
         }
         ; Check if offline stack is needed
@@ -183,7 +185,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
                 g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacksFarmed ) . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
                 if (levelBrivSomeMore)
-                    this.BGFLU_LevelUpChamp(58, amountToLevelBriv)
+                    this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 ; Warden ultimate
                 wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
                 if (!usedWardenUlt && wardenThreshold > 0)
@@ -206,7 +208,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
                 g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
                 if (levelBrivSomeMore)
-                    this.BGFLU_LevelUpChamp(58, amountToLevelBriv)
+                    this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 ; Warden ultimate
                 wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
                 if (!usedWardenUlt && wardenThreshold > 0)

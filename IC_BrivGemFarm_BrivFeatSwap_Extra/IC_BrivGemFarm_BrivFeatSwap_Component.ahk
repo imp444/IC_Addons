@@ -72,7 +72,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         this.TimerFunctions := {}
         fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
-        this.TimerFunctions[fncToCallOnTimer] := 15000
+        this.TimerFunctions[fncToCallOnTimer] := 100
     }
 
     Start()

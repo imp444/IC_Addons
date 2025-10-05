@@ -344,29 +344,7 @@ class IC_RNGWaitingRoom_Functions
             return num
         }
     }
-
-    RemoveThelloraKeyFromInputValues(values)
-    {
-        if (IsObject(values))
-        {
-            newValues := []
-            for k, v in values
-            {
-                slot := this.GetFavoriteFormationSlot(v)
-                if (!slot || !this.IsThelloraInFavoriteFormation(slot))
-                    newValues.Push(v)
-            }
-            return newValues
-        }
-        else
-        {
-            slot := this.GetFavoriteFormationSlot(values)
-            if (slot && this.IsThelloraInFavoriteFormation(slot))
-                values := ""
-            return values
-        }
-    }
-
+    
     GetFavoriteFormationSlot(key)
     {
         key := Trim(key, "{}")

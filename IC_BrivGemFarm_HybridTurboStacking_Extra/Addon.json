@@ -1,6 +1,6 @@
 {
 	"Name":"BrivGemFarm HybridTurboStacking",
-	"Version": "v1.1.5",
+	"Version": "v1.1.6",
     "Includes" : "IC_BrivGemFarm_HybridTurboStacking_Includes.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_HybridTurboStacking_Extra",

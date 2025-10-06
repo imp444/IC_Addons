@@ -130,7 +130,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
         ; Unlock formation switch
         g_SharedData.RNGWR_FirstRun := false
         this.FormationLock := False
-        g_SF.ToggleAutoProgress( 1, false, true )
+        g_BrivGemFarm.BGFLU_DoPartySetupMin()
     }
 }
 

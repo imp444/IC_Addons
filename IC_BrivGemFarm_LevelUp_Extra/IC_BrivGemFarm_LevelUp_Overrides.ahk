@@ -36,6 +36,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             g_SF.SetFormationForStart()
         this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ])
         this.BGFLU_DoPartyWaits(formationModron)
+        g_SF.ToggleAutoProgress( 1, false, true )
         return resetsCount
     }
 
@@ -148,7 +149,6 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (currentZone == 1 || g_SharedData.TriggerStart)
             g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
         ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
-        g_SF.ToggleAutoProgress( 1, false, true )
         return results
     }
 
@@ -188,7 +188,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivShandie)
             }
             else
-                keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
+                keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie, currentZone)
             ; Level up speed champions once
             g_SF.DirectedInput(,, keyspam*)
             ; Set formation
@@ -216,7 +216,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     ; Params: formation:array - List of champion IDs.
     ;         forceBrivShandie:bool - If true, only Briv and Shandie are leveled.
 
-    BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie := false)
+    BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie := false, currentZone := 0)
     {
         keyspam := []
         ; List of champion IDs
@@ -289,7 +289,10 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             for k, champID in nonSpeedIDs
             {
                 if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == this.SelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
-                    keyspam.Push(this.BGFLU_GetFKey(champID))
+                    if (champID == 165 AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to minleveling
+                        continue
+                    else
+                        keyspam.Push(this.BGFLU_GetFKey(champID))
             }
         }
         return keyspam
@@ -633,6 +636,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
     BGFLU_LevelUpChamp(champID, target)
     {
+        if (champID == 165 AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to leveling until after rush and ellywait
+            return
         if (this.BGFLU_ChampUnderTargetLevel(champID, target))
         {
             ; Level up a single champion once

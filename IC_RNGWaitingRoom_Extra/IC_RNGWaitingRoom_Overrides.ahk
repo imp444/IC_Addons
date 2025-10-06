@@ -8,19 +8,19 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
         ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
         EllywickEnabled := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ]
         if (EllywickEnabled && g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > this.LastResetCount)
-        {
             g_SharedData.RNGWR_Elly.Reset()
-            g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
-        }
-        if (!EllywickEnabled || !g_SharedData.RNGWR_Elly.RNGWR_LockFormationSwitch)
-            return True
+        if (!EllywickEnabled OR !g_SF.FormationLock)
+            return base.GemFarmShouldSetFormation()
         return False
     }
 
     GemFarmResetSetup(formationModron := "", doBasePartySetup := False)
     {
+        ; if ( 1 == g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ] AND 1 == g_BrivUserSettingsFromAddons[ "BGFLU_BrivLevelingZones" ][1]) ; to help coerce Thellora/Briv combo jump
+        ;     g_SF.FormationLock := True
+        ; else
+        ;     g_SF.FormationLock := True ; Prioritize evading combination over DM usage.
         resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
-        g_SharedData.RNGWR_LockFormationSwitch := g_SharedData.RNGWR_FirstRun
         g_SharedData.RNGWR_Elly.Reset()
         return resetsCount
     }
@@ -32,22 +32,36 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
         if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Ellywick.HeroID, formation))
             g_SF.RNGWR_DoEllyWait()
-        if (g_SF.IsChampInFormation(139, formation))
+        g_SF.FormationLock := False            
+        if (g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Thellora.HeroID, formation))
             g_SF.DoRushWait()
+    }
+
+    ModronResetCheck()
+    {
+        modronResetTimeout := 75000
+        if (!g_SF.WaitForModronReset(modronResetTimeout))
+            g_SF.CheckifStuck(True)
+        g_SF.FormationLock := True
+        g_PreviousZoneStartTime := A_TickCount
+        g_SharedData.TriggerStart := True
     }
 }
 
 ; Overrides IC_BrivGemFarm_LevelUp_SharedFunctions_Class.GetInitialFormation()
 ; Overrides IC_BrivSharedFunctions_Class.RestartAdventure()
-; Overrides IC_BrivSharedFunctions_Class.DirectedInput()
+; Overrides IC_BrivSharedFunctions_Class.SetFormation()
 class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
+    ;
     GetInitialFormation()
     {
+        modronFormation := g_SF.Memory.GetActiveModronFormation()
+        if(this.FormationLock)
+            return modronFormation
         formation := base.GetInitialFormation()
         ; Use extra champions if they're in the modron formation.
         heroIDs := [99,59,97,165] ; DM / Melf / Tatyana / Baldric
-        modronFormation := g_SF.Memory.GetActiveModronFormation()
         for k,heroID in heroIDs
             if (g_SF.IsChampInFormation(heroID, modronFormation))
                 formation.Push(heroID)
@@ -56,24 +70,32 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_SharedFunctions_Class
 
     RestartAdventure( reason := "" )
     {
-            g_SharedData.RNGWR_Elly.Reset()
-            g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
-            base.RestartAdventure(reason)
+        g_SF.FormationLock := True
+        g_SharedData.RNGWR_Elly.Reset()
+        base.RestartAdventure(reason)
     }
 
-    DirectedInput(hold := 1, release := 1, values* )
+    ; a method to swap formations and cancel briv's jump animation.
+    SetFormation(settings := "", forceCheck := False)
     {
-        ; Remove Thellora
-        if (hold && g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SharedData.RNGWR_LockFormationSwitch)
-            values := IC_RNGWaitingRoom_Functions.RemoveThelloraKeyFromInputValues(values)
-        base.DirectedInput(hold, release, values* )
+        if (!g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] OR !g_SF.FormationLock)
+            return base.SetFormation(settings)
     }
 }
 
 class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunctions_Class
 {
+;   FormationLock := ""   
+
     RNGWR_DoEllyWait()
     {
+        g_SF.ToggleAutoProgress( 0, false, true )
+        if(g_SharedData.RNGWR_FirstRun) ; no ellywait on first run, get to gem farm first.
+        {
+            this.FormationLock := False
+            g_SharedData.RNGWR_FirstRun := False
+            return g_SharedData.RNGWR_Elly.Stop()
+        }
         this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.EffectKey)
         g_SharedData.RNGWR_Elly.Start()
         if (g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())
@@ -83,13 +105,12 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
             StartTime := A_TickCount
             while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
             {
-                if (!g_SharedData.RNGWR_LockFormationSwitch)
-                    g_SF.SetFormationForZ1()
-                    g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
-                    this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
-                    numMelee := g_SF.Memory.ReadNumAttackingMonstersReached()
-                    if (numMelee >= 1 || numMelee + g_SF.Memory.ReadNumRangedAttackingMonsters() >= 15)
-                        g_BrivGemFarm.BGFLU_DoPartySetupMax()
+                g_SF.SetFormationForStart()
+                g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
+                this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
+                numMelee := g_SF.Memory.ReadNumAttackingMonstersReached()
+                ; if (numMelee >= 1 || numMelee + g_SF.Memory.ReadNumRangedAttackingMonsters() >= 15)
+                g_BrivGemFarm.BGFLU_DoPartySetupMax()
                 Sleep, 30
                 ElapsedTime := A_TickCount - StartTime
             }
@@ -99,7 +120,8 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
         g_SharedData.RNGWR_Elly.Stop()
         ; Unlock formation switch
         g_SharedData.RNGWR_FirstRun := false
-        g_SharedData.RNGWR_LockFormationSwitch := false
+        this.FormationLock := False
+        g_SF.ToggleAutoProgress( 1, false, true )
     }
 }
 
@@ -109,7 +131,6 @@ class IC_RNGWaitingRoom_IC_SharedData_Added_Class ; Added to IC_SharedData_Class
 ;    RNGWR_Stats := ""
 ;    RNGWR_Elly := ""
 ;    RNGWR_FirstRun := ""
-;    RNGWR_LockFormationSwitch := ""
 
     ; Return true if the class has been updated by the addon
     RNGWR_Running()

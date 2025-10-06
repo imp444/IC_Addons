@@ -38,47 +38,25 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         currentZone := this.Memory.ReadCurrentZone()
         ;bench briv if jump animation override is added to list and it isn't a quick transition (reading ReadFormationTransitionDir makes sure QT isn't read too early)
         ;check to bench briv
-        if (this.BGFBFS_ShouldSwitchFormation(3))
-        {
-            if (currentZone != 1 AND (this.Memory.ReadNumAttackingMonstersReached() > 10 || this.Memory.ReadNumRangedAttackingMonsters()))
-                this.FallBackFromZone(2000)
-            base.DirectedInput(,,["{e}"]*)  ; try to switch before checking monsters to not get stuck on boss fallback.
-            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
-            g_SharedData.BGFBFS_UpdateSkipAmount(3)
+        if (this.BGFBFS_ShouldSwitchFormation(3)){
+            this.DoSwitchFormation(3)
             return
         }
         ;check to unbench briv
-        if (this.BGFBFS_ShouldSwitchFormation(1))
-        {
-            if (currentZone != 1 AND (this.Memory.ReadNumAttackingMonstersReached() > 10 || this.Memory.ReadNumRangedAttackingMonsters()))
-                this.FallBackFromZone(2000)
-            base.DirectedInput(,,["{q}"]*)
-            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
-            g_SharedData.BGFBFS_UpdateSkipAmount(1)
+        if (this.BGFBFS_ShouldSwitchFormation(1)){
+            this.DoSwitchFormation(1)
             return
         }
         ; Prevent incorrect read if Briv is the only champion leveled in Q/E (e.g. using "Level Briv/Shandie to MinLevel first" LevelUp addon option)
         if (currentZone == 1)
             return
-        if (forceCheck)
+        if (forceCheck OR g_SharedData.TriggerStart)
             isFormation2 := this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2))
         else
             isFormation2 := this.Memory.ReadMostRecentFormationFavorite() == 2 ; (watch for fix for changing on failed swap)
-        isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( this.Memory.ReadCurrentZone(), 50) == 0 ? 50 : Mod( this.Memory.ReadCurrentZone(), 50)] == 0
-        ; check to swap briv from favorite 2 to favorite 3 (W to E)
-        if (isFormation2 AND isWalkZone)
-        {
-            g_SharedData.BGFBFS_UpdateSkipAmount(2)
-            base.DirectedInput(,,["{e}"]*)
-            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
-            return
-        }
-        ; check to swap briv from favorite 2 to favorite 1 (W to Q)
-        if (isFormation2 AND !isWalkZone)
-        {
-            g_SharedData.BGFBFS_UpdateSkipAmount(2)
-            base.DirectedInput(,,["{q}"]*)
-            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
+        ; check to swap briv from favorite 2 to another (W to Q or E)
+        if (isFormation2){
+            this.DoSwitchFormation(2)
             return
         }
     }
@@ -94,6 +72,28 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
 
 class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Added_Class
 {
+
+    ; Switch formation to opposite (Q<-->E) based on favorite, or (W-->Q/E) based o nzone.
+    DoSwitchFormation(fromFavorite := 1)
+    {
+            if (currentZone != 1 AND (this.Memory.ReadNumAttackingMonstersReached() > 10 || this.Memory.ReadNumRangedAttackingMonsters()))
+                this.FallBackFromZone(2000)
+            if(fromFavorite == 1)
+                base.DirectedInput(,,["{q}"]*)
+            else if (fromFavorite == 2)
+            {
+                isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( this.Memory.ReadCurrentZone(), 50) == 0 ? 50 : Mod( this.Memory.ReadCurrentZone(), 50)] == 0         
+                if (isWalkZone)
+                    base.DirectedInput(,,["{e}"]*)
+                else
+                    base.DirectedInput(,,["{q}"]*)
+            }
+            else if (fromFvorite == 3)
+                base.DirectedInput(,,["{e}"]*)
+            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
+            g_SharedData.BGFBFS_UpdateSkipAmount(fromFavorite)
+    }
+
     ; Check if formation switch conditions are met.
     ; Params: formationFavoriteIndex:int - 1:Q, 2:W, 3:E.
     BGFBFS_ShouldSwitchFormation(formationFavoriteIndex)

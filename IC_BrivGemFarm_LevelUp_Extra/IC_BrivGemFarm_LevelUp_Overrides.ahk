@@ -250,8 +250,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Vi := 95
                         , Havilar := 56
                         , Shandie := 47
-                        , Thellora := 139
-                        , Baldric := 165 ]
+                        , Thellora := 139]
         }
         ; Need to walk while Briv is in all formations
         if (!this.BGFLU_AllowBrivLeveling())

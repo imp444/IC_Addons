@@ -80,7 +80,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
             else
                 base.DirectedInput(,,["{q}"]*)
         }
-        else if (fromFvorite == 3)
+        else if (fromFavorite == 3)
             base.DirectedInput(,,["{e}"]*)
         Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
         g_SharedData.BGFBFS_UpdateSkipAmount(fromFavorite)

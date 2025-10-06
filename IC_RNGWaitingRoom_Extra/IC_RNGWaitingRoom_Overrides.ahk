@@ -39,9 +39,18 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
 
     ModronResetCheck()
     {
+        global g_ScriptHubComs
         modronResetTimeout := 75000
         if (!g_SF.WaitForModronReset(modronResetTimeout))
             g_SF.CheckifStuck(True)
+        else
+        {
+            try ; set off any timers in SH that need to run on a reset.
+            {
+                ; e.g. buy/open chests
+                g_ScriptHubComs.RunTimersOnModronReset()
+            }
+        }
         g_SF.FormationLock := True
         g_PreviousZoneStartTime := A_TickCount
         g_SharedData.TriggerStart := True

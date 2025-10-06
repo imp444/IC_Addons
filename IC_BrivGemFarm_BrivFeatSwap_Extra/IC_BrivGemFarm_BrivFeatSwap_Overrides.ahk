@@ -76,13 +76,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Added_Class
     ; Switch formation to opposite (Q<-->E) based on favorite, or (W-->Q/E) based o nzone.
     DoSwitchFormation(fromFavorite := 1)
     {
+            currentZone := this.Memory.ReadCurrentZone()
             if (currentZone != 1 AND (this.Memory.ReadNumAttackingMonstersReached() > 10 || this.Memory.ReadNumRangedAttackingMonsters()))
                 this.FallBackFromZone(2000)
             if(fromFavorite == 1)
                 base.DirectedInput(,,["{q}"]*)
             else if (fromFavorite == 2)
             {
-                isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( this.Memory.ReadCurrentZone(), 50) == 0 ? 50 : Mod( this.Memory.ReadCurrentZone(), 50)] == 0         
+                isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( currentZone, 50) == 0 ? 50 : Mod( currentZone, 50)] == 0         
                 if (isWalkZone)
                     base.DirectedInput(,,["{e}"]*)
                 else

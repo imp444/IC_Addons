@@ -354,7 +354,7 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_MemoryFunctions_Class extends IC_Mem
                         if (g_SF.Memory.ReadChampBenchedByID(v) < 1) 
                             formation[k] := - 1
         this.FavoriteFormations[favorite] := formation.Clone()
-        this.LastFormationSavesVersion[formation] := version                            
+        this.LastFormationSavesVersion[favorite] := version                            
         return formation
     }
 }

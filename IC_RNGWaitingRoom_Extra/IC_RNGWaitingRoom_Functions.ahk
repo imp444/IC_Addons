@@ -101,6 +101,7 @@ class IC_RNGWaitingRoom_Functions
                     if (!shouldRedraw)
                         this.SetStatus("Waiting for card #" . (numCards + 1))
                 }
+                ; (Not waiting) has full hand and does not allow redraws - or - (Not waiting) Redraws > 0 - or - (Waiting) has full hand with no redraws left
                 else if (!this.WaitForAllCards && numCards == 5 && this.Redraws == 0 || !this.WaitForAllCards && this.Redraws || this.WaitForAllCards && numCards == 5 && !this.RedrawsLeft)
                 {
                     this.WaitedForEllywickThisRun := true
@@ -344,7 +345,7 @@ class IC_RNGWaitingRoom_Functions
             return num
         }
     }
-    
+
     GetFavoriteFormationSlot(key)
     {
         key := Trim(key, "{}")

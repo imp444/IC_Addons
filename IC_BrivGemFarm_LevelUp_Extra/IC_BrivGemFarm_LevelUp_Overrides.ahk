@@ -223,8 +223,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (forceBrivShandie)
         {
             champIDs := [ Briv := 58
-                        , Ellywick := 83 
-                        , Widdle := 91]
+                        , Ellywick := 83 ]
         }
         else
         {

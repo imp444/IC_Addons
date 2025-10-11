@@ -57,7 +57,6 @@ class IC_RNGWaitingRoom_Functions
         {
             fncToCallOnTimer := this.LoopTimer
             SetTimer, %fncToCallOnTimer%, 200, 0
-            this.MainLoop()
         }
 
         Stop()
@@ -102,7 +101,7 @@ class IC_RNGWaitingRoom_Functions
                         this.SetStatus("Waiting for card #" . (numCards + 1))
                 }
                 ; (Not waiting) has full hand and does not allow redraws - or - (Not waiting) Redraws > 0 - or - (Waiting) has full hand with no redraws left
-                else if (!this.WaitForAllCards && numCards == 5 && this.Redraws == 0 || !this.WaitForAllCards && this.Redraws || this.WaitForAllCards && numCards == 5 && !this.RedrawsLeft)
+                else if ((!this.WaitForAllCards && numCards == 5 && this.Redraws == 0) || (!this.WaitForAllCards && this.Redraws) || (this.WaitForAllCards && numCards == 5 && !this.RedrawsLeft))
                 {
                     this.WaitedForEllywickThisRun := true
                     success := this.IsSuccess()

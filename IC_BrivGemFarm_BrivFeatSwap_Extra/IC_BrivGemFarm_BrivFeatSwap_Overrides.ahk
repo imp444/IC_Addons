@@ -59,6 +59,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
             this.DoSwitchFormation(2)
             return
         }
+        ; Switch if still in modron formation.
+        else if (!g_SF.FormationLock AND this.IsCurrentFormation(g_SF.Memory.GetActiveModronFormation()))
+        {   ; Q OR E depending on route.
+            if (this.UnBenchBrivConditions(this.Settings))
+                this.DoSwitchFormation(1) 
+            else if (this.BenchBrivConditions(this.Settings))
+                this.DoSwitchFormation(3)
+        }
     }
 
     ; Switch formation to opposite (Q<-->E) based on favorite, or (W-->Q/E) based o nzone.

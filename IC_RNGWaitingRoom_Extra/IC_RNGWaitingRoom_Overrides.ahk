@@ -105,7 +105,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
                 g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
                 this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
                 numMelee := g_SF.Memory.ReadNumAttackingMonstersReached()
-                if (numMelee >= 1 || numMelee + g_SF.Memory.ReadNumRangedAttackingMonsters() >= 15)
+                if (g_SF.Memory.ReadNumAttackingMonstersReached() >= 1)
                     g_BrivGemFarm.BGFLU_DoPartySetupMax()
                 else
                     g_BrivGemFarm.BGFLU_DoPartySetupMin()

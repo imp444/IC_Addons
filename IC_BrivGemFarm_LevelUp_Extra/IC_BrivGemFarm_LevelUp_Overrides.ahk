@@ -347,6 +347,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Sentry := 52
                         , Nahara := 102
                         , BBEG  := 125
+                        , Imoen := 117
                         , Dhani := 89
                         , Kent := 114
                         , Gazrick := 98
@@ -355,6 +356,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Vi := 95
                         , Havilar := 56
                         , Shandie := 47
+                        , Minsc := 7
                         , Thellora := 139 ]
         levelupx10 := {} ; Not implemented yet
         levelupx25 := {}

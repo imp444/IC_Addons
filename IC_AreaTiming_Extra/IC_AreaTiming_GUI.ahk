@@ -209,10 +209,10 @@ StacksAreaTimingView()
 ; Resize window to trigger automatic resize
 AT_RefreshSize()
 {
-    Gui, ICScriptHub:Show, % "w" . g_TabControlWidth . " h" . (g_TabControlHeight + 1)
+    Gui, ICScriptHub:Show, % "w" . g_TabControlWidth . " h" . (g_TabControlHeight + 1) . " NA"
     Sleep, 100
     g_AreaTimingGui.DoResizeEvent()
-    Gui, ICScriptHub:Show, % "w" . g_TabControlWidth . " h" . (g_TabControlHeight)
+    Gui, ICScriptHub:Show, % "w" . g_TabControlWidth . " h" . (g_TabControlHeight) . " NA"
 }
 
 ; Undo last operation

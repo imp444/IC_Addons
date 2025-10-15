@@ -234,7 +234,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Tatyana := 97
                         , Melf := 59
                         , Dynaheir := 145
-                        , Diana := 14
+                        , Diana := 148
                         , Laezel  := 128
                         , Deekin := 28
                         , Virgil := 115
@@ -340,7 +340,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Tatyana := 97
                         , Melf := 59
                         , Dynaheir := 145
-                        , Diana := 14
+                        , Diana := 148
                         , Laezel  := 128
                         , Deekin := 28
                         , Virgil := 115

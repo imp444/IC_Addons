@@ -394,7 +394,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         return false
                 }
         ; Now do x25 levelling.
-        if (this.ArrSize(levelupx25) > 0)
+        if (g_SF.ArrSize(levelupx25) > 0)
         {
             levelBriv := false
             this.ToggleControl(true) ; To go back to x10 - change to ToggleShift
@@ -475,18 +475,6 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         return g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[seat - 1].hero.def.ID.Read()
     }
     
-    ArrSize(arr)
-    {
-        if (IsObject(arr))
-        {
-            CDP_currArrSize := arr.MaxIndex()
-            if (CDP_currArrSize == "")
-                return 0
-            return CDP_currArrSize
-        }
-        return 0
-    }
-
     /*  BGFLU_DoPartySetupFailedConversion - Level up all champs to soft cap after a failed conversion.
         If the setting LevelToSoftCapFailedConversionBriv is set to true, also level Briv.
 

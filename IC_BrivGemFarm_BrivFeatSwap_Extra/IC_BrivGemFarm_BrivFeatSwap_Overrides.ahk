@@ -73,11 +73,21 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
     DoSwitchFormation(toFavorite := 1)
     {
         static lastZone
-
         currentZone := this.Memory.ReadCurrentZone()
+        this.DoSwitchFormationInput(toFavorite)
+        Sleep, 32 ; Give formation time to switch
+        if (toFavorite == this.Memory.ReadMostRecentFormationFavorite())
+            lastZone := currentZone, return
         if (currentZone != 1 AND currentZone != lastZone AND ((attackingMon := this.Memory.ReadNumAttackingMonstersReached()) >= 10 || (attackingRangedMon := this.Memory.ReadNumRangedAttackingMonsters())))
             this.FallBackFromZone(2000)
+        this.DoSwitchFormationInput(toFavorite)
         lastZone := currentZone            
+        Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
+        g_SharedData.BGFBFS_UpdateSkipAmount(toFavorite)
+    }
+
+    DoSwitchFormationInput(toFavorite := 1)
+    {
         if(toFavorite == 1)
             base.DirectedInput(,,["{q}"]*)
         else if (toFavorite == 2)
@@ -90,8 +100,6 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         }
         else if (toFavorite == 3)
             base.DirectedInput(,,["{e}"]*)
-        Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
-        g_SharedData.BGFBFS_UpdateSkipAmount(toFavorite)
     }
 
     ; If Briv has enough stacks to jump, don't force switch to e and wait for the boss to be killed.

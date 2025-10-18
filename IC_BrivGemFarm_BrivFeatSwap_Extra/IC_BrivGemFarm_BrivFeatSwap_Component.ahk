@@ -33,6 +33,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     Settings := ""
     TimerFunctions := ""
     CurrentPath := ""
+    UpdateFeatSwapDisabled := False
 
     Init()
     {
@@ -72,7 +73,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         this.TimerFunctions := {}
         fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
-        this.TimerFunctions[fncToCallOnTimer] := 100
+        this.TimerFunctions[fncToCallOnTimer] := 185
     }
 
     Start()
@@ -95,7 +96,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Update the GUI, try to read Q/W/E skip amounts
     UpdateStatus()
     {
-        this.UpdateDetectedSkipAmount()
+        statusStart := A_TickCount
+        if (this.UpdateFeatSwapDisabled)
+            return
+        this.UpdateFeatSwapDisabled := True
+        this.UpdateDetectedSkipAmount()	
         this.GetModronResetArea()
         try ; avoid thrown errors when comobject is not available.
         {
@@ -122,6 +127,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         {
             GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Waiting for Gem Farm to start
         }
+        statusStop := (A_TickCount - statusStart) / 1000
+        this.UpdateFeatSwapDisabled := False
     }
 
     ; Returns true is the game is open.
@@ -155,9 +162,12 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             skipValues := IC_BrivGemFarm_Class.BrivFunctions.GetBrivSkipValues()
             skipAmount := skipValues[1]
             skipChance := skipValues[2] * 100
-            noUpdate := skipAmount == this.DetectedSkipAmount && skipChance == this.DetectedSkipChance
+            ; Only update if values changed
+            noUpdate := skipAmount == lastSkipAmount && skipChance == lastSkipChance
             if (g_BrivFeatSwapGui.ToolTipAdded && noUpdate)
                 return
+            lastSkipAmount := skipAmount
+            lastSkipChance := skipChance
             this.DetectedSkipAmount := skipAmount
             this.DetectedSkipChance := skipChance
             GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
@@ -409,6 +419,12 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Parameters: - resetArea:int - Actual zone where the run is reset.
     UpdatePath(resetArea := "")
     {
+        static lastResetArea := ""
+        static lastMod50Values := ""
+        static lastTargetQ := ""
+        static lastTargetE := ""
+        static lastBrivMinLevel := ""
+        static lastBrivMetalborn := ""
         mod50Values := this.GetPreferredAdvancedSettings(, true)
         GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
         GuiControlGet, targetE, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE
@@ -417,6 +433,18 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         if (resetArea == "")
         {
             resetArea := this.DetectedResetArea
+            ; Check if anything changed before recalculating
+            mod50String := ""
+            for k, v in mod50Values
+                mod50String .= v
+            if (resetArea == lastResetArea && mod50String == lastMod50Values && targetQ == lastTargetQ && targetE == lastTargetE && brivMinLevelArea == lastBrivMinLevel && brivMetalbornArea == lastBrivMetalborn)
+                return ; Nothing changed, skip recalculation
+            lastResetArea := resetArea
+            lastMod50Values := mod50String
+            lastTargetQ := targetQ
+            lastTargetE := targetE
+            lastBrivMinLevel := brivMinLevelArea
+            lastBrivMetalborn := brivMetalbornArea
             path := this.Calcpath(mod50Values, resetArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
             choices := ""
             for k, v in path.path

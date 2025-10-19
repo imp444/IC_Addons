@@ -1,3 +1,9 @@
+October 19, 2025
+    - Many fixes/changes to work with BrivGemFarm 4.4.3
+    - Updated to use BrivGemFarm's PredictStacks function.
+    - Added Emmote's incremental leveling code.
+    - Updated StackNormal to allow ignoring the melf check for cases such as a forced restart.
+    
 December 12, 2024 - v1.1.5
     - Stacks prediction handles the "Accurate Acrobatics" Briv feat that rounds down his jump amount.
     - Briv stacks gained while clearing the zone before stacking and setting up the stack formation are counted when stacks prediction is on.

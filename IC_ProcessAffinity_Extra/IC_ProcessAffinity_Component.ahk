@@ -119,7 +119,7 @@ Class IC_ProcessAffinity_Component
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            if (!SharedRunData.ProcessAffinityRunning)
+            if (!SharedRunData.ProcessAffinityRunning())
             {
                 this.Stop()
                 GuiControl, ICScriptHub:Show, ProcessAffinityStatusWarning

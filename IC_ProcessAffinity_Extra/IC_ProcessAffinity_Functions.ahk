@@ -84,10 +84,9 @@ class IC_ProcessAffinity_Functions
     }
 }
 
-; Overrides IC_BrivSharedFunctions_Class, check for compatibility
-class IC_ProcessAffinity_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
+class IC_ProcessAffinity_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
-    ; Set affinity after restart
+    ; Set affinity after restart ; (Added but uses base - needs extends)
     OpenProcessAndSetPID(timeoutLeft := 32000)
     {
         base.OpenProcessAndSetPID(timeoutLeft)
@@ -103,7 +102,7 @@ class IC_ProcessAffinity_SharedFunctions_Class extends IC_BrivSharedFunctions_Cl
 }
 
 ; Overrides IC_SharedData_Class, check for compatibility
-class IC_ProcessAffinity_SharedData_Class extends IC_SharedData_Class
+class IC_ProcessAffinity_SharedData_Added_Class ; Added to IC_SharedData_Class
 {
     ; Save new affinity
     ProcessAffinity_UpdateAffinity(affinity := 0)

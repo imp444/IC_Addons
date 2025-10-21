@@ -84,6 +84,8 @@ class IC_ProcessAffinity_Functions
     }
 }
 
+; Overrides IC_SharedFunctions_Class.OpenProcessAndSetPID()
+; Overrides IC_SharedFunctions_Class.VerifyAdventureLoaded()
 class IC_ProcessAffinity_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
     ; Set affinity after restart ; (Added but uses base - needs extends)
@@ -101,7 +103,6 @@ class IC_ProcessAffinity_SharedFunctions_Class extends IC_SharedFunctions_Class
     }
 }
 
-; Overrides IC_SharedData_Class, check for compatibility
 class IC_ProcessAffinity_SharedData_Added_Class ; Added to IC_SharedData_Class
 {
     ; Save new affinity

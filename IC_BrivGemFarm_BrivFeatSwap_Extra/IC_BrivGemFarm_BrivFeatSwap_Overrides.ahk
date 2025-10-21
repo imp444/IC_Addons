@@ -25,6 +25,7 @@ class IC_BrivGemFarm_BrivFeatSwap_Class extends IC_BrivGemFarm_Class
 ; Overrides IC_BrivSharedFunctions_Class.KillCurrentBoss()
 class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
+    static modronSwapAttempts := 0
     ; a method to swap formations and cancel briv's jump animation.
     SetFormation(settings := "", forceCheck := False)
     {
@@ -55,18 +56,28 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         else
             isFormation2 := this.Memory.ReadMostRecentFormationFavorite() == 2 ; (watch for fix for changing on failed swap)
         ; check to swap briv from favorite 2 to another (W to Q or E)
-        if (isFormation2){
-            this.DoSwitchFormation(2)
+        if (isFormation2 AND isWalkZone)
+        {
+            this.DirectedInput(,,["{e}"]*)
+            return
+        }
+        ; check to swap briv from favorite 2 to favorite 1 (W to Q)
+        else if (isFormation2 AND !isWalkZone)
+        {
+            this.DirectedInput(,,["{q}"]*)
             return
         }
         ; Switch if still in modron formation.
-        else if (!g_SF.FormationLock AND this.IsCurrentFormation(g_SF.Memory.GetActiveModronFormation()))
-        {   ; Q OR E depending on route.
+        else if (!g_SF.FormationLock AND g_BrivGemFarm.IsInModronFormation){
+        
+              ; Q OR E depending on route.
             if (this.UnBenchBrivConditions(this.Settings))
                 this.DoSwitchFormation(1) 
             else if (this.BenchBrivConditions(this.Settings))
                 this.DoSwitchFormation(3)
         }
+        if(g_BrivGemFarm.IsInModronFormation AND !this.IsCurrentFormation(g_SF.Memory.GetActiveModronFormation()))
+            g_BrivGemFarm.IsInModronFormation := False
     }
 
     ; Switch formation to opposite (Q<-->E) based on favorite, or (W-->Q/E) based o nzone.

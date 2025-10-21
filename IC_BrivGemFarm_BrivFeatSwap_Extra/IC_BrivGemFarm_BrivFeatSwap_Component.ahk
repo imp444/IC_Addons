@@ -458,7 +458,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
         else
             path := this.Calcpath(mod50Values, resetArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
-        this.CurrentPath := path
+        this.CurrentPath := path.Clone()
         GuiControlGet, runs, ICScriptHub:, BGFBFS_Runs
         ; Update text controls
         a := runs * path.noMetalbornJumps

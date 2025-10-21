@@ -33,6 +33,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     Settings := ""
     TimerFunctions := ""
     CurrentPath := ""
+    UpdateFeatSwapDisabled := False
 
     Init()
     {
@@ -45,12 +46,9 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         {
             if (!settings.HasKey("Enabled"))
                 settings.Enabled := true
-            if (!settings.HasKey("MouseClick"))
-                settings.MouseClick := false
             GuiControl, ICScriptHub:, BGFBFS_Enabled, % settings.Enabled
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ, % settings.targetQ
             GuiControl, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE, % settings.targetE
-            GuiControl, ICScriptHub:, BGFBFS_MouseClick, % settings.MouseClick
             ; Fix preset settings from version v1.2.0
             settings.Preset == "5J/4J" ? settings.Preset := "5J/4J Tall Tales" : ""
             settings.Preset == "8J/4J" ? settings.Preset := "8J/4J Tall Tales" : ""
@@ -75,15 +73,13 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     {
         this.TimerFunctions := {}
         fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
-        this.TimerFunctions[fncToCallOnTimer] := 1000
+        this.TimerFunctions[fncToCallOnTimer] := 185
     }
 
     Start()
     {
         for k,v in this.TimerFunctions
-        {
             SetTimer, %k%, %v%, 0
-        }
     }
 
     Stop()
@@ -100,7 +96,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Update the GUI, try to read Q/W/E skip amounts
     UpdateStatus()
     {
-        this.UpdateDetectedSkipAmount()
+        statusStart := A_TickCount
+        if (this.UpdateFeatSwapDisabled)
+            return
+        this.UpdateFeatSwapDisabled := True
+        this.UpdateDetectedSkipAmount()	
         this.GetModronResetArea()
         try ; avoid thrown errors when comobject is not available.
         {
@@ -123,10 +123,12 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             else
                 GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Disabled
         }
-        catch
+        catch err
         {
             GuiControl, ICScriptHub:Text, BGFBFS_StatusText, Waiting for Gem Farm to start
         }
+        statusStop := (A_TickCount - statusStart) / 1000
+        this.UpdateFeatSwapDisabled := False
     }
 
     ; Returns true is the game is open.
@@ -157,12 +159,15 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         if (this.GameIsReady())
         {
             this.GetModronResetArea()
-            skipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivSkipValues()
+            skipValues := IC_BrivGemFarm_Class.BrivFunctions.GetBrivSkipValues()
             skipAmount := skipValues[1]
             skipChance := skipValues[2] * 100
-            noUpdate := skipAmount == this.DetectedSkipAmount && skipChance == this.DetectedSkipChance
+            ; Only update if values changed
+            noUpdate := skipAmount == lastSkipAmount && skipChance == lastSkipChance
             if (g_BrivFeatSwapGui.ToolTipAdded && noUpdate)
                 return
+            lastSkipAmount := skipAmount
+            lastSkipChance := skipChance
             this.DetectedSkipAmount := skipAmount
             this.DetectedSkipChance := skipChance
             GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
@@ -187,8 +192,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         settings := this.Settings
         GuiControlGet, enabled, ICScriptHub:, BGFBFS_Enabled
         settings.Enabled := enabled
-        GuiControlGet, mouseClick, ICScriptHub:, BGFBFS_MouseClick
-        settings.MouseClick := mouseClick
         settings.Preset := this.GetPresetName()
         this.SaveMod50Preset()
         if (IsObject(g_BrivGemFarm_LevelUp))
@@ -328,7 +331,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     UpdatePresetWarning(targetQ)
     {
         controlID := "BGFBFS_PresetWarningText"
-        targetSkipValues := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivSkipConfig(1, true).AvailableJumps
+        targetSkipValues := IC_BrivGemFarm_Class.BrivFunctions.GetBrivSkipConfig(1, true).AvailableJumps
         if ((detectedChance := this.DetectedSkipChance) != "" && detectedChance != 100)
         {
             preset := this.GetPresetName()
@@ -337,7 +340,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             else
             {
                 warningText := "WARNING: Briv not at 100" . "%" . " skip chance."
-                loot := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivLoot()
+                loot := IC_BrivGemFarm_Class.BrivFunctions.GetBrivLoot()
                 if (loot.gild == 1)
                     warningText .= "`n(Shiny can't get perfect jump for even skip values)"
             }
@@ -416,6 +419,12 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
     ; Parameters: - resetArea:int - Actual zone where the run is reset.
     UpdatePath(resetArea := "")
     {
+        static lastResetArea := ""
+        static lastMod50Values := ""
+        static lastTargetQ := ""
+        static lastTargetE := ""
+        static lastBrivMinLevel := ""
+        static lastBrivMetalborn := ""
         mod50Values := this.GetPreferredAdvancedSettings(, true)
         GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
         GuiControlGet, targetE, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetE
@@ -424,6 +433,18 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         if (resetArea == "")
         {
             resetArea := this.DetectedResetArea
+            ; Check if anything changed before recalculating
+            mod50String := ""
+            for k, v in mod50Values
+                mod50String .= v
+            if (resetArea == lastResetArea && mod50String == lastMod50Values && targetQ == lastTargetQ && targetE == lastTargetE && brivMinLevelArea == lastBrivMinLevel && brivMetalbornArea == lastBrivMetalborn)
+                return ; Nothing changed, skip recalculation
+            lastResetArea := resetArea
+            lastMod50Values := mod50String
+            lastTargetQ := targetQ
+            lastTargetE := targetE
+            lastBrivMinLevel := brivMinLevelArea
+            lastBrivMetalborn := brivMetalbornArea
             path := this.Calcpath(mod50Values, resetArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
             choices := ""
             for k, v in path.path
@@ -636,25 +657,4 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
         return currentArea
     }
-
-    ; Enables/disables mouse clicks.
-    ; Can only be turned on when this addon's tab is active.
-    ToggleClicks()
-    {
-        GuiControlGet, currentTab, ICScriptHub:, ModronTabControl, Tab
-        activeTab := (currentTab == "Briv Feat Swap") && WinActive("IC Script Hub")
-        mouseClick := this.Settings.MouseClick
-        if ((!mouseClick && activeTab) || mouseClick)
-        {
-            GuiControl, ICScriptHub:, BGFBFS_MouseClick, % !mouseClick
-            BrivGemFarm_BrivFeatSwap_Save()
-        }
-    }
-}
-
-Hotkey, ^!x, BGFBFS_ToggleClicks
-
-BGFBFS_ToggleClicks()
-{
-    g_BrivFeatSwap.ToggleClicks()
 }

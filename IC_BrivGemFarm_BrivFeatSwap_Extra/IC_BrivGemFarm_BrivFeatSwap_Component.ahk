@@ -163,11 +163,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             skipAmount := skipValues[1]
             skipChance := skipValues[2] * 100
             ; Only update if values changed
-            noUpdate := skipAmount == lastSkipAmount && skipChance == lastSkipChance
+            noUpdate := skipAmount == this.LastSkipAmount && skipChance == this.LastSkipChance
             if (g_BrivFeatSwapGui.ToolTipAdded && noUpdate)
                 return
-            lastSkipAmount := skipAmount
-            lastSkipChance := skipChance
+            this.LastSkipAmount := skipAmount
+            this.LastSkipChance := skipChance
             this.DetectedSkipAmount := skipAmount
             this.DetectedSkipChance := skipChance
             GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ

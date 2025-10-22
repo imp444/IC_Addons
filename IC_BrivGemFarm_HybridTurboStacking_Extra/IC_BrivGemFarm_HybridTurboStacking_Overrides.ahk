@@ -102,8 +102,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
         ; Just restart the game when hybrid turbo, don't wait
         g_SF.ToggleAutoProgress( 0 )
-        g_SF.CloseIC( "FORT Restart" )
-        g_SF.SafetyCheck()
+        if(g_SharedData.TotalRunsCount > 0)
+            g_SF.CloseIC( "FORT Restart" )
+        g_SF.SafetyCheck(stackRestart := True)
         g_SF.AlreadyOfflineStackedThisRun := True
     }
 

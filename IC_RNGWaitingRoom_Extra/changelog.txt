@@ -1,3 +1,7 @@
+October 22, 2025
+    - Changed update URL to Anti's for now.
+    - Changed Ellywait to run SetupMax instead of SetupMin as last step before progressing.
+
 October 19, 2025
     - Many fixes/changes to work with BrivGemFarm 4.4.3
     - Fixed LastStackSuccessArea not working properly.

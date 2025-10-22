@@ -5,6 +5,7 @@
 ; Overrides IC_BrivGemFarm_Class.StackFarmSetup()
 class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 {
+    Levelupx25 := {}
     ;=====================================================
     ;Primary Functions for Briv Gem Farm
     ;=====================================================
@@ -44,7 +45,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     {
         needToStack := this.BGFLU_NeedToStack()
         ; Level up Briv to MaxLevel after stacking
-        if (!needToStack AND g_SF.Memory.ReadChampLvlByID(ActiveEffectKeySharedFunctions.Briv.HeroID) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
+        if (!needToStack AND g_SF.Memory.ReadChampLvlByID(ActiveEffectKeySharedFunctions.Briv.HeroID) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[ActiveEffectKeySharedFunctions.Briv.HeroID])
             this.SetupMaxDone := false
         ; Check for failed stack conversion
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
@@ -235,12 +236,13 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Melf := 59
                         , Dynaheir := 145
                         , Diana := 148
+                        , BBEG  := 125
+                        , Dungeon Master := 99
                         , Laezel  := 128
                         , Deekin := 28
                         , Virgil := 115
                         , Sentry := 52
                         , Nahara := 102
-                        , BBEG  := 125
                         , Dhani := 89
                         , Kent := 114
                         , Gazrick := 98
@@ -341,13 +343,14 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Melf := 59
                         , Dynaheir := 145
                         , Diana := 148
+                        , BBEG  := 125
+                        , Dungeon Master := 99
+                        , Imoen := 117
                         , Laezel  := 128
                         , Deekin := 28
                         , Virgil := 115
                         , Sentry := 52
                         , Nahara := 102
-                        , BBEG  := 125
-                        , Imoen := 117
                         , Dhani := 89
                         , Kent := 114
                         , Gazrick := 98
@@ -358,8 +361,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Shandie := 47
                         , Minsc := 7
                         , Thellora := 139 ]
-        levelupx10 := {} ; Not implemented yet
-        levelupx25 := {}
+        this.ExitMethod := False
         levelBriv := true ; Return value
         if (!formation)
             formation := g_SF.GetInitialFormation()
@@ -370,8 +372,6 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             levelBriv := false
             if (this.BGFLU_AllowBrivLeveling()) ; Level Briv to be able to skip areas
                 this.BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivShandie := True) ; this.BGFLU_DoPartySetupMin(true)
-            else
-                levelBriv := false
         }
         ; Speed champions are leveled up first (without Briv)
         ; If low favor mode is active, cheapeast upgrade first
@@ -379,26 +379,45 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
         else
             for k, champID in champIDs
-                ;if (g_SF.IsChampInFormation(champID, formation) AND this.BGFLU_LevelUpChamp(champID, this.BGFLU_GetTargetLevel(champID)))
-                    ;return false
                 if (g_SF.IsChampInFormation(champID, formation))
                 {
-                    targetLevel := this.BGFLU_GetTargetLevel(champID)
-                    targetLevelMod := Mod(this.BGFLU_GetTargetLevel(champID), 100)
-                    if (targetLevelMod > 0 && this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
-                    {
-                        levelupx25[champId] := targetLevel
-                        targetLevel := targetLevel - targetLevelMod
-                    }
+                    targetLevel := this.CalculateTargetLevel(champID)
                     if (champID == this.SelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && this.BGFLU_LevelUpChamp(champID, targetLevel))
                         return false
                 }
         ; Now do x25 levelling.
-        if (g_SF.ArrSize(levelupx25) > 0)
+        levelBriv := this.DoX25Leveling()
+        if(this.ExitMethod)  
+            return false
+        ; Complete leveling
+        for k, champID in formation
+        {
+            if (champID != this.SelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)))
+                continue
+            targetLevel := this.CalculateTargetLevel(champID)
+            ; Briv
+            if (champID == 58 AND !levelBriv)
+                continue
+            if (champID == 58 AND this.BGFLU_NeedToStack())
+                targetLevel := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" . (g_BrivGemFarm.ShouldOfflineStack() ? "" : "Online") ]
+            if (this.BGFLU_LevelUpChamp(champID, targetLevel))
+                return false
+        }
+        levelBriv := this.DoX25Leveling()
+        if(this.ExitMethod)  
+            return false
+        if (levelBriv)
+            g_SharedData.BGFLU_SetStatus("All champions leveled up.")
+        return g_SF.ArrSize(this.Levelupx25) == 0 AND levelBriv
+    }
+
+    DoX25Leveling()
+    {
+        if (g_SF.ArrSize(this.Levelupx25) > 0)
         {
             levelBriv := false
             this.ToggleControl(true) ; To go back to x10 - change to ToggleShift
-            for champID, targetLevel in levelupx25
+            for champID, targetLevel in this.Levelupx25
             {
                 champSeat := g_SF.Memory.ReadChampSeatByID(champID)
                 champIDInSeat := this.SelectedChampIDBySeat(champSeat)
@@ -407,45 +426,30 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 if (this.BGFLU_LevelUpChamp(champID, targetLevel))
                 {
                     this.ToggleControl()
-                    return false
+                    this.Levelupx25.delete(champID)
+                    this.ExitMethod := True
+                    return levelBriv
                 }
             }
             this.ToggleControl()
         }
         else
-            levelBriv := true                    
-        ; Complete leveling
-        for k, champID in formation
-        {
-            champSeat := g_SF.Memory.ReadChampSeatByID(champID)
-            champIDInSeat := this.SelectedChampIDBySeat(champSeat)
-            if (champID != champIDInSeat)
-                continue
+            levelBriv := true
+        return levelBriv
+    }
+
+    CalculateTargetLevel(champID)
+    {
             targetLevel := this.BGFLU_GetTargetLevel(champID)
             targetLevelMod := Mod(targetLevel, 100)
             if (targetLevelMod > 0 && this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
             {
-                levelupx25[champId] := targetLevel
+                this.Levelupx25[champID] := targetLevel
                 targetLevel := targetLevel - targetLevelMod
             }
-            ; Briv
-            if (champID == 58)
-            {
-                if (!levelBriv)
-                    continue
-                ; Level up Briv to BrivMinLevelStacking before stacking
-                if (this.BGFLU_NeedToStack())
-                    targetLevel := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" . (g_BrivGemFarm.ShouldOfflineStack() ? "" : "Online") ]
-            }
-            if (this.BGFLU_LevelUpChamp(champID, targetLevel))
-                return false
-        }
-        if (levelBriv)
-            g_SharedData.BGFLU_SetStatus("All champions leveled up.")
-        return levelBriv
+            return targetLevel
     }
 
-        
     ToggleShift(shiftKeyDown := false)
     {
         g_SF.DirectedInput(shiftKeyDown ? 1 : 0, shiftKeyDown ? 0 : 1, "{Shift}")
@@ -625,8 +629,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
     BGFLU_LevelUpChamp(champID, target)
     {
-        if (champID == 165 AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to leveling until after rush and ellywait
-            return
+        if ((champID == (baldric := 165)) AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to leveling until after rush and ellywait
+            return true
         if (this.BGFLU_ChampUnderTargetLevel(champID, target))
         {
             ; Level up a single champion once

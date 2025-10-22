@@ -1,9 +1,9 @@
 {
 	"Name":"RNG Waiting Room",
-	"Version": "v0.2.5",
+	"Version": "v0.2.6",
     "Includes" : "IC_RNGWaitingRoom_Includes.ahk",
     "Author" : "ImpEGamer",
-    "Url" : "https://github.com/imp444/IC_Addons/tree/main/IC_RNGWaitingRoom_Extra",
+    "Url" : "https://github.com/antilectual/IC_Addons-1/tree/Anti-Changes/IC_RNGWaitingRoom_Extra",
     "Info" : "This Addon does things with RNG abilities.",
     "Dependencies" : [
         {

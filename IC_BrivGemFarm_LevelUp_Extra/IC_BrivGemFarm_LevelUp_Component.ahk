@@ -3,6 +3,9 @@
 #include %A_LineFile%\..\Data\Loader\IC_BrivGemFarm_LevelUp_HeroDefinesLoader.ahk
 #include %A_LineFile%\..\Data\IC_BrivGemFarm_LevelUp_HeroDefinesData.ahk
 
+
+SH_UpdateClass.AddClassFunctions(g_SharedData, IC_BrivGemFarm_LevelUp_IC_SharedData_Added_Class)
+
 ; Test to see if BrivGemFarm addon is avaialbe.
 if(IsObject(IC_BrivGemFarm_Component))
     IC_BrivGemFarm_LevelUp_Functions.InjectAddon()
@@ -403,7 +406,7 @@ Class IC_BrivGemFarm_LevelUp_Component
     ; Returns a list of champIDs from the current selected champions
     GetFormationFromGUI()
     {
-        formation := []
+        formation := {}
         Loop, 12
             if (IsObject(heroData := IC_BrivGemFarm_LevelUp_Seat.Seats[A_Index].GetCurrentHeroData()))
                 formation.Push(heroData.id)

@@ -1,3 +1,13 @@
+October 19, 2025
+    - Many fixes/changes to work with BrivGemFarm 4.4.3
+    - Removed StackFarmSetup (should be unnecessary) and removed all click related code from BrivFeatSwap.
+    - Added 100 levels to click damage per area after z1000 so higher zones don't fall behind on click damage.
+    - Added Emmote's LevelUpx25 edit.
+    - Added more concurrent keyspam ability.
+    - Fixed a recursion issue.
+    - Tests to keep Baldric from joining until after Ellywait.
+    - Force Briv/Shandie now forces Briv/Ellywick.
+
 November 27, 2024 - v1.3.7
     - While setting up the stack formation, the party automatically falls back one zone if it is under attack and can't swap to W.
 

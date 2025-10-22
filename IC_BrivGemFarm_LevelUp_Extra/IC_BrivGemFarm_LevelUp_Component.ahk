@@ -285,7 +285,7 @@ Class IC_BrivGemFarm_LevelUp_Component
     {
         settings := {}
         settings.ShowSpoilers := false
-        settings.ForceBrivShandie := false
+        settings.ForceBrivShandie := True
         settings.SkipMinDashWait := false
         settings.MaxSimultaneousInputs := 4
         settings.MinLevelInputDelay := 60

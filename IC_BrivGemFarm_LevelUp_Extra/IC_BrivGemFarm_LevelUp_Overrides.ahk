@@ -744,6 +744,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
     ; Does once per zone tasks like pressing leveling keys
     InitZone( spam )
     {
+        global g_PreviousZoneStartTime
         Critical, On
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
         {

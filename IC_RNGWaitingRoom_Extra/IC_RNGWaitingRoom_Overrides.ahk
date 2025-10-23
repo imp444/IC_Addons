@@ -120,6 +120,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
         g_SharedData.RNGWR_FirstRun := false
         this.FormationLock := False
         g_BrivGemFarm.BGFLU_DoPartySetupMax()
+        g_PreviousZoneStartTime := A_TickCount
     }
 }
 

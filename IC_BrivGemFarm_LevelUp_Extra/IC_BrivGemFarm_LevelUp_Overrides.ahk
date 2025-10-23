@@ -776,7 +776,6 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivShare
     }
 
     ; LevelUp click damage.
-    ; Depending on the <NoCtrlKeypress> setting, uses either in-game settings or x100.
     ; Params: numClicks:int - Number of clicks on level click damage.
     ;                         If set to 0, levels up to clickLevel.
     ;         clickLevel:int - If set at higher than 0, click damage is leveled up to this value.
@@ -813,23 +812,14 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivShare
     }
 
     ; Level up click damage.
-    ; Depending on the <NoCtrlKeypress> setting, uses either in-game settings or x100.
     ; Params: numClicks:int - Number of clicks on level click damage.
     BGFLU_LevelClickDamage(numClicks := 1)
     {
         Critical, On
         Loop, % numClicks
         {
-            if(g_UserSettings[ "NoCtrlKeypress" ])
-            {
-                this.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
-                this.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
-            }
-            else
-            {
-                this.DirectedInput(,release := 0, ["{RCtrl}","{ClickDmg}"]*) ;keysdown
-                this.DirectedInput(hold := 0,, ["{ClickDmg}","{RCtrl}"]*) ;keysup
-            }
+            this.DirectedInput(,release := 0, "{ClickDmg}") ;keysdown
+            this.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
         }
         Critical, Off
     }
@@ -838,10 +828,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivShare
     BGFLU_StopSpamClickDamage()
     {
         Critical, On
-        if (g_UserSettings[ "NoCtrlKeypress" ])
-            this.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
-        else
-            this.DirectedInput(hold := 0,, ["{ClickDmg}","{RCtrl}"]*) ;keysup
+        this.DirectedInput(hold := 0,, "{ClickDmg}") ;keysup
         Critical, Off
     }
 

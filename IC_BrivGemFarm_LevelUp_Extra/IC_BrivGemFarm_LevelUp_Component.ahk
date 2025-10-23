@@ -343,6 +343,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[100] := 0, maxLevels[100] := 90 ; Nordom
         minLevels[118] := 0, maxLevels[118] := 60 ; Fen
         minLevels[83] := 200, maxLevels[83] := 200 ; Ellywick
+        minLevels[99] := 200, maxLevels[99] := 200 ; Dungeon Master
         settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
         return settings
     }

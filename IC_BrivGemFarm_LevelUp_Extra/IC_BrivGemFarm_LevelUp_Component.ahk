@@ -554,7 +554,7 @@ Class IC_BrivGemFarm_LevelUp_Component
                 return savedFormations.W
             Case 3:
                 return savedFormations.E
-            Case 3:
+            Case 4:
                 return savedFormations.M
             Default:
                 return formation

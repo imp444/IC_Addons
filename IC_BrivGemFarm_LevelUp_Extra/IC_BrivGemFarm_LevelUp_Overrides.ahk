@@ -919,7 +919,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Added_Class ; Added to IC_SharedData_
     ; Save full Q,W,E formations to BrivGemFarm_LevelUp_Settings.json
     BGFLU_SaveFormations()
     {
-        static formationsFromIndex := {1: "Q", 2: "W", 3: "E"}
+        static formationsFromIndex := {1: "Q", 2: "W", 3: "E", 4: "M"}
         static lastFormations := ""
         static lastFormationsNotSaved := true
 
@@ -940,9 +940,12 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Added_Class ; Added to IC_SharedData_
             lastFormations := {}
         if (!save) ; Compare the last known formation to the current in-game formation, then current formation to saved formation
         {
-            Loop, 3
+            Loop, 4
             {
-                currentFormation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(A_Index), true) ; without empty slots
+                if(A_Index == 4)
+                    currentFormation := g_SF.Memory.GetActiveModronFormation()
+                else
+                    currentFormation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(A_Index), true) ; without empty slots
                 lastFormation := lastFormations[formationsFromIndex[A_Index]]
                 if (!IC_BrivGemFarm_LevelUp_Functions.AreObjectsEqual(currentFormation, lastFormation))
                 {
@@ -967,6 +970,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Added_Class ; Added to IC_SharedData_
             savedFormations.Q := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(1), true)
             savedFormations.W := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(2), true)
             savedFormations.E := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(3), true)
+            savedFormations.M := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetActiveModronFormationSaveSlot(), true)
             settings["SavedFormations"] := savedFormations
             g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Functions.SettingsPath, settings)
         }

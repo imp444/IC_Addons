@@ -539,7 +539,11 @@ Class IC_BrivGemFarm_LevelUp_Component
             if (ErrorLevel)
             {
                 g_SF.Memory.OpenProcessReader()
-                return g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formation), true) ; without empty slots
+                if(formation == 4)
+                    currFormation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetActiveModronFormationSaveSlot(), true) ; without empty slots
+                else
+                    currFormation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formation), true) ; without empty slots
+                return currFormation
             }
         }
         Switch formation
@@ -550,6 +554,8 @@ Class IC_BrivGemFarm_LevelUp_Component
                 return savedFormations.W
             Case 3:
                 return savedFormations.E
+            Case 3:
+                return savedFormations.M
             Default:
                 return formation
         }

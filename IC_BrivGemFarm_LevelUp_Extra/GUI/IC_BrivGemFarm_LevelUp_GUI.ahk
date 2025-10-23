@@ -115,7 +115,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
         Loop, 12
             this.AddSeat(A_Index, group, posW)
         group.AddControl("BGFLU_LoadFormationText", "Text", "y+15", "Formation", true)
-        group.AddControl("BGFLU_LoadFormation", "DropDownList", "y+-17 w35 AltSubmit Disabled hwndBGFLU_LoadFormation gBGFLU_LoadFormation", "Q||W|E")
+        group.AddControl("BGFLU_LoadFormation", "DropDownList", "y+-17 w35 AltSubmit Disabled hwndBGFLU_LoadFormation gBGFLU_LoadFormation", "Q||W|E|M")
         SendMessage, CB_SETITEMHEIGHT, -1, 17,, ahk_id %BGFLU_LoadFormation%
         if (ErrorLevel)
             MsgBox, 16,, Failed to resize BGFLU_LoadFormation.

@@ -44,7 +44,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_MinRadio%defaultMinLevel%, 1
         GuiControl, ICScriptHub:, BGFLU_MaxRadio%defaultMaxLevel%, 1
         GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % this.Settings.ShowSpoilers
-        GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:, BGFLU_ForceBrivEllywick, % this.Settings.ForceBrivEllywick
         GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelInputDelay, % this.Settings.MinLevelInputDelay
@@ -253,7 +253,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             this.ResetNonSpeedSettings(true)
             GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % defaultSettings.ShowSpoilers
             this.ToggleSpoilers(defaultSettings.ShowSpoilers)
-            GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % defaultSettings.ForceBrivShandie
+            GuiControl, ICScriptHub:, BGFLU_ForceBrivEllywick, % defaultSettings.ForceBrivEllywick
             GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % defaultSettings.SkipMinDashWait
             GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
             GuiControl, ICScriptHub:, BGFLU_MinLevelInputDelay, % defaultSettings.MinLevelInputDelay
@@ -285,7 +285,7 @@ Class IC_BrivGemFarm_LevelUp_Component
     {
         settings := {}
         settings.ShowSpoilers := false
-        settings.ForceBrivShandie := True
+        settings.ForceBrivEllywick := True
         settings.SkipMinDashWait := false
         settings.MaxSimultaneousInputs := 4
         settings.MinLevelInputDelay := 60
@@ -383,7 +383,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         showSpoilers := this.Settings.ShowSpoilers
         GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % showSpoilers
         this.ToggleSpoilers(showSpoilers)
-        GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:, BGFLU_ForceBrivEllywick, % this.Settings.ForceBrivEllywick
         GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelInputDelay, % this.Settings.MinLevelInputDelay
@@ -793,7 +793,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             {
                 if (IsObject(v))
                     continue
-                if k in ShowSpoilers,ForceBrivShandie,SkipMinDashWait,LowFavorMode,ClickDamageSpam,LevelToSoftCapFailedConversion,LevelToSoftCapFailedConversionBriv
+                if k in ShowSpoilers,ForceBrivEllywick,SkipMinDashWait,LowFavorMode,ClickDamageSpam,LevelToSoftCapFailedConversion,LevelToSoftCapFailedConversionBriv
                 {
                     saved := g_BrivGemFarm_LevelUp.Settings[k] ? "Yes" : "No"
                     v := v ? "Yes" : "No"

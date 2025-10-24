@@ -141,8 +141,8 @@ Class IC_BrivGemFarm_LevelUp_GUI
     {
         global
         local group := new IC_BrivGemFarm_LevelUp_GUI_Group("BGFLU_GeneralSettingsGroup", "General Settings",, false)
-        ; Force Briv/Shandie MinLevel
-        group.AddCheckBox("BGFLU_ForceBrivShandie",,, "Level up Briv/Shandie to MinLevel first", true)
+        ; Force Briv/Ellywick MinLevel
+        group.AddCheckBox("BGFLU_ForceBrivEllywick",,, "Level up Briv/Ellywick to MinLevel first", true)
         ; Skip early Dashwait
         group.AddCheckBox("BGFLU_SkipMinDashWait",,, "Skip DashWait after Min Leveling")
         ; Maximum number of simultaneous F keys inputs during BGFLU_DoPartySetupMin()

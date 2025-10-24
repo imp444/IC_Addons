@@ -14,7 +14,7 @@ Class IC_BrivGemFarm_LevelUp_ToolTip
         GUIFunctions.AddToolTip("BGFLU_DefaultMaxLevelText", "Default max level for champions with no default values.")
         GUIFunctions.AddToolTip("BGFLU_MaxRadio1", "Put the champion on the field and don't level them.")
         GUIFunctions.AddToolTip("BGFLU_MaxRadioLast", "Level up the champion until soft cap.")
-        GUIFunctions.AddToolTip("BGFLU_ForceBrivShandie", "Level up Briv and Shandie before other champions after resetting.")
+        GUIFunctions.AddToolTip("BGFLU_ForceBrivEllywick", "Level up Briv and Ellywick before other champions after resetting.")
         GUIFunctions.AddToolTip("BGFLU_SkipMinDashWait", "Skip waiting for Shandie's dash being active after leveling champions to MinLevel. Useful if stacking really early in the run.")
         GUIFunctions.AddToolTip("BGFLU_MaxSimultaneousInputs", "Maximum number of champions being leveled during the intial leveling to minLevel.")
         GUIFunctions.AddToolTip("BGFLU_MaxSimultaneousInputsText", "Maximum number of champions being leveled during the intial leveling to minLevel.")

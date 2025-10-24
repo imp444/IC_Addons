@@ -275,7 +275,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             {
                 if (g_SF.IsChampInFormation(champID, formation))
                 {
-                    if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == this.SelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
+                    if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
                         keyspam.Push(this.BGFLU_GetFKey(champID))
                     if (!forceBrivShandie)
                         nonSpeedIDs.Delete(champID)
@@ -289,7 +289,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         {
             for k, champID in nonSpeedIDs
             {
-                if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == this.SelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
+                if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
                     if (champID == 165 AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to minleveling
                         continue
                     else
@@ -382,7 +382,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 if (g_SF.IsChampInFormation(champID, formation))
                 {
                     targetLevel := this.CalculateTargetLevel(champID)
-                    if (champID == this.SelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && this.BGFLU_LevelUpChamp(champID, targetLevel))
+                    if (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && this.BGFLU_LevelUpChamp(champID, targetLevel))
                         return false
                 }
         ; Now do x25 levelling.
@@ -392,7 +392,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         ; Complete leveling
         for k, champID in formation
         {
-            if (champID != this.SelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)))
+            if (champID != g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)))
                 continue
             targetLevel := this.CalculateTargetLevel(champID)
             ; Briv
@@ -420,7 +420,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             for champID, targetLevel in this.Levelupx25
             {
                 champSeat := g_SF.Memory.ReadChampSeatByID(champID)
-                champIDInSeat := this.SelectedChampIDBySeat(champSeat)
+                champIDInSeat := g_SF.Memory.ReadSelectedChampIDBySeat(champSeat)
                 if (champID != champIDInSeat)
                     continue
                 if (this.BGFLU_LevelUpChamp(champID, targetLevel))
@@ -474,10 +474,6 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         }
     }
     
-    SelectedChampIDBySeat(seat)
-    {
-        return g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[seat - 1].hero.def.ID.Read()
-    }
     
     /*  BGFLU_DoPartySetupFailedConversion - Level up all champs to soft cap after a failed conversion.
         If the setting LevelToSoftCapFailedConversionBriv is set to true, also level Briv.

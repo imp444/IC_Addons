@@ -434,12 +434,12 @@ Class IC_BrivGemFarm_LevelUp_Component
         {
             hasSaved := levelSettings.minLevels.HasKey(heroID) || levelSettings.maxLevels.HasKey(heroID)
             if (!defaultLevelSettings.minLevels.HasKey(heroID) && !hasSaved)
-                settings.BrivGemFarm_LevelUp_Settings.minLevels.Delete(heroID)
+                settings.BrivGemFarm_LevelUp_Settings.minLevels[heroID] := "", settings.BrivGemFarm_LevelUp_Settings.minLevels.Delete(heroID)
             if (!defaultLevelSettings.maxLevels.HasKey(heroID) && !hasSaved)
             {
                 heroData := g_HeroDefines.HeroDataByID[heroID]
                 if (levelSettings.maxLevels[heroID] == (this.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1))
-                    settings.BrivGemFarm_LevelUp_Settings.maxLevels.Delete(heroID)
+                    settings.BrivGemFarm_LevelUp_Settings.minLevels[heroID] := "", settings.BrivGemFarm_LevelUp_Settings.maxLevels.Delete(heroID)
             }
         }
         g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)

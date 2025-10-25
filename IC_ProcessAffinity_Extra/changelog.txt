@@ -1,3 +1,7 @@
+October 21, 2025 - v1.0.3
+    - Fixed addon status not being correctly displayed.
+    - Updated Briv Gem Farm version required (v1.5.10).
+
 October 19, 2025
     - Fixes/changes to work with BrivGemFarm 4.4.3
     - Updated timers to not run as much.

@@ -27,6 +27,13 @@ hCols := Min(ProcessorCount + 1, 33)
 Gui, ICScriptHub:Add, ListView, AltSubmit Checked Disabled -Hdr -Multi R%hCols% xs y+10 w120 vProcessAffinityView gProcessAffinityView, CoreID
 GUIFunctions.UseThemeListViewBackgroundColor("ProcessAffinityView")
 
+OnMessage(0x200, Func("ProcessAffinity_CheckMouseEvent"))
+
+ProcessAffinity_CheckMouseEvent(W)
+{
+    IC_ProcessAffinity_Component.OnMouseOver(W)
+}
+
 ; Load button
 ProcessAffinityLoad()
 {
@@ -79,7 +86,7 @@ else
 */
 Class IC_ProcessAffinity_Component
 {
-    TimerFunctions := ""
+    StatusUpdatedOnLaunch := false
 
     ; Start up the GUI
     Init()
@@ -245,5 +252,18 @@ Class IC_ProcessAffinity_Component
             rowNumber := nextChecked ; Resume the search at the row after that found by the previous iteration.
         }
         return false
+    }
+
+    ; Update status on script launch
+    OnMouseOver(W)
+    {
+        if (this.StatusUpdatedOnLaunch)
+            return
+        GuiControlGet, CurrentTab,, ModronTabControl, Tab
+        if (CurrentTab == "Process Affinity")
+        {
+            this.UpdateStatusStart()
+            this.StatusUpdatedOnLaunch := true
+        }
     }
 }

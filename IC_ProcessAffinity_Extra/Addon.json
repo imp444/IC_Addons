@@ -1,6 +1,6 @@
 {
 	"Name":"Process Affinity",
-	"Version": "v1.0.1",
+	"Version": "v1.0.3",
     "Includes" : "IC_ProcessAffinity_Component.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/imp444/IC_Addons/tree/main/IC_ProcessAffinity_Extra",
@@ -8,7 +8,7 @@
     "Dependencies" : [
         {
             "Name":"Briv Gem Farm",
-            "Version":"v1.4.7"
+            "Version":"v1.5.10"
         }
     ]
 }

@@ -245,4 +245,22 @@ class IC_BrivGemFarm_LevelUp_Functions
         }
         return Round(exponent * 1000 + significand * 100)
     }
+
+    ; Returns true if combining Briv and Thellora jumps lands in a boss zone.
+    ThelloraBrivCombineHitsBoss()
+    {
+        maxRushArea := ActiveEffectKeySharedFunctions.Thellora.ThelloraPlateausOfUnicornRunHandler.ReadMaxRushArea()
+        rushStacks := Floor(ActiveEffectKeySharedFunctions.Thellora.ThelloraPlateausOfUnicornRunHandler.ReadRushStacks())
+        rushZone := Min(maxRushArea, rushStacks)
+        if (g_SF.Memory.ReadHighestZone() >= rushZone)
+            return false
+        QCfg := IC_BrivGemFarm_Class.BrivFunctions.GetBrivSkipConfig(1)
+        availableJumps := QCfg.AvailableJumps
+        for _, skips in availableJumps
+        {
+            if (Mod(rushZone + 1 + skips, 5) == 0)
+                return true
+        }
+        return false
+    }
 }

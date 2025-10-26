@@ -355,8 +355,8 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
     ; Show Briv's slot 4 current item gild/raity/level.
     AddBrivSkipTooltip()
     {
-        GuiControlGet, visible, ICScriptHub:Visible, BGFBFS_DetectedText
-        if (!visible)
+        GuiControlGet, isVisible, ICScriptHub:Visible, BGFBFS_DetectedText
+        if (!isVisible)
             return
         loot := IC_BrivGemFarm_Class.BrivFunctions.GetBrivLoot()
         gild := loot.gild

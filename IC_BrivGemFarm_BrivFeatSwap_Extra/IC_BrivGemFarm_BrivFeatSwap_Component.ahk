@@ -163,11 +163,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
             skipAmount := skipValues[1]
             skipChance := skipValues[2] * 100
             ; Only update if values changed
-            noUpdate := skipAmount == lastSkipAmount && skipChance == lastSkipChance
+            noUpdate := skipAmount == this.LastSkipAmount && skipChance == this.LastSkipChance
             if (g_BrivFeatSwapGui.ToolTipAdded && noUpdate)
                 return
-            lastSkipAmount := skipAmount
-            lastSkipChance := skipChance
+            this.LastSkipAmount := skipAmount
+            this.LastSkipChance := skipChance
             this.DetectedSkipAmount := skipAmount
             this.DetectedSkipChance := skipChance
             GuiControlGet, targetQ, ICScriptHub:, BrivGemFarm_BrivFeatSwap_TargetQ
@@ -298,11 +298,11 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
                 this.ApplyPresets(878610951932870, 8, 7)
             case "9J/4J Tall Tales":
                 this.ApplyPresets(35181131988031, 9, 4)
-            case "12J/11J Tall Tales")
+            case "12J/11J Tall Tales":
                 this.ApplyPresets(554220480505760, 12, 11)
-            case "14J/9J Tall Tales")
+            case "14J/9J Tall Tales":
                 this.ApplyPresets(1125899805626349, 14, 9)
-            case "16J/15J Tall Tales")
+            case "16J/15J Tall Tales":
                 this.ApplyPresets(360709071052808, 16, 15)
             case default:
                 this.ApplyPresets(this.SavedPreferredAdvancedSettings, this.Settings.targetQ, this.Settings.targetE)
@@ -458,7 +458,7 @@ Class IC_BrivGemFarm_BrivFeatSwap_Component
         }
         else
             path := this.Calcpath(mod50Values, resetArea, targetQ, targetE, brivMinLevelArea, brivMetalbornArea)
-        this.CurrentPath := path
+        this.CurrentPath := path.Clone()
         GuiControlGet, runs, ICScriptHub:, BGFBFS_Runs
         ; Update text controls
         a := runs * path.noMetalbornJumps

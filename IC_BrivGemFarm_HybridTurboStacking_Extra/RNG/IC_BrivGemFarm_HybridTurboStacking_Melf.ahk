@@ -1,12 +1,13 @@
 #include %A_LineFile%\..\..\..\..\SharedFunctions\CSharpRNG.ahk
 
+; TODO: take into account preferred zones
 Class IC_BrivGemFarm_HybridTurboStacking_Melf
 {
     static MAX_ZONE := 2501
 
     GetCurrentEffectIndex()
     {
-        rng := new CSharpRNG(IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets() * 10)
+        rng := new CSharpRNG(g_SF.Memory.ReadResetsTotal() * 10)
 		num := Ceil(g_SF.Memory.ReadCurrentZone() / 50)
 	    Loop, % num
 		    result := rng.NextRange(0, 3)
@@ -21,7 +22,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Melf
     GetFirstSpawnMoreEffectRange(reset := "", min := 1, max := 2550)
     {
         if (reset == "")
-            reset := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
+            reset := g_SF.Memory.ReadResetsTotal()
         if (reset == "")
             return 0
         rng := new CSharpRNG(reset * 10)
@@ -43,7 +44,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Melf
     GetAllEffects(reset := "")
     {
         if (reset == "")
-            reset := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
+            reset := g_SF.Memory.ReadResetsTotal()
         if (reset == "")
             return ""
         result := []
@@ -57,7 +58,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Melf
     GetNumberOfSuccessesInRange(resets := "", next := 1000, min := 1, max := 2550)
     {
         if (resets == "")
-            resets := IC_BrivGemFarm_HybridTurboStacking_Functions.ReadResets()
+            resets := g_SF.Memory.ReadResetsTotal()
         successes := 0
         Loop, % next
         {

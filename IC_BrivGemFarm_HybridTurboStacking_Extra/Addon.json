@@ -1,6 +1,6 @@
 {
 	"Name":"BrivGemFarm HybridTurboStacking",
-	"Version": "v1.1.5",
+	"Version": "v1.1.8",
     "Includes" : "IC_BrivGemFarm_HybridTurboStacking_Includes.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_HybridTurboStacking_Extra",
@@ -8,7 +8,17 @@
     "Dependencies" : [
         {
             "Name":"IC Core",
-            "Version":"v0.1.0"
+            "Version":"v0.1.5"
+        },
+        {
+            "Name":"Briv Gem Farm",
+            "Version":"v1.5.5"
+        }
+    ],
+    "LoadAfter" : [
+        {
+            "Name":"BrivGemFarm LevelUp",
+            "Version":"v1.3.4"
         }
     ]
 }

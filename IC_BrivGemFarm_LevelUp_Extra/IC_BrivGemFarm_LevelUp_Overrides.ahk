@@ -488,8 +488,9 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
             formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
+        modronFormation := g_SF.Memory.GetActiveModronFormation() ; required as a champ not in modron will never be seen as max because it can't upgrade past its specialization.
         for k, champID in formation
-            if (g_SF.IsChampInFormation(champID, formation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ]))
+            if (g_SF.IsChampInFormation(champID, formation) AND g_SF.IsChampInFormation(champID, modronFormation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ]))
                 if (this.BGFLU_LevelUpChamp(champID, g_SF.BGFLU_GetLastUpgradeLevel(champID)))
                     return false
         g_SharedData.BGFLU_SetStatus("Finished leveling champions.")
@@ -850,8 +851,8 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivShare
         maxUpgradeLevel := 0
         Loop, %size%
         {
-            requiredLevel := this.Memory.ReadHeroUpgradeRequiredLevel(champID, A_Index - 1)
-            if (requiredLevel != 9999)
+            requiredLevel := this.Memory.ReadHeroUpgradeRequiredLevelByIndex(champID, A_Index - 1) ;bugfix
+            if (requiredLevel != "" AND requiredLevel != 9999)
                 maxUpgradeLevel := Max(requiredLevel, maxUpgradeLevel)
         }
         cachedLevels[champID] := maxUpgradeLevel

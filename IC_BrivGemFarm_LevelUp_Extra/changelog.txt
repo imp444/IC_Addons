@@ -1,3 +1,7 @@
+October 27, 2025
+    - Added setting to avoid levelling Briv if Thellora+Briv combined jumps end up hitting a boss zone.
+    - Removed duplicate code in HeroDefintionsLoader.
+
 October 26, 2025
     - Fixed bug where wrong function was called that prevented upgrade check from working correctly.
     - Fixed bug where upgrade check would not work if the champion was not in the Modron formation and as such did could not upgrade past specializations.

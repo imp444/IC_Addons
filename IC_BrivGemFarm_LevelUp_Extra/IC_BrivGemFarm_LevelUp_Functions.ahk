@@ -4,7 +4,6 @@
 class IC_BrivGemFarm_LevelUp_Functions
 {
     static SettingsPath := A_LineFile . "\..\BrivGemFarm_LevelUp_Settings.json"
-    static HeroDefsPath := A_LineFile . "\..\Data\HeroDefines.json"
     static Injected := false
 
     ; Adds IC_BrivGemFarm_LevelUp_Addon.ahk to the startup of the Briv Gem Farm script.
@@ -181,15 +180,6 @@ class IC_BrivGemFarm_LevelUp_Functions
         return idxPrimary
     }
 
-    ; https://www.autohotkey.com/board/topic/30042-run-ahk-scripts-with-less-half-or-even-less-memory-usage/
-    EmptyMem(PID:="")
-    {
-        pid:=(pid="") ? DllCall("GetCurrentProcessId") : pid
-        h:=DllCall("OpenProcess", "UInt", 0x001F0FFF, "Int", 0, "Int", pid)
-        DllCall("SetProcessWorkingSetSize", "UInt", h, "Int", -1, "Int", -1)
-        DllCall("CloseHandle", "Int", h)
-    }
-
     UnixToUTC(unixTime)
     {
         time := 1970
@@ -244,5 +234,23 @@ class IC_BrivGemFarm_LevelUp_Functions
             exponent := this.ConvertNumberSymbolToInt(out2)
         }
         return Round(exponent * 1000 + significand * 100)
+    }
+
+    ; Returns true if combining Briv and Thellora jumps lands in a boss zone.
+    ThelloraBrivCombineHitsBoss()
+    {
+        maxRushArea := ActiveEffectKeySharedFunctions.Thellora.ThelloraPlateausOfUnicornRunHandler.ReadMaxRushArea()
+        rushStacks := Floor(ActiveEffectKeySharedFunctions.Thellora.ThelloraPlateausOfUnicornRunHandler.ReadRushStacks())
+        rushZone := Min(maxRushArea, rushStacks)
+        if (g_SF.Memory.ReadHighestZone() >= rushZone)
+            return false
+        QCfg := IC_BrivGemFarm_Class.BrivFunctions.GetBrivSkipConfig(1)
+        availableJumps := QCfg.AvailableJumps
+        for _, skips in availableJumps
+        {
+            if (Mod(rushZone + 1 + skips, 5) == 0)
+                return true
+        }
+        return false
     }
 }

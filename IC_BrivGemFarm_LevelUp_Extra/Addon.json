@@ -1,6 +1,6 @@
 {
 	"Name":"BrivGemFarm LevelUp",
-	"Version": "v1.3.7",
+	"Version": "v1.4.7",
     "Includes" : "IC_BrivGemFarm_LevelUp_Component.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/imp444/IC_Addons/tree/main/IC_BrivGemFarm_LevelUp_Extra",
@@ -8,7 +8,7 @@
     "Dependencies" : [
         {
             "Name":"Briv Gem Farm",
-            "Version":"v1.3.0"
+            "Version":"v1.5.5"
         }
     ]
 }

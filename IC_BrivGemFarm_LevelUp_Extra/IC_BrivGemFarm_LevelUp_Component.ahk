@@ -3,6 +3,9 @@
 #include %A_LineFile%\..\Data\Loader\IC_BrivGemFarm_LevelUp_HeroDefinesLoader.ahk
 #include %A_LineFile%\..\Data\IC_BrivGemFarm_LevelUp_HeroDefinesData.ahk
 
+
+SH_UpdateClass.AddClassFunctions(g_SharedData, IC_BrivGemFarm_LevelUp_IC_SharedData_Added_Class)
+
 ; Test to see if BrivGemFarm addon is avaialbe.
 if(IsObject(IC_BrivGemFarm_Component))
     IC_BrivGemFarm_LevelUp_Functions.InjectAddon()
@@ -41,7 +44,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:, BGFLU_MinRadio%defaultMinLevel%, 1
         GuiControl, ICScriptHub:, BGFLU_MaxRadio%defaultMaxLevel%, 1
         GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % this.Settings.ShowSpoilers
-        GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:, BGFLU_ForceBrivEllywick, % this.Settings.ForceBrivEllywick
         GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelInputDelay, % this.Settings.MinLevelInputDelay
@@ -54,6 +57,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStackingOnline, % this.Settings.BrivMinLevelStackingOnline
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
+        GuiControl, ICScriptHub:, BGFLU_BrivThelloraCombineBossCheck, % this.Settings.BrivThelloraCombineBossCheck
         g_BrivGemFarm_LevelUpGui.LoadMod50("BrivLevelingZones", this.Settings.BrivLevelingZones)
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
@@ -250,7 +254,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             this.ResetNonSpeedSettings(true)
             GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % defaultSettings.ShowSpoilers
             this.ToggleSpoilers(defaultSettings.ShowSpoilers)
-            GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % defaultSettings.ForceBrivShandie
+            GuiControl, ICScriptHub:, BGFLU_ForceBrivEllywick, % defaultSettings.ForceBrivEllywick
             GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % defaultSettings.SkipMinDashWait
             GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % defaultSettings.MaxSimultaneousInputs
             GuiControl, ICScriptHub:, BGFLU_MinLevelInputDelay, % defaultSettings.MinLevelInputDelay
@@ -263,6 +267,7 @@ Class IC_BrivGemFarm_LevelUp_Component
             GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % defaultSettings.BrivMinLevelStacking
             GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStackingOnline, % defaultSettings.BrivMinLevelStackingOnline
             GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % defaultSettings.BrivMinLevelArea
+            GuiControl, ICScriptHub:, BGFLU_BrivThelloraCombineBossCheck, % defaultSettings.BrivThelloraCombineBossCheck
             g_BrivGemFarm_LevelUpGui.LoadMod50("BrivLevelingZones", defaultSettings.BrivLevelingZones)
             GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % defaultSettings.LevelToSoftCapFailedConversion
             GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % defaultSettings.LevelToSoftCapFailedConversionBriv
@@ -282,7 +287,7 @@ Class IC_BrivGemFarm_LevelUp_Component
     {
         settings := {}
         settings.ShowSpoilers := false
-        settings.ForceBrivShandie := false
+        settings.ForceBrivEllywick := True
         settings.SkipMinDashWait := false
         settings.MaxSimultaneousInputs := 4
         settings.MinLevelInputDelay := 60
@@ -295,6 +300,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.BrivMinLevelStacking := 1300
         settings.BrivMinLevelStackingOnline := 1300
         settings.BrivMinLevelArea := 1
+        settings.BrivThelloraCombineBossCheck := true
         settings.BrivLevelingZones := 1125899906842623
         settings.DefaultMinLevel := 0
         settings.DefaultMaxLevel := 1
@@ -340,6 +346,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         minLevels[100] := 0, maxLevels[100] := 90 ; Nordom
         minLevels[118] := 0, maxLevels[118] := 60 ; Fen
         minLevels[83] := 200, maxLevels[83] := 200 ; Ellywick
+        minLevels[99] := 200, maxLevels[99] := 200 ; Dungeon Master
         settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
         return settings
     }
@@ -379,7 +386,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         showSpoilers := this.Settings.ShowSpoilers
         GuiControl, ICScriptHub:, BGFLU_ShowSpoilers, % showSpoilers
         this.ToggleSpoilers(showSpoilers)
-        GuiControl, ICScriptHub:, BGFLU_ForceBrivShandie, % this.Settings.ForceBrivShandie
+        GuiControl, ICScriptHub:, BGFLU_ForceBrivEllywick, % this.Settings.ForceBrivEllywick
         GuiControl, ICScriptHub:, BGFLU_SkipMinDashWait, % this.Settings.SkipMinDashWait
         GuiControl, ICScriptHub:, BGFLU_MaxSimultaneousInputs, % this.Settings.MaxSimultaneousInputs
         GuiControl, ICScriptHub:, BGFLU_MinLevelInputDelay, % this.Settings.MinLevelInputDelay
@@ -392,6 +399,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStacking, % this.Settings.BrivMinLevelStacking
         GuiControl, ICScriptHub:Text, BGFLU_Combo_BrivMinLevelStackingOnline, % this.Settings.BrivMinLevelStackingOnline
         GuiControl, ICScriptHub:, BGFLU_BrivMinLevelArea, % this.Settings.BrivMinLevelArea
+        GuiControl, ICScriptHub:, BGFLU_BrivThelloraCombineBossCheck, % this.Settings.BrivThelloraCombineBossCheck
         g_BrivGemFarm_LevelUpGui.LoadMod50("BrivLevelingZones", this.Settings.BrivLevelingZones)
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversion, % this.Settings.LevelToSoftCapFailedConversion
         GuiControl, ICScriptHub:, BGFLU_LevelToSoftCapFailedConversionBriv, % this.Settings.LevelToSoftCapFailedConversionBriv
@@ -403,7 +411,7 @@ Class IC_BrivGemFarm_LevelUp_Component
     ; Returns a list of champIDs from the current selected champions
     GetFormationFromGUI()
     {
-        formation := []
+        formation := {}
         Loop, 12
             if (IsObject(heroData := IC_BrivGemFarm_LevelUp_Seat.Seats[A_Index].GetCurrentHeroData()))
                 formation.Push(heroData.id)
@@ -430,12 +438,12 @@ Class IC_BrivGemFarm_LevelUp_Component
         {
             hasSaved := levelSettings.minLevels.HasKey(heroID) || levelSettings.maxLevels.HasKey(heroID)
             if (!defaultLevelSettings.minLevels.HasKey(heroID) && !hasSaved)
-                settings.BrivGemFarm_LevelUp_Settings.minLevels.Delete(heroID)
+                settings.BrivGemFarm_LevelUp_Settings.minLevels[heroID] := "", settings.BrivGemFarm_LevelUp_Settings.minLevels.Delete(heroID)
             if (!defaultLevelSettings.maxLevels.HasKey(heroID) && !hasSaved)
             {
                 heroData := g_HeroDefines.HeroDataByID[heroID]
                 if (levelSettings.maxLevels[heroID] == (this.Settings.DefaultMaxLevel == "Last" ? heroData.lastUpgradeLevel : 1))
-                    settings.BrivGemFarm_LevelUp_Settings.maxLevels.Delete(heroID)
+                    settings.BrivGemFarm_LevelUp_Settings.minLevels[heroID] := "", settings.BrivGemFarm_LevelUp_Settings.maxLevels.Delete(heroID)
             }
         }
         g_SF.WriteObjectToJSON(IC_BrivGemFarm_LevelUp_Component.SettingsPath, settings)
@@ -536,7 +544,11 @@ Class IC_BrivGemFarm_LevelUp_Component
             if (ErrorLevel)
             {
                 g_SF.Memory.OpenProcessReader()
-                return g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formation), true) ; without empty slots
+                if(formation == 4)
+                    currFormation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetActiveModronFormationSaveSlot(), true) ; without empty slots
+                else
+                    currFormation := g_SF.Memory.GetFormationSaveBySlot(g_SF.Memory.GetSavedFormationSlotByFavorite(formation), true) ; without empty slots
+                return currFormation
             }
         }
         Switch formation
@@ -547,6 +559,8 @@ Class IC_BrivGemFarm_LevelUp_Component
                 return savedFormations.W
             Case 3:
                 return savedFormations.E
+            Case 4:
+                return savedFormations.M
             Default:
                 return formation
         }
@@ -783,7 +797,8 @@ Class IC_BrivGemFarm_LevelUp_Component
             {
                 if (IsObject(v))
                     continue
-                if k in ShowSpoilers,ForceBrivShandie,SkipMinDashWait,LowFavorMode,ClickDamageSpam,LevelToSoftCapFailedConversion,LevelToSoftCapFailedConversionBriv
+                ; Binary settings
+                if k in ShowSpoilers,ForceBrivEllywick,SkipMinDashWait,LowFavorMode,ClickDamageSpam,ClickDamageMatchArea,BrivThelloraCombineBossCheck,LevelToSoftCapFailedConversion,LevelToSoftCapFailedConversionBriv
                 {
                     saved := g_BrivGemFarm_LevelUp.Settings[k] ? "Yes" : "No"
                     v := v ? "Yes" : "No"

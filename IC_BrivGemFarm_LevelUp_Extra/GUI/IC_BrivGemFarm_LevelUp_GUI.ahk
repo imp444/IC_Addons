@@ -344,7 +344,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
     ; The bar uses colors from the current theme, or default colors.
     MoveProgressBar(state)
     {
-        cl := IC_BrivGemFarm_LevelUp_HeroDefinesLoader
+        cl := g_BGFLU_HDL_Constants
         GuiControlGet, currentState, ICScriptHub:, BGFLU_LoadDefinitionsProgress
         if (state != currentState)
         {
@@ -362,7 +362,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
     ; Update the text displayed during definitions loading.
     UpdateLoadingText(state)
     {
-        cl := IC_BrivGemFarm_LevelUp_HeroDefinesLoader
+        cl := g_BGFLU_HDL_Constants
         switch state
         {
             case cl.STOPPED:

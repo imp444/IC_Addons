@@ -4,7 +4,6 @@
 class IC_BrivGemFarm_LevelUp_Functions
 {
     static SettingsPath := A_LineFile . "\..\BrivGemFarm_LevelUp_Settings.json"
-    static HeroDefsPath := A_LineFile . "\..\Data\HeroDefines.json"
     static Injected := false
 
     ; Adds IC_BrivGemFarm_LevelUp_Addon.ahk to the startup of the Briv Gem Farm script.

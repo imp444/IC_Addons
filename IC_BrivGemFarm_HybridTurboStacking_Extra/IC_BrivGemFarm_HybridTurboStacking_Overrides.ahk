@@ -283,6 +283,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                 wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
                 if (!usedWardenUlt && wardenThreshold > 0)
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
+                if (g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
+                    this.StackFarmSetup()
                 Sleep, 30
                 ElapsedTime := A_TickCount - StartTime
                 stacks := this.GetNumStacksFarmed()

@@ -416,22 +416,23 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (g_SF.ArrSize(this.Levelupx25) > 0)
         {
             levelBriv := false
-            this.ToggleControl(true) ; To go back to x10 - change to ToggleShift
             for champID, targetLevel in this.Levelupx25
             {
                 champSeat := g_SF.Memory.ReadChampSeatByID(champID)
                 champIDInSeat := g_SF.Memory.ReadSelectedChampIDBySeat(champSeat)
                 if (champID != champIDInSeat)
                     continue
+                this.ToggleControl(true) ; To go back to x10 - change to ToggleShift
                 if (this.BGFLU_LevelUpChamp(champID, targetLevel))
                 {
-                    this.ToggleControl()
+                    this.ToggleControl(false)
                     this.Levelupx25.delete(champID)
                     this.ExitMethod := True
                     return levelBriv
                 }
+                this.ToggleControl(false) ; To go back to x10 - change to ToggleShift
             }
-            this.ToggleControl()
+            this.ToggleControl(false)
         }
         else
             levelBriv := true
@@ -455,7 +456,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         g_SF.DirectedInput(shiftKeyDown ? 1 : 0, shiftKeyDown ? 0 : 1, "{Shift}")
         startTime:=A_TickCount
         elapsedTime:=0
-        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=shiftKeyDown AND elapsedTime < 100) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
+        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=shiftKeyDown AND elapsedTime < 60) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
         {
             Sleep 1
             elapsedTime:=A_TickCount - startTime
@@ -467,7 +468,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         g_SF.DirectedInput(controlKeyDown ? 1 : 0, controlKeyDown ? 0 : 1, "{RCtrl}")
         startTime:=A_TickCount
         elapsedTime:=0
-        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=controlKeyDown AND elapsedTime < 100) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
+        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=controlKeyDown AND elapsedTime < 60) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
         {
             Sleep 1
             elapsedTime:=A_TickCount - startTime

@@ -1,7 +1,8 @@
 ; Based on Idle-Champions\ServerCalls\IC_ServerCalls_Class.ahk.
 ; Avoids parsing responses with the JSON class to speed up processing data,
 ; relying on InStr() and RegExMatch() instead.
-class IC_BrivGemFarm_LevelUp_ServerCalls_Class
+#include %A_LineFile%\..\..\..\..\..\ServerCalls\SH_ServerCalls.ahk 
+class IC_BrivGemFarm_LevelUp_ServerCalls_Class extends SH_ServerCalls
 {
     static Timeout := 60000
     WebRoot := "http://ps21.idlechampions.com/~idledragons/"
@@ -45,6 +46,8 @@ class IC_BrivGemFarm_LevelUp_ServerCalls_Class
         WR := ComObjCreate("WinHttp.WinHttpRequest.5.1")
         ; https://learn.microsoft.com/en-us/windows/win32/winhttp/iwinhttprequest-settimeouts defaults: 0 (DNS Resolve), 60000 (connection timeout. 60s), 30000 (send timeout), 60000 (receive timeout)
         WR.SetTimeouts(30000, 45000, 30000, timeout)
+        if (this.proxy != "")
+            WR.SetProxy(2, this.proxy)
         Try
         {
             WR.Open( "POST", URLtoCall, true )

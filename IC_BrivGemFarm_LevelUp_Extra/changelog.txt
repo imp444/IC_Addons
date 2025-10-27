@@ -1,3 +1,7 @@
+October 26, 2025
+    - Fixed bug where wrong function was called that prevented upgrade check from working correctly.
+    - Fixed bug where upgrade check would not work if the champion was not in the Modron formation and as such did could not upgrade past specializations.
+
 October 22, 2025
     - Changed update URL to Anti's for now.
     - Updated how levelupx25 works.

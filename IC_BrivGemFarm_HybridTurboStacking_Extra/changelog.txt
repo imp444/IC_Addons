@@ -1,3 +1,10 @@
+October 26, 2025
+    Refactored Addon.
+    Reduced method sizes to make the code chunks easier to parse.
+    Fixed issues with predict stacks.
+    Added timer off before starting timer to make sure it's only run once.
+    Made FORT restart switch to W formation first.
+
 October 22, 2025
     - Changed update URL to Anti's for now.
     - Prevet FORT restart happening on very first run.

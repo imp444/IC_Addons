@@ -213,36 +213,4 @@ class IC_BrivGemFarm_LevelUp_Functions
         }
         return array
     }
-
-    ; Converts a symbol to the corresponding integer exponent.
-    ConvertNumberSymbolToInt(name)
-    {
-        static symbols := {"K":3, "M":6, "B":9, "t":12, "q":15, "Q":18, "s":21, "S":24
-                           , "o":27, "n":30, "d":33, "U":36, "D":39, "T":42, "Qt":45
-                           , "Qd":48, "Sd":51, "St":54, "O":57, "N":60, "v":63, "c":66}
-
-        return symbols[name]
-    }
-
-    ; Converts a number string in scientific notation or symbol notation
-    ; to an integer for comparison.
-    ; Returns an integer equal to 1000 * exponent plus 100 * significand.
-    ; This works only when the number format has less than 3 significant digits.
-    ConvertNumberStringToInt(numStr)
-    {
-        split := StrSplit(numStr, "e")
-        if split[2] is integer
-        {
-            significand := split[1]
-            exponent := split[2]
-        }
-        else
-        {
-            regex := "(.*\d)([a-zA-Z]+)"
-            RegExMatch(numStr, regex, out)
-            significand := out1
-            exponent := this.ConvertNumberSymbolToInt(out2)
-        }
-        return Round(exponent * 1000 + significand * 100)
-    }
 }

@@ -87,8 +87,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             this.ShouldOfflineStack()
         if (afterReset || IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
         {
-            stacksAfterReset := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks(True,False,True)
-            stacksAfterReset := g_SF.BrivHasThunderStep() ? stacksAfterReset * 1.2 : stacksAfterReset
+            sbStacks := g_SF.Memory.ReadSBStacks()
+            hasteStacksAfterReset := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks(False,False,True)
+            stacksAfterReset := g_SF.BrivHasThunderStep() ? sbStacks * 1.2 + hasteStacksAfterReset: sbStacks + hasteStacksAfterReset
             ; thunderstep recalc.
             g_SharedData.BGFHTS_SBStacksPredict := stacksAfterReset
             return stacksAfterReset

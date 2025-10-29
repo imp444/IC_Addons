@@ -65,6 +65,10 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         ; Click damage
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
             g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
+        else if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
+            g_SF.BGFLU_DoClickDamageSetup(g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ])
+        else
+            g_SF.BGFLU_DoClickDamageSetup(1)
     }
 
     ; Stops progress and switches to appropriate party to prepare for stacking Briv's SteelBones.

@@ -120,7 +120,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         this.StackFarm() ; immediately stack after coming back online if expected.  
         if (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
         {
-            g_SF.Memory.ReadNumAttackingMonstersReached()
             g_SF.FallBackFromZone() ; don't get stuck getting attacked.
             if (g_SF.UnBenchBrivConditions(g_BrivUserSettings))
                 g_SF.DirectedInput(,, "{q}")

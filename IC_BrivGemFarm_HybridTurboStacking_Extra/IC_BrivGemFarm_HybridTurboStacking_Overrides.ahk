@@ -115,8 +115,11 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         g_SF.AlreadyOfflineStackedThisRun := True
         g_SF.SetFormation() ; set formation when returning
         this.StackFarm() ; immediately stack after coming back online if expected.  
-        if (ElapsedTime > 1000 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
+        if (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
+        {
             g_SF.FallBackFromZone() ; don't get stuck getting attacked.
+            g_SF.SetFormation() ; set formation when returning
+        }
         ; SetFormation effectively called here after returning from this function by way of Stack continuing StackFarm()
     }
 

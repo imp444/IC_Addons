@@ -5,6 +5,7 @@ October 29, 2025
     Added alternative ways to increase click damage in zones.
     Added rate limit to Click Damage keypresses.
     Limited Click Leveling to after Ellywait.
+    Reverted lock on clicks and baldric on Ellywick.
 
 October 26, 2025
     - Fixed bug where wrong function was called that prevented upgrade check from working correctly.

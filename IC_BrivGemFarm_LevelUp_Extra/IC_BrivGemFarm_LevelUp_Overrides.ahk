@@ -65,6 +65,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
         if(A_TickCount - lastTick < g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ])
             return
+        if(this.FormationLock)
+            return ; don't level click damage until after ellywait
         ; Click damage
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
             g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())

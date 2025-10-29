@@ -65,7 +65,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         }
         if(A_TickCount - lastTick < g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ])
             return
-        if(this.FormationLock)
+        if(g_SF.FormationLock)
             return ; don't level click damage until after ellywait
         ; Click damage
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
@@ -156,7 +156,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         g_SF.DirectedInput(hold := 0,, keyspam*) ; keysup
         if (forceBrivEllywick AND remainingTime > 0)
             this.BGFLU_DoPartySetupMin(false, remainingTime)
-        if (currentZone == 1 || g_SharedData.TriggerStart)
+        if ((currentZone == 1 || g_SharedData.TriggerStart) AND !g_SF.FormationLock)
             g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
         ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
         return results
@@ -204,7 +204,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             ; Set formation
             g_SF.SetFormationForStart()
             Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
-            if(allowClick OR currentZone > 1)
+            if((allowClick OR currentZone > 1) AND !g_SF.FormationLock)
             {
                 if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
                     g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
@@ -299,7 +299,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             for k, champID in nonSpeedIDs
             {
                 if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
-                    if (champID == 165 AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to minleveling
+                    if (champID == 165 AND (g_SF.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to minleveling
                         continue
                     else
                         keyspam.Push(this.BGFLU_GetFKey(champID))
@@ -636,7 +636,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
     BGFLU_LevelUpChamp(champID, target)
     {
-        if ((champID == (baldric := 165)) AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to leveling until after rush and ellywait
+        if ((champID == (baldric := 165)) AND (g_SF.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to leveling until after rush and ellywait
             return true
         if (this.BGFLU_ChampUnderTargetLevel(champID, target))
         {
@@ -753,7 +753,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
     {
         global g_PreviousZoneStartTime
         Critical, On
-        if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
+        if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ] AND !g_SF.FormationLock)
         {
             ; Level up click damage once
             this.BGFLU_DoClickDamageSetup(1)

@@ -1,3 +1,11 @@
+October 29, 2025
+    Updated to use proxy settings file.
+    Updated x25 levelup to only togglectrl when pressing leveling key up and not for full leveling process.
+    Fixed calculation for Thellora in prediciton to not include Haste.
+    Added alternative ways to increase click damage in zones.
+    Added rate limit to Click Damage keypresses.
+    Limited Click Leveling to after Ellywait.
+
 October 26, 2025
     - Fixed bug where wrong function was called that prevented upgrade check from working correctly.
     - Fixed bug where upgrade check would not work if the champion was not in the Modron formation and as such did could not upgrade past specializations.

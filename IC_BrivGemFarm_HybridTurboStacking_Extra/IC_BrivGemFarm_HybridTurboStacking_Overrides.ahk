@@ -248,7 +248,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         usedWardenUlt := false
         StartTime := A_TickCount
         ElapsedTime := 0
-        if (IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())  ; Haste stacks are taken into account
+        if (!IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())  ; Haste stacks are taken into account
         {
             remainder := targetStacks - stacks
             SBStacksFarmed := 0

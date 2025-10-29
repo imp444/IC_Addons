@@ -43,6 +43,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 
     GemFarmDoNonModronActions(currentZone := "")
     {
+        static lastTick := 0
         needToStack := this.BGFLU_NeedToStack()
         ; Level up Briv to MaxLevel after stacking
         if (!needToStack AND g_SF.Memory.ReadChampLvlByID(ActiveEffectKeySharedFunctions.Briv.HeroID) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[ActiveEffectKeySharedFunctions.Briv.HeroID])
@@ -62,6 +63,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
                 g_SF.BGFLU_StopSpamClickDamage()
         }
+        if(A_TickCount - lastTick < g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ])
+            return
         ; Click damage
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
             g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())

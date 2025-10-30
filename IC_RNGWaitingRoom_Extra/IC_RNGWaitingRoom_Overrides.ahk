@@ -58,7 +58,9 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_SharedFunctions_Class
         formation := base.GetInitialFormation()
         ; Use extra champions if they're in the modron formation.
         heroIDs := [99,59,97,165] ; DM / Melf / Tatyana / Baldric
-        formation.Push(heroIDs*)
+        for k,heroID in heroIDs
+            if (g_SF.IsChampInFormation(heroID, modronFormation))
+                formation.Push(heroID)
         return formation
     }
 

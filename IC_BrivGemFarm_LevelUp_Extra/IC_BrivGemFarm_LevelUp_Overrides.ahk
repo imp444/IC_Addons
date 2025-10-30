@@ -78,8 +78,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     StackFarmSetup()
     {
         g_SharedData.LoopString := "Switching to stack farm formation."
-        if (!g_SF.KillCurrentBoss() ) ; Previously/Alternatively FallBackFromBossZone()
-            g_SF.FallBackFromBossZone() ; Boss kill Timeout
+        if (!this.BossKillAttempt AND !g_SF.KillCurrentBoss() ) ; Previously/Alternatively FallBackFromBossZone()
+            this.BossKillAttempt := True, g_SF.FallBackFromBossZone() ; Boss kill Timeout
         inputValues := "{w}" ; Stack farm formation hotkey
         g_SF.DirectedInput(,, inputValues )
         keyspam := this.BGFLU_GetMinLevelingKeyspam(g_SF.Memory.GetFormationByFavorite(2))
@@ -89,7 +89,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         StartTime := A_TickCount
         ElapsedTime := 0
         counter := 0
-        sleepTime := 50
+        sleepTime := 60
         g_SharedData.LoopString := "Setting stack farm formation."
         stackFormation := g_SF.Memory.GetFormationByFavorite(2)
         isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun
@@ -99,19 +99,22 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         while (!isFormation2 AND ElapsedTime < 5000 )
         {
             ElapsedTime := A_TickCount - StartTime
-            if (ElapsedTime > (counter * sleepTime)) ; input limiter..
-            {
+            if (ElapsedTime > (sleepTime * counter++)) ; input limiter..
                 g_SF.DirectedInput(,,inputValues)
-                counter++
-            }
             ; Can't formation switch when under attack.
-            if (ElapsedTime > 1000 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
-                g_SF.FallBackFromZone()
+            isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun
+            if (!isFormation2)
+                if(g_SF.IsCurrentFormation(g_SF.Memory.GetFormationByFavorite(2)))
+                    isFormation2 := True
+            if (ElapsedTime > 1000 AND !isFormation2 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
+            {
+                 ; not W formation or briv is benched
+                if (g_SF.Memory.ReadChampBenchedByID(ActiveEffectKeySharedFunctions.Briv.HeroID) OR !(g_SF.Memory.ReadMostRecentFormationFavorite() == 2))
+                    g_SF.FallBackFromZone()
+            }
             else
                 this.BGFLU_DoPartySetupMax(stackFormation)
-            if(g_SF.IsCurrentFormation(stackFormation))
-                isFormation2 := True
-            Sleep, 20
+            isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun
         }
         while (!this.BGFLU_DoPartySetupMax(stackFormation) AND (A_TickCount - StartTime) < 5000)
            Sleep, 30

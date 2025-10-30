@@ -1,3 +1,7 @@
+October 30, 2025
+    Updated display to be rounded to the nearest stack.
+    Updated how stacking formation is checked.
+
 October 29, 2025
     Added Emmote's fix to avoid getting stuck in W.
     Added Jame's other fix to avoid getting stuck in W.

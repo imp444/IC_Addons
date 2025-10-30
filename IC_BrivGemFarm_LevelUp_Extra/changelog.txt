@@ -1,3 +1,7 @@
+October 30, 2025
+    Added Baldric default levels.
+    Removed formation lock preventing Baldric from leveling during Ellywait.
+
 October 29, 2025
     Updated to use proxy settings file.
     Updated x25 levelup to only togglectrl when pressing leveling key up and not for full leveling process.

@@ -126,6 +126,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             else if (g_SF.BenchBrivConditions(g_BrivUserSettings))
                 g_SF.DirectedInput(,, "{e}")
         }
+        IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun := True
         ; SetFormation effectively called here after returning from this function by way of Stack continuing StackFarm()
     }
 
@@ -275,8 +276,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                 wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
                 if (!usedWardenUlt && wardenThreshold > 0)
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
-                if (g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
+                if (IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
                     this.StackFarmSetup()
+                else if (!this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2)))
+                    this.StackFarmSetup()                
                 else if (SBStacksFarmed < (remainder / 10) and ElapsedTime > 10000 ) ; not gaining stacks 
                     this.StackFarmSetup()
                 Sleep, 30
@@ -298,7 +301,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                 wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
                 if (!usedWardenUlt && wardenThreshold > 0)
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
-                if (g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
+                if (IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
+                    this.StackFarmSetup()
+                else if (!this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2)))
                     this.StackFarmSetup()
                 Sleep, 30
                 ElapsedTime := A_TickCount - StartTime

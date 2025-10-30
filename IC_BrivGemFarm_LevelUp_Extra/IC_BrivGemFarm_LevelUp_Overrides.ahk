@@ -92,15 +92,11 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         sleepTime := 50
         g_SharedData.LoopString := "Setting stack farm formation."
         stackFormation := g_SF.Memory.GetFormationByFavorite(2)
-        isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND g_SF.IsCurrentFormation(stackFormation)
+        isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun
         if (!isFormation2)
-        {
-            g_SF.DirectedInput(,,inputValues)
-            isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2
-            if(!isFormation2 AND g_SF.IsCurrentFormation(stackFormation))
+            if(g_SF.IsCurrentFormation(stackFormation))
                 isFormation2 := True
-        }
-        while (!g_SF.IsCurrentFormation(stackFormation) AND ElapsedTime < 5000 )
+        while (!isFormation2 AND ElapsedTime < 5000 )
         {
             ElapsedTime := A_TickCount - StartTime
             if (ElapsedTime > (counter * sleepTime)) ; input limiter..
@@ -113,6 +109,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 g_SF.FallBackFromZone()
             else
                 this.BGFLU_DoPartySetupMax(stackFormation)
+            if(g_SF.IsCurrentFormation(stackFormation))
+                isFormation2 := True
             Sleep, 20
         }
         while (!this.BGFLU_DoPartySetupMax(stackFormation) AND (A_TickCount - StartTime) < 5000)

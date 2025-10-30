@@ -258,6 +258,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Vi := 95
                         , Havilar := 56
                         , Shandie := 47
+                        , Minsc := 7
+                        , Baldric := 165 
                         , Thellora := 139]
         }
         ; Need to walk while Briv is in all formations
@@ -367,7 +369,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Havilar := 56
                         , Shandie := 47
                         , Minsc := 7
-                        , Thellora := 139 ]
+                        , Baldric := 165 
+                        , Thellora := 139]
         this.ExitMethod := False
         levelBriv := true ; Return value
         if (!formation)

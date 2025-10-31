@@ -233,37 +233,39 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         ; List of champion IDs
         if (forceBrivEllywick)
         {
-            champIDs := [ Briv := 58
-                        , Ellywick := 83 ]
+            champIDs := {}
+            champIDs[Briv := 58] := 58
+            champIDs[Ellywick := 83] := 83
         }
         else
         {
-            champIDs := [ Briv := 58
-                        , Widdle := 91
-                        , Ellywick := 83
-                        , HewMaan := 75
-                        , Tatyana := 97
-                        , Melf := 59
-                        , Dynaheir := 145
-                        , Diana := 148
-                        , BBEG  := 125
-                        , Dungeon Master := 99
-                        , Laezel  := 128
-                        , Deekin := 28
-                        , Virgil := 115
-                        , Sentry := 52
-                        , Nahara := 102
-                        , Dhani := 89
-                        , Kent := 114
-                        , Gazrick := 98
-                        , Alyndra := 79
-                        , Selise := 81
-                        , Vi := 95
-                        , Havilar := 56
-                        , Shandie := 47
-                        , Minsc := 7
-                        , Baldric := 165 
-                        , Thellora := 139]
+            champIDs := {}
+            champIDs[Briv := 58] := 58 
+            champIDs[Widdle := 91] := 91 
+            champIDs[Ellywick := 83] := 83 
+            champIDs[HewMaan := 75] := 75 
+            champIDs[Tatyana := 97] := 97 
+            champIDs[Melf := 59] := 59 
+            champIDs[Dynaheir := 145] := 145 
+            champIDs[Diana := 148] := 148 
+            champIDs[BBEG  := 125] := 125 
+            champIDs[Dungeon_Master := 99] := 99 
+            champIDs[Laezel  := 128] := 128 
+            champIDs[Deekin := 28] := 28 
+            champIDs[Virgil := 115] := 115 
+            champIDs[Sentry := 52] := 52 
+            champIDs[Nahara := 102] := 102 
+            champIDs[Dhani := 89] := 89 
+            champIDs[Kent := 114] := 114 
+            champIDs[Gazrick := 98] := 98 
+            champIDs[Alyndra := 79] := 79 
+            champIDs[Selise := 81] := 81 
+            champIDs[Vi := 95] := 95 
+            champIDs[Havilar := 56] := 56 
+            champIDs[Shandie := 47] := 47 
+            champIDs[Minsc := 7] := 7 
+            champIDs[Baldric := 165] := 165  
+            champIDs[Thellora := 139] := 139 
         }
         ; Need to walk while Briv is in all formations
         if (!this.BGFLU_AllowBrivLeveling())
@@ -283,9 +285,9 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         ; Get Fkeys for speed champs
         while (keyspam.Length() < g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ])
         {
-            for k, champID in champIDs
+            for k, champID in formation
             {
-                if (g_SF.IsChampInFormation(champID, formation))
+                if (champIDs[champID] := champID)
                 {
                     if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
                         keyspam.Push(this.BGFLU_GetFKey(champID))
@@ -347,33 +349,34 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     BGFLU_DoPartySetupMax(formation := "")
     {
         ; Speed champions without Briv
-        static champIDs := [ HewMaan := 75
-                        , Briv := 58
-                        , Widdle := 91
-                        , Ellywick := 83
-                        , Tatyana := 97
-                        , Melf := 59
-                        , Dynaheir := 145
-                        , Diana := 148
-                        , BBEG  := 125
-                        , Dungeon Master := 99
-                        , Imoen := 117
-                        , Laezel  := 128
-                        , Deekin := 28
-                        , Virgil := 115
-                        , Sentry := 52
-                        , Nahara := 102
-                        , Dhani := 89
-                        , Kent := 114
-                        , Gazrick := 98
-                        , Alyndra := 79
-                        , Selise := 81
-                        , Vi := 95
-                        , Havilar := 56
-                        , Shandie := 47
-                        , Minsc := 7
-                        , Baldric := 165 
-                        , Thellora := 139]
+        static champIDs := {}
+        champIDs[HewMaan := 75] := 75
+        champIDs[Briv := 58] := 58
+        champIDs[Widdle := 91] := 91
+        champIDs[Ellywick := 83] := 83
+        champIDs[Tatyana := 97] := 97
+        champIDs[Melf := 59] := 59
+        champIDs[Dynaheir := 145] := 145
+        champIDs[Diana := 148] := 148
+        champIDs[BBEG  := 125] := 125
+        champIDs[Dungeon_Master := 99] := 99
+        champIDs[Imoen := 117] := 117
+        champIDs[Laezel  := 128] := 128
+        champIDs[Deekin := 28] := 28
+        champIDs[Virgil := 115] := 115
+        champIDs[Sentry := 52] := 52
+        champIDs[Nahara := 102] := 102
+        champIDs[Dhani := 89] := 89
+        champIDs[Kent := 114] := 114
+        champIDs[Gazrick := 98] := 98
+        champIDs[Alyndra := 79] := 79
+        champIDs[Selise := 81] := 81
+        champIDs[Vi := 95] := 95
+        champIDs[Havilar := 56] := 56
+        champIDs[Shandie := 47] := 47
+        champIDs[Minsc := 7] := 7
+        champIDs[Baldric := 165] := 165 
+        champIDs[Thellora := 139] 139
         this.ExitMethod := False
         levelBriv := true ; Return value
         if(!g_SF.FormationLock AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; don't show leveling before ellywait finishes or when stacking.
@@ -393,8 +396,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
             formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
         else
-            for k, champID in champIDs
-                if (g_SF.IsChampInFormation(champID, formation))
+            for k, champID in formation
+                if (champIDs[champID] := champID)
                 {
                     targetLevel := this.CalculateTargetLevel(champID)
                     if (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && this.BGFLU_LevelUpChamp(champID, targetLevel))

@@ -347,10 +347,10 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     BGFLU_DoPartySetupMax(formation := "")
     {
         ; Speed champions without Briv
-        static champIDs := [ Briv := 58
+        static champIDs := [ HewMaan := 75
+                        , Briv := 58
                         , Widdle := 91
                         , Ellywick := 83
-                        , HewMaan := 75
                         , Tatyana := 97
                         , Melf := 59
                         , Dynaheir := 145

@@ -287,7 +287,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         {
             for k, champID in formation
             {
-                if (champIDs[champID] := champID)
+                if (champIDs[champID] == champID)
                 {
                     if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
                         keyspam.Push(this.BGFLU_GetFKey(champID))
@@ -397,7 +397,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
         else
             for k, champID in formation
-                if (champIDs[champID] := champID)
+                if (champIDs[champID] == champID)
                 {
                     targetLevel := this.CalculateTargetLevel(champID)
                     if (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && this.BGFLU_LevelUpChamp(champID, targetLevel))
@@ -406,7 +406,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         ; Now do x25 levelling.
         levelBriv := this.DoX25Leveling()
         if(this.ExitMethod)  
-            return false
+            return (this.ExitMethod := False)
         ; Complete leveling
         for k, champID in formation
         {

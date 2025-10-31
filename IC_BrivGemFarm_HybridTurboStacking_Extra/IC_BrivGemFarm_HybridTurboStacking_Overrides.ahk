@@ -201,14 +201,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
 
     StackNormalCheckOrDoOffline()
     {
-        isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
-        if (this.BGFHTS_DelayedOffline || ((!isMelfActive) && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2))
-        {
-            this.BGFHTS_DelayedOffline := false
-            IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
-            this.StackRestart()
-            return true
-        }
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_Multirun" ])
             targetStacks := g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunTargetStacks" ]
         g_SF.ToggleAutoProgress( 0, false, true )
@@ -229,7 +221,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
     {
         currentZone:= g_SF.Memory.ReadCurrentZone()
         amountToLevelBriv := 0
-        if (currentZone >= 1400)
+        if (currentZone >= 1500)
+            amountToLevelBriv := 815
+        else if (currentZone >= 1400)
             amountToLevelBriv := 695
         else if (currentZone >= 1300)
             amountToLevelBriv := 575
@@ -237,8 +231,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
             amountToLevelBriv := 455
         else if (currentZone >= 1100)
             amountToLevelBriv := 400
-        else
-            amountToLevelBriv := 340
         return amountToLevelBriv
         
     }

@@ -55,9 +55,9 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             this.SetupMaxDone := this.BGFLU_DoPartySetupMax() ; Level up all champs to the specified max level
         else if (!this.SetupFailedConversionDone)
             this.SetupFailedConversionDone := this.BGFLU_DoPartySetupFailedConversion() ; Level up all champs to soft cap (including Briv if option checked)
-        if (g_SharedData.BGFLU_UpdateMaxLevels)
+        if (g_SharedData.BGFLU_UpdateMaxLevels) 
         {
-            this.SetupMaxDone := false
+            this.SetupMaxDone := false ; Trigger start max leveling
             g_SharedData.BGFLU_UpdateMaxLevels := false
             ; Stop click spam
             if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
@@ -137,6 +137,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     BGFLU_DoPartySetupMin(forceBrivEllywick := false, timeout := 5000)
     {
         currentZone := g_SF.Memory.ReadCurrentZone()
+        if(!g_SF.FormationLock) ; don't show leveling before ellywait.
+            g_SharedData.LoopString .= " - Party setup Min"
         if (forceBrivEllywick || currentZone == 1)
             g_SF.ToggleAutoProgress( 0, false, true )
         formation := g_SF.GetInitialFormation()
@@ -374,6 +376,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Thellora := 139]
         this.ExitMethod := False
         levelBriv := true ; Return value
+        if(!g_SF.FormationLock) ; don't show leveling before ellywait.
+            g_SharedData.LoopString .= " - Party setup Max"
         if (!formation)
             formation := g_SF.GetInitialFormation()
         else

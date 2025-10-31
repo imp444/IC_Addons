@@ -94,7 +94,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         stackFormation := g_SF.Memory.GetFormationByFavorite(2)
         isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun
         if (!isFormation2)
-            if(g_SF.IsCurrentFormation(stackFormation))
+            if(g_SF.IsCurrentFormationLazy(g_SF.Memory.GetFormationByFavorite(2), 2))
                 isFormation2 := True
         while (!isFormation2 AND ElapsedTime < 5000 )
         {
@@ -104,7 +104,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             ; Can't formation switch when under attack.
             isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun
             if (!isFormation2)
-                if(g_SF.IsCurrentFormation(g_SF.Memory.GetFormationByFavorite(2)))
+                if(g_SF.IsCurrentFormationLazy(stackFormation, 2))
                     isFormation2 := True
             if (ElapsedTime > 1000 AND !isFormation2 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
             {
@@ -376,7 +376,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                         , Thellora := 139]
         this.ExitMethod := False
         levelBriv := true ; Return value
-        if(!g_SF.FormationLock) ; don't show leveling before ellywait.
+        if(!g_SF.FormationLock AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; don't show leveling before ellywait finishes or when stacking.
             g_SharedData.LoopString .= " - Party setup Max"
         if (!formation)
             formation := g_SF.GetInitialFormation()
@@ -437,17 +437,13 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 champIDInSeat := g_SF.Memory.ReadSelectedChampIDBySeat(champSeat)
                 if (champID != champIDInSeat)
                     continue
-                this.ToggleControl(true) ; To go back to x10 - change to ToggleShift
-                if (this.BGFLU_LevelUpChamp(champID, targetLevel))
+                if (this.BGFLU_LevelUpChamp(champID, targetLevel, True))
                 {
-                    this.ToggleControl(false)
                     this.Levelupx25.delete(champID)
                     this.ExitMethod := True
                     return levelBriv
                 }
-                this.ToggleControl(false) ; To go back to x10 - change to ToggleShift
             }
-            this.ToggleControl(false)
         }
         else
             levelBriv := true
@@ -468,26 +464,16 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
     ToggleShift(shiftKeyDown := false)
     {
-        g_SF.DirectedInput(shiftKeyDown ? 1 : 0, shiftKeyDown ? 0 : 1, "{Shift}")
-        startTime:=A_TickCount
-        elapsedTime:=0
-        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=shiftKeyDown AND elapsedTime < 60) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
-        {
+        g_SF.DirectedInput(shiftKeyDown, !shiftKeyDown, "{Shift}")
+        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=shiftKeyDown AND g_SF.IsTimeUp(100)) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
             Sleep 1
-            elapsedTime:=A_TickCount - startTime
-        }
     }
     
     ToggleControl(controlKeyDown := false)
     {
-        g_SF.DirectedInput(controlKeyDown ? 1 : 0, controlKeyDown ? 0 : 1, "{RCtrl}")
-        startTime:=A_TickCount
-        elapsedTime:=0
-        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=controlKeyDown AND elapsedTime < 60) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
-        {
+        g_SF.DirectedInput(controlKeyDown, !controlKeyDown, "{RCtrl}")
+        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=controlKeyDown AND g_SF.IsTimeUp(100)) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
             Sleep 1
-            elapsedTime:=A_TickCount - startTime
-        }
     }
     
     
@@ -640,7 +626,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         return ids
     }
 
-    BGFLU_LevelUpChamp(champID, target)
+    BGFLU_LevelUpChamp(champID, target, isX25 := False)
     {
         if ((g_SF.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1))
             return true
@@ -649,7 +635,11 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             ; Level up a single champion once
             text := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . target . ")"
             g_SharedData.BGFLU_SetStatus(text)
+            if(isX25)
+                this.ToggleControl(true) ; To go back to x10 - change to ToggleShift
             g_SF.DirectedInput(,, this.BGFLU_GetFKey(champID))
+            if(isX25)
+                this.ToggleControl(false) ; To go back to x10 - change to ToggleShift
             return true
         }
         return false

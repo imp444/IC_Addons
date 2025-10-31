@@ -278,7 +278,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
                 if (IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
                     this.StackFarmSetup()
-                else if (!this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2)))
+                else if (!this.IsCurrentFormationLazy(this.Memory.GetFormationByFavorite(2), 2))
                     this.StackFarmSetup()                
                 else if (SBStacksFarmed < (remainder / 10) and ElapsedTime > 10000 ) ; not gaining stacks 
                     this.StackFarmSetup()
@@ -303,7 +303,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
                 if (IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
                     this.StackFarmSetup()
-                else if (!this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2)))
+                else if (!this.IsCurrentFormationLazy(this.Memory.GetFormationByFavorite(2), 2))
                     this.StackFarmSetup()
                 Sleep, 30
                 ElapsedTime := A_TickCount - StartTime

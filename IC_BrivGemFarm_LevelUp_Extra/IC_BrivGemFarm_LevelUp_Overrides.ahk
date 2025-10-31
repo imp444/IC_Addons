@@ -92,7 +92,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         sleepTime := 60
         g_SharedData.LoopString := "Setting stack farm formation."
         stackFormation := g_SF.Memory.GetFormationByFavorite(2)
-        isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun
+        isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2
         if (!isFormation2)
             if(g_SF.IsCurrentFormationLazy(g_SF.Memory.GetFormationByFavorite(2), 2))
                 isFormation2 := True
@@ -102,7 +102,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             if (ElapsedTime > (sleepTime * counter++)) ; input limiter..
                 g_SF.DirectedInput(,,inputValues)
             ; Can't formation switch when under attack.
-            isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun
+            isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2
             if (!isFormation2)
                 if(g_SF.IsCurrentFormationLazy(stackFormation, 2))
                     isFormation2 := True
@@ -114,7 +114,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
             }
             else
                 this.BGFLU_DoPartySetupMax(stackFormation)
-            isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun
+            isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2
         }
         while (!this.BGFLU_DoPartySetupMax(stackFormation) AND (A_TickCount - StartTime) < 5000)
            Sleep, 30

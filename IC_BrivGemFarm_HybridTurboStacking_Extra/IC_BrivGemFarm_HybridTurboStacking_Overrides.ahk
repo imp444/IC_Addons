@@ -98,34 +98,25 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return g_SF.Memory.ReadSBStacks() + 48
     }
 
-    StackRestart(doingRetry := False)
+    StackRestart()
     {
-         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
-        this.StackFarmSetup() ; needs to go to W formation to pervent progressing a single zone on restart.
-        highestZone := g_SF.Memory.ReadHighestZone()
-        if (highestZone == g_SF.Memory.ReadCurrentZone() + 1 AND !Mod(highestZone, 5)) { ; if progressed 1 zone due to no jump, retry no progression..
-            g_SF.ToggleAutoProgress(1)
-            this.StackFarmSetup()
-        }
+        IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
+        g_SF.AlreadyOfflineStackedThisRun := True
+        this.StackFarm() ; immediately stack after coming back online if expected.
+        stacks := g_SF.Memory.ReadSBStacks()
         g_SharedData.LoopString := "FORT Restart"
         g_SF.CurrentZone := g_SF.Memory.ReadCurrentZone() ; record current zone before saving for bad progression checks
+        g_PreviousZoneStartTime := A_TickCount ; reset zone start time after stacking
         if(g_SharedData.TotalRunsCount > 0)
             g_SF.CloseIC( "FORT Restart" )
+        ; save stacks in case close IC fails at doing it properly ? ; g_ServerCall.CallPreventStackFail(stacks) - only saves Haste, deletes SB. Only for resets.
         g_SF.SafetyCheck(stackRestart := True)
-        g_SF.AlreadyOfflineStackedThisRun := True
+        if (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
+            g_SF.FallBackFromZone() ; don't get stuck getting attacked.
         if (g_SF.UnBenchBrivConditions(g_BrivUserSettings))
             g_SF.DirectedInput(,, "{q}")
         else if (g_SF.BenchBrivConditions(g_BrivUserSettings))
             g_SF.DirectedInput(,, "{e}")
-        this.StackFarm() ; immediately stack after coming back online if expected.  
-        if (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
-        {
-            g_SF.FallBackFromZone() ; don't get stuck getting attacked.
-            if (g_SF.UnBenchBrivConditions(g_BrivUserSettings))
-                g_SF.DirectedInput(,, "{q}")
-            else if (g_SF.BenchBrivConditions(g_BrivUserSettings))
-                g_SF.DirectedInput(,, "{e}")
-        }
         IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun := True
         ; SetFormation effectively called here after returning from this function by way of Stack continuing StackFarm()
     }
@@ -139,7 +130,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Melf stacking
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] && this.BGFHTS_PostponeStacking() && !ignoreMelf)
             return 0
-        stacks := this.GetNumStacksFarmed(IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
+        predictStacks := IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive()
+        stacks := this.GetNumStacksFarmed(predictStacks)
         targetStacks := targetStacks ? targetStacks : g_BrivUserSettings[ "TargetStacks" ]
         ; first checks should short circuit last check if failed.
         if (this.ShouldAvoidRestack(stacks, targetStacks) AND !ignoreMelf) {

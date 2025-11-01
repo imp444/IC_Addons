@@ -139,7 +139,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return 0
         }
         ; Check if offline stack is needed
-        if(this.StackNormalCheckOrDoOffline()) ; bad name - tries to offline if it can, otherwise does more setup
+        if(this.StackNormalExtraSetup())
             return
         this.StackFarmSetup()
         ; Start online stacking
@@ -199,7 +199,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         return fncToCallOnTimer
     }
 
-    StackNormalCheckOrDoOffline()
+    ; Extra setup for HTS online stacking.
+    StackNormalExtraSetup()
     {
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_Multirun" ])
             targetStacks := g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunTargetStacks" ]
@@ -254,6 +255,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                     return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
                 g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacksFarmed ) . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
+                this.BGFLU_DoPartySetupMax(stackFormation)
                 if (levelBrivSomeMore)
                     this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 ; Warden ultimate

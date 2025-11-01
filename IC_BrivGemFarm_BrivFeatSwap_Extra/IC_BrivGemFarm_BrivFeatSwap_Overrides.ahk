@@ -68,7 +68,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
             return
         }
         ; Switch if still in modron formation.
-        else if (!g_SF.FormationLock AND g_BrivGemFarm.IsInModronFormation){
+        else if (!g_SF.FormationSwitchLock AND g_BrivGemFarm.IsInModronFormation){
         
               ; Q OR E depending on route.
             if (this.UnBenchBrivConditions(this.Settings))

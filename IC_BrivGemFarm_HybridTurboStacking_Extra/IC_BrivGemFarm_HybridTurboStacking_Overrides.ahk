@@ -213,7 +213,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         if (!isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 1)
             removedIds := [59] ; Melf
         else if (isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfActiveStrategy" ] == 1)
-            removedIds := [36] ; Warden/Tatyana
+            removedIds := [36, 97] ; Warden/Tatyana
         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite(removedIds)
         return false
     }
@@ -245,6 +245,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         usedWardenUlt := false
         StartTime := A_TickCount
         ElapsedTime := 0
+        MelfID := 59
         if (!IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())  ; Haste stacks are taken into account
         {
             remainder := targetStacks - stacks
@@ -255,7 +256,12 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                     return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
                 g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacksFarmed ) . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
+                isMelfInParty := MelfID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(MelfID))
+                if (isMelfInParty)
+                    targetLevel := this.BGFLU_GetTargetLevel(MelfID)
+                this.BGFLU_LevelUpChamp(MelfID, targetLevel, true) ; level melf x25
                 this.BGFLU_DoPartySetupMax(stackFormation)
+                this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 if (levelBrivSomeMore)
                     this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 ; Warden ultimate
@@ -281,6 +287,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                     return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
                 g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
+                isMelfInParty := MelfID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(MelfID))
+                if (isMelfInParty)
+                    targetLevel := this.BGFLU_GetTargetLevel(MelfID)
+                this.BGFLU_LevelUpChamp(MelfID, targetLevel, true) ; level melf x25
                 if (levelBrivSomeMore)
                     this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 ; Warden ultimate

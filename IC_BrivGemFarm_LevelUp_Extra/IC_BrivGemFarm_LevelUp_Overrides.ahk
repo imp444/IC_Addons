@@ -83,9 +83,10 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
     }
 
     ; Stops progress and switches to appropriate party to prepare for stacking Briv's SteelBones.
-    StackFarmSetup()
+    StackFarmSetup(setUIString := False)
     {
-        g_SharedData.LoopString := "Switching to stack farm formation."
+        if(setUIString)
+            g_SharedData.LoopString := "Switching to stack farm formation."
         if (!this.BossKillAttempt AND !g_SF.KillCurrentBoss() ) ; Previously/Alternatively FallBackFromBossZone()
             this.BossKillAttempt := True, g_SF.FallBackFromBossZone() ; Boss kill Timeout
         inputValues := "{w}" ; Stack farm formation hotkey
@@ -98,7 +99,8 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         ElapsedTime := 0
         counter := 0
         sleepTime := 60
-        g_SharedData.LoopString := "Setting stack farm formation."
+        if(setUIString)
+            g_SharedData.LoopString := "Setting stack farm formation."
         stackFormation := g_SF.Memory.GetFormationByFavorite(2)
         if(g_SF.IsCurrentFormationLazy(g_SF.Memory.GetFormationByFavorite(2), 2))
             isFormation2 := True
@@ -165,7 +167,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (currentZone == 1 || g_SharedData.TriggerStart)
             g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
         ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
-        return results
+        return keyspam == {}
     }
 
     BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivEllywick := false, timeout := "", currentZone := 1)

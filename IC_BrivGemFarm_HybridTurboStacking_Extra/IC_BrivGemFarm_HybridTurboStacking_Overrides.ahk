@@ -141,7 +141,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Check if offline stack is needed
         if(this.StackNormalExtraSetup())
             return
-        this.StackFarmSetup()
+        this.StackFarmSetup(setUIString := True)
         ; Start online stacking
         g_SharedData.LoopString := "Stack Normal"
         ; Turn on Briv auto-heal
@@ -259,7 +259,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                 isMelfInParty := MelfID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(MelfID))
                 if (isMelfInParty)
                     targetLevel := this.BGFLU_GetTargetLevel(MelfID)
-                this.BGFLU_LevelUpChamp(MelfID, targetLevel, true) ; level melf x25
+                this.BGFLU_LevelUpChamp(MelfID, targetLevel, true) ; special redundant level melf x25
                 this.BGFLU_DoPartySetupMax(stackFormation)
                 this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 if (levelBrivSomeMore)

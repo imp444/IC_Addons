@@ -102,16 +102,17 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
                 g_BrivGemFarm.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Ellywick.HeroID)
         timeout := 60000
         timeoutTimer := new SH_SharedTimers()
+        minFailCount := 0
         while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && !timeoutTimer.IsTimeUp(timeout))
         {
             g_SF.SetFormationForStart()
             g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
             ; this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
             numMelee := g_SF.Memory.ReadNumAttackingMonstersReached()
-            if (g_SF.Memory.ReadNumAttackingMonstersReached() >= 1)
+            if(g_BrivGemFarm.BGFLU_DoPartySetupMin())
+                minFailCount += 1
+            if(minCount >= 3)
                 g_BrivGemFarm.BGFLU_DoPartySetupMax()
-            else
-                g_BrivGemFarm.BGFLU_DoPartySetupMin()
             Sleep, 30
         }
         if (timeoutTimer.IsTimeUp(timeout))

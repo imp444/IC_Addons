@@ -100,27 +100,21 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
         if (!g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())
             if(ActiveEffectKeySharedFunctions.Ellywick.HeroID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(ActiveEffectKeySharedFunctions.Ellywick.HeroID)))
                 g_BrivGemFarm.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Ellywick.HeroID )
-        if (g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())                
+        while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && !g_SF.IsTimeUp(timeout))
         {
-            timeout := 60000
-            ElapsedTime := 0
-            StartTime := A_TickCount
-            while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
-            {
-                g_SF.SetFormationForStart()
-                g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
-                ; this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
-                numMelee := g_SF.Memory.ReadNumAttackingMonstersReached()
-                if (g_SF.Memory.ReadNumAttackingMonstersReached() >= 1)
-                    g_BrivGemFarm.BGFLU_DoPartySetupMax()
-                else
-                    g_BrivGemFarm.BGFLU_DoPartySetupMin()
-                Sleep, 30
-                ElapsedTime := A_TickCount - StartTime
-            }
-            if (ElapsedTime >= timeout)
-                g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
+            g_SF.SetFormationForStart()
+            g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
+            ; this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
+            numMelee := g_SF.Memory.ReadNumAttackingMonstersReached()
+            if (g_SF.Memory.ReadNumAttackingMonstersReached() >= 1)
+                g_BrivGemFarm.BGFLU_DoPartySetupMax()
+            else
+                g_BrivGemFarm.BGFLU_DoPartySetupMin()
+            Sleep, 30
         }
+        if (g_SF.IsTimeUp(timeout))
+            g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
+        g_SF.IsTimeUp(0) ; Timer reset
         g_SharedData.RNGWR_Elly.Stop()
         g_SharedData.RNGWR_FirstRun := false
         g_BrivGemFarm.BGFLU_DoPartySetupMax()

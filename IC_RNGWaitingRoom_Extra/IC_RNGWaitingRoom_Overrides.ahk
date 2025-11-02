@@ -100,7 +100,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
         if (!g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())
             if(ActiveEffectKeySharedFunctions.Ellywick.HeroID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(ActiveEffectKeySharedFunctions.Ellywick.HeroID)))
                 g_BrivGemFarm.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Ellywick.HeroID )
-        if (!g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())                
+        if (g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())                
         {
             timeout := 60000
             ElapsedTime := 0

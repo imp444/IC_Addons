@@ -32,12 +32,13 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
         this.SetupMaxDone := false
         this.SetupFailedConversionDone := true
-        this.BGLU_DoneLeveling := False
         resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup := False)
         if(this.GemFarmShouldSetFormation())
             g_SF.SetFormationForStart()        
         this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivEllywick" ]) ; level forced champions (briv/ellywick), then other minlevel champs
         this.BGFLU_DoPartyWaits(formationModron)
+        this.Levelupx25 := {} 
+        this.BGLU_DoneLeveling := False 
         g_SF.FormationSwitchLock := False
         g_SF.ToggleAutoProgress( 1, false, true )
         return resetsCount

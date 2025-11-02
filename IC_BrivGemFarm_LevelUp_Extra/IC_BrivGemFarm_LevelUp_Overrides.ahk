@@ -723,7 +723,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
     {
         this.ToggleAutoProgress(0)
         this.SetFormationForStart()
-        g_BrivGemFarm.BGFLU_DoPartySetupMIn() ; min before ellywait.
+        g_BrivGemFarm.BGFLU_DoPartySetupMin() ; min before ellywait.
         this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
         ElapsedTime := A_TickCount - StartTime
         g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate

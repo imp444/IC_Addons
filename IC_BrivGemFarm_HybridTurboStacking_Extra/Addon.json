@@ -1,6 +1,6 @@
 {
 	"Name":"BrivGemFarm HybridTurboStacking",
-	"Version": "v1.2.2",
+	"Version": "v1.2.3",
     "Includes" : "IC_BrivGemFarm_HybridTurboStacking_Includes.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/antilectual/IC_Addons-1/tree/Anti-Changes/IC_BrivGemFarm_HybridTurboStacking_Extra",

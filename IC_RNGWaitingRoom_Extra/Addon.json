@@ -1,6 +1,6 @@
 {
 	"Name":"RNG Waiting Room",
-	"Version": "v0.2.8",
+	"Version": "v0.2.9",
     "Includes" : "IC_RNGWaitingRoom_Includes.ahk",
     "Author" : "ImpEGamer",
     "Url" : "https://github.com/antilectual/IC_Addons-1/tree/Anti-Changes/IC_RNGWaitingRoom_Extra",

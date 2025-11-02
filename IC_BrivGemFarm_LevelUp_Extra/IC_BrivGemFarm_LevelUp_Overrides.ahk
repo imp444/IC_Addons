@@ -483,19 +483,17 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     ToggleShift(shiftKeyDown := false)
     {
         g_SF.DirectedInput(shiftKeyDown, !shiftKeyDown, "{Shift}")
-        timeoutTimer := new SH_SharedTimers
+        timeoutTimer := new SH_SharedTimers()
         while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=shiftKeyDown AND !timeoutTimer.IsTimeUp(100)) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
             Sleep 1
-        timeoutTimer.IsTimeUp(0) ; clean up your timers
     }
     
     ToggleControl(controlKeyDown := false)
     {
         g_SF.DirectedInput(controlKeyDown, !controlKeyDown, "{RCtrl}")
-        timeoutTimer := new SH_SharedTimers
+        timeoutTimer := new SH_SharedTimers()
         while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=controlKeyDown AND !timeoutTimer.IsTimeUp(100)) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
             Sleep 1
-        timeoutTimer.IsTimeUp(0)
     }
     
     

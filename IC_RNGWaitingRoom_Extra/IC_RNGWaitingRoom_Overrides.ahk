@@ -100,8 +100,8 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
         if (!g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())
             if(ActiveEffectKeySharedFunctions.Ellywick.HeroID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(ActiveEffectKeySharedFunctions.Ellywick.HeroID)))
                 g_BrivGemFarm.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Ellywick.HeroID)
-        timer := new SH_SharedTimers
-        while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && !timer.IsTimeUp(timeout))
+        timeoutTimer := new SH_SharedTimers
+        while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && !timeoutTimer.IsTimeUp(timeout))
         {
             g_SF.SetFormationForStart()
             g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
@@ -113,7 +113,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
                 g_BrivGemFarm.BGFLU_DoPartySetupMin()
             Sleep, 30
         }
-        if (timer.IsTimeUp(timeout))
+        if (timeoutTimer.IsTimeUp(timeout))
             g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
         g_SF.IsTimeUp(0) ; Timer reset
         g_SharedData.RNGWR_Elly.Stop()

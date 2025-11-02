@@ -140,10 +140,10 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
         Returns:
     */
-    BGFLU_DoPartySetupMin(forceBrivEllywick := false, timeout := 5000, initialFormation := "")
+    BGFLU_DoPartySetupMin(forceBrivEllywick := false, timeout := 10000, initialFormation := "")
     {
         currentZone := g_SF.Memory.ReadCurrentZone()
-        if(!g_SF.FormationSwitchLock) ; don't show leveling before ellywait.
+        if(!g_SF.FormationSwitchLock) ; don't show leveling string before ellywait.
             g_SharedData.LoopString .= " - Party setup Min"
         if (forceBrivEllywick || currentZone == 1)
             g_SF.ToggleAutoProgress( 0, false, true )
@@ -172,53 +172,50 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
     BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivEllywick := false, timeout := "", currentZone := 1)
     {
-        StartTime := A_TickCount, ElapsedTime := 0
-        if (timeout == "")
-            timeout := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ]
-        timeout := timeout == "" ? 5000 : timeout
+        timeout := timeout == "" ? g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ] : timeout
+        timeout := timeout == "" ? 10000 : timeout
         keyspam := {}
         keyspam.Push("")
         loopCount := 0
         allowClick := False
-        while(keyspam.Length() != 0 AND ElapsedTime < timeout)
+        timeoutTimer := new SH_SharedTimers()
+        while(keyspam.Length() != 0 AND !timeoutTimer.IsTimeUp(timeout))
         {
-            if(loopCount > 2)
+            if(2 < loopCount++) 
                 allowClick := True
             keyspam := this.BGFLU_DoPartySetupMinInnerLoop_NoLowFavor(formation, forceBrivEllywick, currentZone, allowClick)
-            loopCount++
-            ElapsedTime := A_TickCount - StartTime
         }
         return keyspam
     }
 
     BGFLU_DoPartySetupMinInnerLoop_NoLowFavor(formation, forceBrivEllywick := false, currentZone := 1, allowClick := True)
     {
-            keyspam := {}
-            ; Update formation on zone change
-            if (currentZone < g_SF.Memory.ReadCurrentZone())
-            {
-                currentZone := g_SF.Memory.ReadCurrentZone()
-                formation := g_SF.GetInitialFormation()
-            }
-            if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
-            {
-                formationInOrder := this.BGFLU_OrderByCheapeastUpgrade(formation)
-                keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivEllywick)
-            }
-            else
-                keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivEllywick, currentZone)
-            ; Level up speed champions once
-            g_SF.DirectedInput(,, keyspam*)
-            ; Set formation
-            g_SF.SetFormationForStart()
-            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
-            if(allowClick OR currentZone > 1)
-            {
-                if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-                    g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
-                g_SF.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
-            }
-            return keyspam
+        keyspam := {}
+        ; Update formation on zone change
+        if (currentZone < g_SF.Memory.ReadCurrentZone())
+        {
+            currentZone := g_SF.Memory.ReadCurrentZone()
+            formation := g_SF.GetInitialFormation()
+        }
+        if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
+        {
+            formationInOrder := this.BGFLU_OrderByCheapeastUpgrade(formation)
+            keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivEllywick)
+        }
+        else
+            keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivEllywick, currentZone)
+        ; Level up speed champions once
+        g_SF.DirectedInput(,, keyspam*)
+        ; Set formation
+        g_SF.SetFormationForStart()
+        Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
+        if(allowClick OR currentZone > 1)
+        {
+            if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
+                g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
+            g_SF.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
+        }
+        return keyspam
     }
 
     BGFLU_DoPartyWaits(formation)
@@ -387,7 +384,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         champIDs[Thellora := 139] 139
         this.ExitMethod := False
         levelBriv := true ; Return value
-        if(!g_SF.FormationSwitchLock AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; don't show leveling before ellywait finishes or when stacking.
+        if(!g_SF.FormationSwitchLock AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; don't show leveling string before ellywait finishes or when stacking.
             g_SharedData.LoopString .= " - Party setup Max"
         if (!formation)
             formation := g_SF.GetInitialFormation()

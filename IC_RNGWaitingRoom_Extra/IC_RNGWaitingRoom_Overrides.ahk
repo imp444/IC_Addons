@@ -111,7 +111,7 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
             numMelee := g_SF.Memory.ReadNumAttackingMonstersReached()
             if(g_BrivGemFarm.BGFLU_DoPartySetupMin())
                 minFailCount += 1
-            if(minCount >= 3)
+            if(minCount >= 4)
                 g_BrivGemFarm.BGFLU_DoPartySetupMax()
             Sleep, 30
         }

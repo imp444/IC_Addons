@@ -305,46 +305,31 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.LevelToSoftCapFailedConversionBriv := false
         settings.DefinitionsLanguage := 1
         minLevels := {}, maxLevels := {}
+
         ; Speed champions
-        minLevels[58] := 170, maxLevels[58] := 1300 ; Briv
-        minLevels[47] := 120, maxLevels[47] := 120 ; Shandie
-        minLevels[91] := 260, maxLevels[91] := 310 ; Widdle 260 310 350
-        minLevels[128] := 100, maxLevels[128] := 170 ; Lae'Zel
-        minLevels[28] := 90, maxLevels[28] := 200 ; Deekin 90 200
-        minLevels[75] := 220, maxLevels[75] := 220 ; Hew Maan 40 200 220 360
-        minLevels[102] := 90, maxLevels[102] := 250 ; Nahara
-        minLevels[125] := 1, maxLevels[125] := 370 ; BBEG
-        minLevels[52] := 80, maxLevels[52] := 280 ; Sentry
-        minLevels[59] := 70, maxLevels[59] := 100 ; Melf
-        minLevels[148] := 100, maxLevels[148] := 200 ; Diana
-        minLevels[115] := 100, maxLevels[115] := 100 ; Virgil
-        minLevels[89] := 1, maxLevels[89] := 1 ; D'hani
-        minLevels[114] := 1, maxLevels[114] := 1 ; Kent
-        minLevels[98] := 1, maxLevels[98] := 1 ; Gazrick 1540
-        minLevels[79] := 1, maxLevels[79] := 1 ; Shaka
-        minLevels[81] := 1, maxLevels[81] := 1 ; Selise
-        minLevels[56] := 165, maxLevels[56] := 165 ; Havilar
-        minLevels[95] := 100, maxLevels[95] := 250 ; Vi 100 250
-        minLevels[70] := 90, maxLevels[70] := 90 ; Ezmeralda 90 315
-        minLevels[12] := 65, maxLevels[12] := 65 ; Arkhan
-        minLevels[139] := 1, maxLevels[139] := 1 ; Thellora
-        ; Gold find % champions
-        minLevels[4] := 1, maxLevels[4] := 2050 ; Jarlaxle
-        minLevels[39] := 1, maxLevels[39] := 2930 ; Paultin
-        minLevels[103] := 1, maxLevels[103] := 2000 ; Valentine
-        minLevels[124] := 1, maxLevels[124] := 890 ; Evandra
-        minLevels[113] := 1, maxLevels[113] := 1370 ; Egbert
-        minLevels[129] := 1, maxLevels[129] := 2490 ; Astarion
-        minLevels[94] := 1, maxLevels[94] := 2520 ; Rust
-        minLevels[30] := 1, maxLevels[30] := 2020 ; Azaka
+        minLevels[ 58] := 200, maxLevels[ 58] := 1300 ; Briv
+        minLevels[ 47] := 200, maxLevels[ 47] :=  200 ; Shandie
+        minLevels[ 91] := 300, maxLevels[ 91] :=  310 ; Widdle
+        minLevels[128] := 100, maxLevels[128] :=  200 ; Lae'Zel
+        minLevels[ 28] := 100, maxLevels[ 28] :=  200 ; Deekin
+        minLevels[ 75] := 200, maxLevels[ 75] :=  225 ; Hew Maan
+        minLevels[102] := 100, maxLevels[102] :=  300 ; Nahara
+        minLevels[125] := 400, maxLevels[125] :=  400 ; BBEG
+        minLevels[145] :=   0, maxLevels[145] :=  100 ; Dynaheir
+        minLevels[ 52] := 100, maxLevels[ 52] :=  100 ; Sentry
+        minLevels[ 59] := 100, maxLevels[ 59] :=  100 ; Melf
+        minLevels[148] := 100, maxLevels[148] :=  200 ; Diana
+        minLevels[139] :=   1, maxLevels[139] :=    1 ; Thellora
+        minLevels[ 97] := 100, maxLevels[ 97] :=  100 ; Tatyana
         ; Other
-        minLevels[40] := 0, maxLevels[40] := 215 ; Black Viper
-        minLevels[97] := 0, maxLevels[97] := 80 ; Tatyana
-        minLevels[100] := 0, maxLevels[100] := 90 ; Nordom
-        minLevels[118] := 0, maxLevels[118] := 60 ; Fen
-        minLevels[83] := 200, maxLevels[83] := 200 ; Ellywick
-        minLevels[99] := 200, maxLevels[99] := 200 ; Dungeon Master
-        minLevels[165] := 200, maxLevels[165] := 200 ; Baldric
+        minLevels[ 83] := 200, maxLevels[ 83] :=  200 ; Ellywick
+        minLevels[ 99] := 200, maxLevels[ 99] :=  200 ; Dungeon Master
+        minLevels[165] := 200, maxLevels[165] :=  200 ; Baldric
+        minLevels[  7] := 100, maxLevels[  7] :=  100 ; Minsc
+        minLevels[117] :=   0, maxLevels[117] :=   50 ; Imoen
+        minLevels[ 33] :=   0, maxLevels[ 33] :=  110 ; Farideh
+        minLevels[ 36] :=   0, maxLevels[ 36] :=  250 ; Warden
+        
         settings.BrivGemFarm_LevelUp_Settings := {minLevels:minLevels, maxLevels:maxLevels}
         return settings
     }

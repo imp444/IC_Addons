@@ -296,8 +296,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 {
                     if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
                         keyspam.Push(this.BGFLU_GetFKey(champID))
-                    if (!forceBrivEllywick)
-                        nonSpeedIDs.Delete(champID)
+                    ; if (!forceBrivEllywick)
+                    ;     nonSpeedIDs.Delete(champID)
                 }
             }
             if (keyspam.Length() == 0) ; no champs to add, length cannot reach MaxSimultaneousInputs > 0 here.

@@ -96,24 +96,20 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_SF.WaitForTransition( inputValues )
         g_SF.DirectedInput(,, keyspam*)
         g_SF.ToggleAutoProgress( 0 , false, true )
-        StartTime := A_TickCount
-        ElapsedTime := 0
+        timeout := 5000
         counter := 0
-        sleepTime := 60
+        sleepTime := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
         if(setUIString)
             g_SharedData.LoopString := "Setting stack farm formation."
         stackFormation := g_SF.Memory.GetFormationByFavorite(2)
         if(g_SF.IsCurrentFormationLazy(g_SF.Memory.GetFormationByFavorite(2), 2))
             isFormation2 := True
-        while (!isFormation2 AND ElapsedTime < 5000 )
+        timeoutTimer := new SH_SharedTimers()
+        while (!isFormation2 AND !timeoutTimer.IsTimeUp(timeout) )
         {
-            ElapsedTime := A_TickCount - StartTime
-            if (ElapsedTime > (sleepTime * counter++)) ; input limiter..
+            if (!timeoutTimer.IsTimeUp(sleepTime * counter)) ; input limiter..
                 g_SF.DirectedInput(,,inputValues)
-            ; Can't formation switch when under attack.
-            if(g_SF.IsCurrentFormationLazy(stackFormation, 2))
-                isFormation2 := True
-            if (ElapsedTime > 1000 AND !isFormation2 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
+            if (timeoutTimer.IsTimeUp(1000) AND !isFormation2 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
             {
                  ; not W formation or briv is benched
                 if (g_SF.Memory.ReadChampBenchedByID(ActiveEffectKeySharedFunctions.Briv.HeroID) OR !(g_SF.Memory.ReadMostRecentFormationFavorite() == 2))
@@ -123,7 +119,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 this.BGFLU_DoPartySetupMax(stackFormation)
             if(g_SF.IsCurrentFormationLazy(stackFormation, 2))
                 isFormation2 := True
-            ; isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2
+            counter++
         }
         return
     }

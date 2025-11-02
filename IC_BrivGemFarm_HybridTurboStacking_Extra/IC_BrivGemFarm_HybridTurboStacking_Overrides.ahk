@@ -400,7 +400,8 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_MemoryFunctions_Class extends IC_Mem
         version := this.GameManager.game.gameInstances[this.GameInstance].FormationSaveHandler.formationSavesV2.__version.Read()
         if (this.FavoriteFormations[favorite] != "" AND version != "" AND version == this.LastFormationSavesVersion[favorite])
             return this.FavoriteFormations[favorite] 
-        formation := this.GetFormationSaveBySlot(,,favorite)
+        slot := this.GetSavedFormationSlotByFavorite(favorite)
+        formation := this.GetFormationSaveBySlot(slot)
         if (favorite == 2) ; don't test stack formation for champions are still benched.
             for k, v in formation
                 for _, champID in g_SharedData.BGFHTS_RemovedIdsFromWFavorite

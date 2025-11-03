@@ -283,7 +283,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         {
             for k, champID in formation
             {
-                isEllywickAndForce := forceBrivEllywick ANd champID == ActiveEffectKeySharedFunctions.Ellywick.HeroID
+                isEllywickAndForce := forceBrivEllywick AND champID == ActiveEffectKeySharedFunctions.Ellywick.HeroID
                 isBrivAndForce := forceBrivEllywick AND champID == ActiveEffectKeySharedFunctions.Briv.HeroID
                 IsNotForce := !forceBrivEllywick AND this.ChampIDs[champID] == champID
                 if (isBrivAndForce OR isEllywickAndForce OR IsNotForce)

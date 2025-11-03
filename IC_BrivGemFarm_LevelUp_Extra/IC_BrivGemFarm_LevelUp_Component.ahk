@@ -289,7 +289,7 @@ Class IC_BrivGemFarm_LevelUp_Component
         settings.SkipMinDashWait := false
         settings.MaxSimultaneousInputs := 1
         settings.MinLevelInputDelay := 40
-        settings.MinLevelTimeout := 1000
+        settings.MinLevelTimeout := 10000
         settings.FavoriteFormationZ1 := "Q"
         settings.LowFavorMode := false
         settings.MinClickDamage := 1

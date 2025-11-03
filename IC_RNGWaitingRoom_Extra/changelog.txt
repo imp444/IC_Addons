@@ -1,4 +1,7 @@
 November 3, 2025
+    - Updated locks to be differentiated between leveling and formation.
+    - Updated ellywick's logic to make sure ellywait happens in more cases.
+    - Updated timeout timers.
 
 October 22, 2025
     - Changed update URL to Anti's for now.

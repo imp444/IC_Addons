@@ -6,39 +6,6 @@
 class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 {
     Levelupx25 := {}
-    ChampIDs := {}
-
-    InitChamps()
-    {
-        this.ChampIDs := {}
-        this.ChampIDs[Briv := "58"] := 58 ; must be in quotes so object is treated as dict and not an array that will modify keys.
-        this.ChampIDs[Widdle := 91] := 91
-        this.ChampIDs[Ellywick := 83] := 83
-        this.ChampIDs[HewMaan := 75] := 75
-        this.ChampIDs[Tatyana := 97] := 97
-        this.ChampIDs[Melf := 59] := 59
-        this.ChampIDs[Dynaheir := 145] := 145
-        this.ChampIDs[Diana := 148] := 148
-        this.ChampIDs[BBEG  := 125] := 125
-        this.ChampIDs[Dungeon_Master := 99] := 99
-        this.ChampIDs[Imoen := 117] := 117
-        this.ChampIDs[Laezel  := 128] := 128
-        this.ChampIDs[Deekin := 28] := 28
-        this.ChampIDs[Virgil := 115] := 115
-        this.ChampIDs[Sentry := 52] := 52
-        this.ChampIDs[Nahara := 102] := 102
-        this.ChampIDs[Dhani := 89] := 89
-        this.ChampIDs[Kent := 114] := 114
-        this.ChampIDs[Gazrick := 98] := 98
-        this.ChampIDs[Alyndra := 79] := 79
-        this.ChampIDs[Selise := 81] := 81
-        this.ChampIDs[Vi := 95] := 95
-        this.ChampIDs[Havilar := 56] := 56
-        this.ChampIDs[Shandie := 47] := 47
-        this.ChampIDs[Minsc := 7] := 7
-        this.ChampIDs[Baldric := 165] := 165 
-        this.ChampIDs[Thellora := 139] := 139
-    }
     ;=====================================================
     ;Primary Functions for Briv Gem Farm
     ;=====================================================
@@ -48,13 +15,11 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         base.GemFarmDoZone(formationModron)
     }
     
-    ; returns 0 on normal exit, otherwise error number < 0
     GemFarmPreLoopSetup()
     {
         isFailed := base.GemFarmPreLoopSetup(True)
         if(!isFailed)
         {
-            this.InitChamps()
             g_SF.BGFLU_CalcLastUpgradeLevels()
             g_SharedData.BGFLU_UpdateSettingsFromFile(true)
             g_SharedData.BGFLU_SaveFormations()
@@ -156,7 +121,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
                 isFormation2 := True
             counter++
         }
-        g_SharedData.LoopString := "Stack farm formation set."
         return
     }
 }
@@ -264,17 +228,54 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     BGFLU_GetMinLevelingKeyspam(formation, forceBrivEllywick := false, currentZone := 0)
     {
         keyspam := []
-        brivLeveling := True
+        ; List of champion IDs
+        if (forceBrivEllywick)
+        {
+            champIDs := {}
+            champIDs[Briv := "58"] := 58
+            champIDs[Ellywick := 83] := 83
+        }
+        else
+        {
+            champIDs := {}
+            champIDs[Briv := "58"] := 58 ; must be in quotes so object is treated as dict and not an array that will modify keys.
+            champIDs[Widdle := 91] := 91
+            champIDs[Ellywick := 83] := 83
+            champIDs[HewMaan := 75] := 75
+            champIDs[Tatyana := 97] := 97
+            champIDs[Melf := 59] := 59
+            champIDs[Dynaheir := 145] := 145
+            champIDs[Diana := 148] := 148
+            champIDs[BBEG  := 125] := 125
+            champIDs[Dungeon_Master := 99] := 99
+            champIDs[Imoen := 117] := 117
+            champIDs[Laezel  := 128] := 128
+            champIDs[Deekin := 28] := 28
+            champIDs[Virgil := 115] := 115
+            champIDs[Sentry := 52] := 52
+            champIDs[Nahara := 102] := 102
+            champIDs[Dhani := 89] := 89
+            champIDs[Kent := 114] := 114
+            champIDs[Gazrick := 98] := 98
+            champIDs[Alyndra := 79] := 79
+            champIDs[Selise := 81] := 81
+            champIDs[Vi := 95] := 95
+            champIDs[Havilar := 56] := 56
+            champIDs[Shandie := 47] := 47
+            champIDs[Minsc := 7] := 7
+            champIDs[Baldric := 165] := 165 
+            champIDs[Thellora := 139] := 139
+        }
         ; Need to walk while Briv is in all formations
         if (!this.BGFLU_AllowBrivLeveling())
-            brivLeveling := False
+            champIDs.RemoveAt(1)
         if (!forceBrivEllywick)
         {
             nonSpeedIDs := {}
             for k, champID in formation
             {
                 ; Need to walk while Briv is in all formations
-                if (champID == 58 && !brivLeveling)
+                if (champID == 58 && !this.BGFLU_AllowBrivLeveling())
                     continue
                 if (champID != -1 && champID != "")
                     nonSpeedIDs[champID] := champID
@@ -285,13 +286,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         {
             for k, champID in formation
             {
-                isBrivAndForce := forceBrivEllywick ANd champID == ActiveEffectKeySharedFunctions.Ellywick.HeroID
-                isEllywickAndForce := forceBrivEllywick AND champID == ActiveEffectKeySharedFunctions.Briv.HeroID
-                IsNotForce := !forceEllywick AND this.ChampIDs[champID] == champID
-                if (isBrivAndForce OR isEllywickAndForce OR IsNotForce)
+                if (champIDs[champID] == champID)
                 {
-                    if((champID == 58 && !brivLeveling))
-                        continue
                     if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
                         keyspam.Push(this.BGFLU_GetFKey(champID))
                     if (!forceBrivEllywick)
@@ -353,11 +349,38 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if(this.BGLU_DoneLeveling)
             return true
         ; Speed champions without Briv
+        static champIDs := {}
+        champIDs[HewMaan := "75"] := 75
+        champIDs[Briv := 58] := 58
+        champIDs[Widdle := 91] := 91
+        champIDs[Ellywick := 83] := 83
+        champIDs[Tatyana := 97] := 97
+        champIDs[Melf := 59] := 59
+        champIDs[Dynaheir := 145] := 145
+        champIDs[Diana := 148] := 148
+        champIDs[BBEG  := 125] := 125
+        champIDs[Dungeon_Master := 99] := 99
+        champIDs[Imoen := 117] := 117
+        champIDs[Laezel  := 128] := 128
+        champIDs[Deekin := 28] := 28
+        champIDs[Virgil := 115] := 115
+        champIDs[Sentry := 52] := 52
+        champIDs[Nahara := 102] := 102
+        champIDs[Dhani := 89] := 89
+        champIDs[Kent := 114] := 114
+        champIDs[Gazrick := 98] := 98
+        champIDs[Alyndra := 79] := 79
+        champIDs[Selise := 81] := 81
+        champIDs[Vi := 95] := 95
+        champIDs[Havilar := 56] := 56
+        champIDs[Shandie := 47] := 47
+        champIDs[Minsc := 7] := 7
+        champIDs[Baldric := 165] := 165 
+        champIDs[Thellora := 139] := 139
         this.ExitMethod := False
         levelBriv := true ; Return value
-        updateLoopString := !g_SF.FormationSwitchLock AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2
-        if(updateLoopString) ; don't show leveling string before ellywait finishes or when stacking.
-            g_SharedData.LoopString .= " - Party setup Max" ; Will be added multiple times if not cleared in previous function after returning.
+        if(!g_SF.FormationSwitchLock AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; don't show leveling string before ellywait finishes or when stacking.
+            g_SharedData.LoopString .= " - Party setup Max"
         if (!formation)
             formation := g_SF.GetInitialFormation()
         formation := this.BGFLU_GetFormationNoEmptySlots(formation)
@@ -373,7 +396,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
         else
             for k, champID in formation
-                if (this.ChampIDs[champID] == champID) ; Is speed champ
+                if (champIDs[champID] == champID) ; Is speed champ
                 {
                     if (g_SF.FormationLevelingLock)
                         return

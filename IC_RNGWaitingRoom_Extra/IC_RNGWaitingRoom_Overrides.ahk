@@ -106,13 +106,14 @@ class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunc
         while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && !timeoutTimer.IsTimeUp(timeout))
         {
             g_SF.SetFormationForStart()
-            g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
+            g_SharedData.LoopString := "Elly Wait: " . A_TickCount - timeoutTimer.StartTime
             if(g_BrivGemFarm.BGFLU_DoPartySetupMin())
                 minFailCount += 1
             if(minCount >= 4)
                 g_BrivGemFarm.BGFLU_DoPartySetupMax()
             Sleep, 30
         }
+        g_SharedData.LoopString := "Elly Wait Done!"
         if (timeoutTimer.IsTimeUp(timeout))
             g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
         g_SharedData.RNGWR_Elly.Stop()

@@ -84,12 +84,14 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
     DoSwitchFormation(toFavorite := 1)
     {
         static lastZone
+        Critical, On
         currentZone := this.Memory.ReadCurrentZone()
         this.DoSwitchFormationInput(toFavorite)
         Sleep, 32 ; Give formation time to switch
         if (toFavorite == this.Memory.ReadMostRecentFormationFavorite())
         {
             lastZone := currentZone
+            Critical, Off
             return
         }
         if (currentZone != 1 AND currentZone != lastZone AND ((attackingMon := this.Memory.ReadNumAttackingMonstersReached()) >= 10 || (attackingRangedMon := this.Memory.ReadNumRangedAttackingMonsters())))
@@ -98,6 +100,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun := True
         Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
         g_SharedData.BGFBFS_UpdateSkipAmount(toFavorite)
+        Critical, Off
     }
 
     DoSwitchFormationInput(toFavorite := 1)

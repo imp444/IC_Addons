@@ -1,3 +1,7 @@
+November 3, 2025
+    - Updated to use new base DoSwitchFormation.
+    - Added lazy formation checking.
+    - Added critical to formation switching.
 
 October 19, 2025
     - Many fixes/changes to work with BrivGemFarm 4.4.3

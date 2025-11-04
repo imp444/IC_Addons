@@ -16,10 +16,6 @@ class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
 
     GemFarmResetSetup(formationModron := "", doBasePartySetup := False)
     {
-        ; if ( 1 == g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ] AND 1 == g_BrivUserSettingsFromAddons[ "BGFLU_BrivLevelingZones" ][1]) ; to help coerce Thellora/Briv combo jump
-        ;     g_SF.FormationLevelingLock := True ; or is it FormationSwitchLock? Or both?
-        ; else
-        ;     g_SF.FormationLevelingLock := True ; Prioritize evading combination over DM usage.
         resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
         g_SharedData.RNGWR_Elly.Reset()
         return resetsCount
@@ -85,8 +81,6 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_SharedFunctions_Class
 
 class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunctions_Class
 {
-;   FormationLevelingLock := False   
-
     RNGWR_DoEllyWait()
     {
         g_SF.ToggleAutoProgress( 0, false, true )

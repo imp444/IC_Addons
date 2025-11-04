@@ -138,7 +138,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             if (!timeoutTimer.IsTimeUp(sleepTime * counter)) ; input limiter..
                 g_SF.DirectedInput(,,inputValues)
-            if (timeoutTimer.IsTimeUp(1000) AND !isFormation2 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
+            if (timeoutTimer.IsTimeUp(1000) AND !isFormation2 && (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters()))
             {
                  ; not W formation or briv is benched
                 if (g_SF.Memory.ReadChampBenchedByID(ActiveEffectKeySharedFunctions.Briv.HeroID) OR !(g_SF.Memory.ReadMostRecentFormationFavorite() == 2))
@@ -176,7 +176,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             g_SF.ToggleAutoProgress( 0, false, true )
         if(initialFormation == "")
             formation := g_SF.GetInitialFormation()
-        ; If low favor mode is active, cheapeast upgrade first
+        ; If low favor mode is active, cheapest upgrade first
         lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
         g_SF.SetFormationForStart()
         ; Level up speed champs first, priority to getting Briv, Ellywick, Hew Maan, Nahara, Sentry, Virgil speed effects
@@ -185,11 +185,11 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
             keyspam := this.BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivEllywick, timeout, currentZone)
         else {
-            formationInOrder := this.BGFLU_OrderByCheapeastUpgrade(formation)
+            formationInOrder := this.BGFLU_OrderBycheapestUpgrade(formation)
             keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivEllywick)
         }
         if(keyspam != "" AND keyspam != {})
-            remainingTime := timeout
+            remainingTime := timeout ; reset timeout
         else
             remainingTime := timeout - (A_TickCount - StartTime)
         g_SF.DirectedInput(hold := 0,, keyspam*) ; keysup
@@ -345,7 +345,6 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         if(this.BGLU_DoneLeveling)
             return true
         ; Speed champions without Briv
-        this.ExitMethod := False
         levelBriv := true ; Return value
         updateLoopString := !g_SF.FormationSwitchLock AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2
         if(updateLoopString) ; don't show leveling string before ellywait finishes or when stacking.
@@ -360,9 +359,9 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 this.BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivEllywick := True) 
         }
         ; Speed champions are leveled up first (without Briv)
-        ; If low favor mode is active, cheapeast upgrade first
+        ; If low favor mode is active, cheapest upgrade first
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
-            formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
+            formation := this.BGFLU_OrderBycheapestUpgrade(formation)
         else
             for k, champID in formation
                 if (this.ChampIDs[champID] == champID) ; Is speed champ
@@ -375,8 +374,6 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 }
         ; Now do x25 levelling.
         levelBriv := this.DoX25Leveling()
-        if(this.ExitMethod)  
-            return (this.ExitMethod := False)
         ; Complete leveling
         for k, champID in formation
         {
@@ -392,8 +389,6 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 return false
         }
         levelBriv := this.DoX25Leveling()
-        if(this.ExitMethod)  
-            return (this.ExitMethod := false)
         if (levelBriv)
         {
             this.BGLU_DoneLeveling := True
@@ -470,7 +465,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         else
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
-            formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
+            formation := this.BGFLU_OrderBycheapestUpgrade(formation)
         modronFormation := g_SF.Memory.GetActiveModronFormation() ; required as a champ not in modron will never be seen as max because it can't upgrade past its specialization.
         for k, champID in formation
             if (g_SF.IsChampInFormation(champID, formation) AND g_SF.IsChampInFormation(champID, modronFormation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ]))
@@ -567,7 +562,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     ; Returns the list of champion IDs sorted by cheapast upgrade first.
     ; Params: champIDs:array - List of champion IDs.
     ;         num:int - Number of champions that need to be returned.
-    BGFLU_GetCheapeastUpgrade(champIDs, num := 1)
+    BGFLU_GetcheapestUpgrade(champIDs, num := 1)
     {
         if (num == 1 && champIDs.Length() == num)
             return champIDs
@@ -591,9 +586,9 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         return cheapest
     }
 
-    BGFLU_OrderByCheapeastUpgrade(formation)
+    BGFLU_OrderBycheapestUpgrade(formation)
     {
-        return this.BGFLU_GetCheapeastUpgrade(formation, formation.Length())
+        return this.BGFLU_GetcheapestUpgrade(formation, formation.Length())
     }
 
     BGFLU_GetFormationNoEmptySlots(formation)

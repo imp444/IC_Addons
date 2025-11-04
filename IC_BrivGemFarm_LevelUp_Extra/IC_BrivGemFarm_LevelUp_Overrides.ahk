@@ -158,7 +158,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 {
     /*  BGFLU_DoPartySetupMin - When gem farm is started or an adventure is reloaded, this is called to set up the primary party.
-                          This will only level champs to the minium target specified in BrivGemFarm_LevelUp_Settings.json.
+                          This will only level champs to the minimum target specified in BrivGemFarm_LevelUp_Settings.json.
                           This will not level champs whose minimum level is set to 0.
                           It will wait for Shandie dash / Thellora Rush if necessary.
                           It will only level up at a time the number of champions specified in the MaxSimultaneousInputs setting.
@@ -176,16 +176,15 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             g_SF.ToggleAutoProgress( 0, false, true )
         if(initialFormation == "")
             formation := g_SF.GetInitialFormation()
-        ; If low favor mode is active, cheapest upgrade first
-        lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
         g_SF.SetFormationForStart()
         ; Level up speed champs first, priority to getting Briv, Ellywick, Hew Maan, Nahara, Sentry, Virgil speed effects
         ; Set formation
         StartTime := A_TickCount
+        ; If low favor mode is active, cheapest upgrade first
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
             keyspam := this.BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivEllywick, timeout, currentZone)
         else {
-            formationInOrder := this.BGFLU_OrderBycheapestUpgrade(formation)
+            formationInOrder := this.BGFLU_OrderByCheapestUpgrade(formation)
             keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivEllywick)
         }
         if(keyspam != "" AND keyspam != {})
@@ -361,7 +360,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         ; Speed champions are leveled up first (without Briv)
         ; If low favor mode is active, cheapest upgrade first
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
-            formation := this.BGFLU_OrderBycheapestUpgrade(formation)
+            formation := this.BGFLU_OrderByCheapestUpgrade(formation)
         else
             for k, champID in formation
                 if (this.ChampIDs[champID] == champID) ; Is speed champ
@@ -395,7 +394,6 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             g_SharedData.BGFLU_SetStatus("All champions leveled up.")
         }
         return levelBriv
-        ; return g_SF.ArrSize(this.Levelupx25) == 0 AND levelBriv
     }
 
     ; Returns True if all champs are done with x25, false if champs still need leveling.
@@ -465,7 +463,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         else
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
-            formation := this.BGFLU_OrderBycheapestUpgrade(formation)
+            formation := this.BGFLU_OrderByCheapestUpgrade(formation)
         modronFormation := g_SF.Memory.GetActiveModronFormation() ; required as a champ not in modron will never be seen as max because it can't upgrade past its specialization.
         for k, champID in formation
             if (g_SF.IsChampInFormation(champID, formation) AND g_SF.IsChampInFormation(champID, modronFormation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ]))
@@ -562,7 +560,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     ; Returns the list of champion IDs sorted by cheapast upgrade first.
     ; Params: champIDs:array - List of champion IDs.
     ;         num:int - Number of champions that need to be returned.
-    BGFLU_GetcheapestUpgrade(champIDs, num := 1)
+    BGFLU_GetCheapestUpgrade(champIDs, num := 1)
     {
         if (num == 1 && champIDs.Length() == num)
             return champIDs
@@ -586,9 +584,9 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         return cheapest
     }
 
-    BGFLU_OrderBycheapestUpgrade(formation)
+    BGFLU_OrderByCheapestUpgrade(formation)
     {
-        return this.BGFLU_GetcheapestUpgrade(formation, formation.Length())
+        return this.BGFLU_GetCheapestUpgrade(formation, formation.Length())
     }
 
     BGFLU_GetFormationNoEmptySlots(formation)
@@ -602,7 +600,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         return ids
     }
 
-    ; Returns TRUE if champ still is done leveling, FALSE if not.
+    ; Returns TRUE if champ is done leveling, FALSE if not.
     BGFLU_LevelUpChamp(champID, target, isX25 := False)
     {
         if (this.BGFLU_ChampUnderTargetLevel(champID, target))
@@ -615,7 +613,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             g_SF.DirectedInput(,, this.BGFLU_GetFKey(champID))
             if(isX25)
                 this.ToggleControl(false) ; To go back to x10 - change to ToggleShift
-            nedsLeveling := this.BGFLU_ChampUnderTargetLevel(champID, target)
+            needsLeveling := this.BGFLU_ChampUnderTargetLevel(champID, target)
             if (!needsLeveling)
                 return true
         }

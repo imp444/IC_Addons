@@ -138,7 +138,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         {
             if (!timeoutTimer.IsTimeUp(sleepTime * counter)) ; input limiter..
                 g_SF.DirectedInput(,,inputValues)
-            if (timeoutTimer.IsTimeUp(1000) AND !isFormation2 AND (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 OR g_SF.Memory.ReadNumRangedAttackingMonsters()))
+            if (timeoutTimer.IsTimeUp(1000) AND !isFormation2 && (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters()))
             {
                  ; not W formation or briv is benched
                 if (g_SF.Memory.ReadChampBenchedByID(ActiveEffectKeySharedFunctions.Briv.HeroID) OR !(g_SF.Memory.ReadMostRecentFormationFavorite() == 2))
@@ -361,14 +361,16 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         ; If low favor mode is active, cheapest upgrade first
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
             formation := this.BGFLU_OrderByCheapestUpgrade(formation)
-        else if (g_SF.FormationLevelingLock)
-            return
-        else 
+        else
             for k, champID in formation
-                if (this.ChampIDs[champID] == champID ; Is speed champ
-                    , AND champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) ; speed champ is selected in seat
-                    , AND !this.BGFLU_LevelUpChamp(champID, this.CalculateTargetLevel(champID))) ; !LevelUpChamp means not done leveling, so leveling was successful
+                if (this.ChampIDs[champID] == champID) ; Is speed champ
+                {
+                    if (g_SF.FormationLevelingLock)
+                        return
+                    targetLevel := this.CalculateTargetLevel(champID)
+                    if (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && !this.BGFLU_LevelUpChamp(champID, targetLevel)) ; champ in seat and leveling them is successful (at or over target level)
                         break ; do once per call
+                }
         ; Now do x25 levelling.
         levelBriv := this.DoX25Leveling()
         ; Complete leveling

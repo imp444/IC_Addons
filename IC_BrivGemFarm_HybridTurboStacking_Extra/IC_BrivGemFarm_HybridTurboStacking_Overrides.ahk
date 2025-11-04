@@ -87,8 +87,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             this.ShouldOfflineStack()
         if (afterReset || IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
         {
-            stacksAfterReset := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks(,,True)
-            stacksAfterReset := g_SF.BrivHasThunderStep() ? stacksAfterReset * 1.2 : stacksAfterReset
+            sbStacks := g_SF.Memory.ReadSBStacks()
+            hasteStacksAfterReset := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks(False,False,True)
+            stacksAfterReset := g_SF.BrivHasThunderStep() ? sbStacks * 1.2 + hasteStacksAfterReset: sbStacks + hasteStacksAfterReset
             ; thunderstep recalc.
             g_SharedData.BGFHTS_SBStacksPredict := stacksAfterReset
             return stacksAfterReset
@@ -97,15 +98,36 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return g_SF.Memory.ReadSBStacks() + 48
     }
 
-    StackRestart()
+    StackRestart(doingRetry := False)
     {
-        IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
-        ; Just restart the game when hybrid turbo, don't wait
-        g_SF.ToggleAutoProgress( 0 )
+         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
+        this.StackFarmSetup() ; needs to go to W formation to pervent progressing a single zone on restart.
+        highestZone := g_SF.Memory.ReadHighestZone()
+        if (highestZone == g_SF.Memory.ReadCurrentZone() + 1 AND !Mod(highestZone, 5)) { ; if progressed 1 zone due to no jump, retry no progression..
+            g_SF.ToggleAutoProgress(1)
+            this.StackFarmSetup()
+        }
+        g_SharedData.LoopString := "FORT Restart"
+        g_SF.CurrentZone := g_SF.Memory.ReadCurrentZone() ; record current zone before saving for bad progression checks
         if(g_SharedData.TotalRunsCount > 0)
             g_SF.CloseIC( "FORT Restart" )
         g_SF.SafetyCheck(stackRestart := True)
         g_SF.AlreadyOfflineStackedThisRun := True
+        if (g_SF.UnBenchBrivConditions(g_BrivUserSettings))
+            g_SF.DirectedInput(,, "{q}")
+        else if (g_SF.BenchBrivConditions(g_BrivUserSettings))
+            g_SF.DirectedInput(,, "{e}")
+        this.StackFarm() ; immediately stack after coming back online if expected.  
+        if (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
+        {
+            g_SF.FallBackFromZone() ; don't get stuck getting attacked.
+            if (g_SF.UnBenchBrivConditions(g_BrivUserSettings))
+                g_SF.DirectedInput(,, "{q}")
+            else if (g_SF.BenchBrivConditions(g_BrivUserSettings))
+                g_SF.DirectedInput(,, "{e}")
+        }
+        IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun := True
+        ; SetFormation effectively called here after returning from this function by way of Stack continuing StackFarm()
     }
 
     ; Tries to complete the zone before online stacking.
@@ -117,108 +139,23 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Melf stacking
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] && this.BGFHTS_PostponeStacking() && !ignoreMelf)
             return 0
-        predictStacks := IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive()
-        SBStacksStart := g_SF.Memory.ReadSBStacks()
-        stacks := this.GetNumStacksFarmed(predictStacks)
+        stacks := this.GetNumStacksFarmed(IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
         targetStacks := targetStacks ? targetStacks : g_BrivUserSettings[ "TargetStacks" ]
-        if (this.ShouldAvoidRestack(stacks, targetStacks) AND !ignoreMelf)
-        {
+        ; first checks should short circuit last check if failed.
+        if (this.ShouldAvoidRestack(stacks, targetStacks) AND !ignoreMelf) {
             g_SharedData.LoopString .= " - Rejected by HybridTurbo. Already Stacked"
             return 0
         }
         ; Check if offline stack is needed
-        isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
-        if (this.BGFHTS_DelayedOffline || ((!isMelfActive) && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2))
-        {
-            this.BGFHTS_DelayedOffline := false
-            IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
-            return this.StackRestart()
-        }
-        if (g_BrivUserSettingsFromAddons[ "BGFHTS_Multirun" ])
-            targetStacks := g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunTargetStacks" ]
-        g_SF.ToggleAutoProgress( 0, false, true )
-        ; Complete the current zone
-        completed := g_BrivUserSettingsFromAddons[ "BGFHTS_CompleteOnlineStackZone" ] && this.BGFHTS_WaitForZoneCompleted()
-        ; Conditional stack formation
-        isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
-        removedIds := ""
-        if (!isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 1)
-            removedIds := [59] ; Melf
-        else if (isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfActiveStrategy" ] == 1)
-            removedIds := [36] ; Warden/Tatyana
-        IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite(removedIds)
+        if(this.StackNormalCheckOrDoOffline()) ; bad name - tries to offline if it can, otherwise does more setup
+            return
         this.StackFarmSetup()
         ; Start online stacking
-        StartTime := A_TickCount
-        ElapsedTime := 0
         g_SharedData.LoopString := "Stack Normal"
-        usedWardenUlt := false
-        levelBrivZone := g_SF.Memory.ReadCurrentZone()
-        levelBrivSomeMore := levelBrivZone >= 1100
-        amountToLevelBriv := 0
-        if (levelBrivSomeMore)
-        {
-            if (levelBrivZone >= 1400)
-                amountToLevelBriv := 695
-            else if (levelBrivZone >= 1300)
-                amountToLevelBriv := 575
-            else if (levelBrivZone >= 1200)
-                amountToLevelBriv := 455
-            else
-                amountToLevelBriv := 340
-        }
         ; Turn on Briv auto-heal
-        autoHeal := g_BrivUserSettingsFromAddons[ "BGFHTS_BrivAutoHeal" ] > 0
-        if (autoHeal)
-        {
-            fncToCallOnTimer := g_SharedData.BGFHTS_TimerFunctionHeal
-            SetTimer, %fncToCallOnTimer%, 1000, 0
-        }
-        ; Haste stacks are taken into account
-        if (predictStacks)
-        {
-            remainder := targetStacks - stacks
-            SBStacksFarmed := 0
-            while (SBStacksFarmed < remainder AND ElapsedTime < maxOnlineStackTime )
-            {
-                if (g_SF.Memory.ReadCurrentZone() < 1)
-                    return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
-                g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacksFarmed ) . "/" . targetStacks
-                g_SF.FallBackFromBossZone()
-                if (levelBrivSomeMore)
-                    this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
-                ; Warden ultimate
-                wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
-                if (!usedWardenUlt && wardenThreshold > 0)
-                    usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
-                if (g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
-                    this.StackFarmSetup()
-                else if (SBStacksFarmed < (remainder / 10) and ElapsedTime > 10000 ) ; not gaining stacks 
-                    this.StackFarmSetup()
-                Sleep, 30
-                ElapsedTime := A_TickCount - StartTime
-                SBStacksFarmed := g_SF.Memory.ReadSBStacks() - SBStacksStart
-            }
-        }
-        else
-        {
-            while ( stacks < targetStacks AND ElapsedTime < maxOnlineStackTime )
-            {
-                if (g_SF.Memory.ReadCurrentZone() < 1)
-                    return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
-                g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
-                g_SF.FallBackFromBossZone()
-                if (levelBrivSomeMore)
-                    this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
-                ; Warden ultimate
-                wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
-                if (!usedWardenUlt && wardenThreshold > 0)
-                    usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
-                Sleep, 30
-                ElapsedTime := A_TickCount - StartTime
-                stacks := this.GetNumStacksFarmed()
-            }
-        }
+        fncToCallOnTimer := this.StackNormalAutoHeal()
+        ; Stacking
+        this.StackNormalStacking(targetStacks, stacks, maxOnlineStackTime)
         ; Turn off Briv auto-heal
         if (autoHeal)
             SetTimer, %fncToCallOnTimer%, Off
@@ -246,15 +183,135 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         if (g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
         ; Update stats
-        if (predictStacks)
-            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks()
+        if (IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
+            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks(True,False,False)
         g_SharedData.BGFHTS_Status := "Online stacking done"
         return ""
     }
 }
 
+
 class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_Class
 {
+    
+    StackNormalAutoHeal()
+    {
+        fncToCallOnTimer := ""
+        autoHeal := g_BrivUserSettingsFromAddons[ "BGFHTS_BrivAutoHeal" ] > 0
+        if (autoHeal)
+        {
+            fncToCallOnTimer := g_SharedData.BGFHTS_TimerFunctionHeal
+            SetTimer, %fncToCallOnTimer%, Off       ; avoid running timer multiple times.
+            SetTimer, %fncToCallOnTimer%, 1000, 0
+        }
+        return fncToCallOnTimer
+    }
+
+    StackNormalCheckOrDoOffline()
+    {
+        isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
+        if (this.BGFHTS_DelayedOffline || ((!isMelfActive) && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2))
+        {
+            this.BGFHTS_DelayedOffline := false
+            IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
+            this.StackRestart()
+            return true
+        }
+        if (g_BrivUserSettingsFromAddons[ "BGFHTS_Multirun" ])
+            targetStacks := g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunTargetStacks" ]
+        g_SF.ToggleAutoProgress( 0, false, true )
+        ; Complete the current zone
+        completed := g_BrivUserSettingsFromAddons[ "BGFHTS_CompleteOnlineStackZone" ] && this.BGFHTS_WaitForZoneCompleted()
+        ; Conditional stack formation
+        isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
+        removedIds := ""
+        if (!isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 1)
+            removedIds := [59] ; Melf
+        else if (isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfActiveStrategy" ] == 1)
+            removedIds := [36] ; Warden/Tatyana
+        IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite(removedIds)
+        return false
+    }
+
+    StackNormalGetMoreBrivLeveling()
+    {
+        currentZone:= g_SF.Memory.ReadCurrentZone()
+        amountToLevelBriv := 0
+        if (currentZone >= 1400)
+            amountToLevelBriv := 695
+        else if (currentZone >= 1300)
+            amountToLevelBriv := 575
+        else if (currentZone >= 1200)
+            amountToLevelBriv := 455
+        else if (currentZone >= 1100)
+            amountToLevelBriv := 400
+        else
+            amountToLevelBriv := 340
+        return amountToLevelBriv
+        
+    }
+
+    StackNormalStacking(targetStacks, stacks, maxOnlineStackTime)
+    {
+        ; Incremental Briv Leveling vars
+        amountToLevelBriv := this.StackNormalGetMoreBrivLeveling()
+        levelBrivSomeMore := amountToLevelBriv > 340
+        SBStacksStart := g_SF.Memory.ReadSBStacks()
+        usedWardenUlt := false
+        StartTime := A_TickCount
+        ElapsedTime := 0
+        if (!IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())  ; Haste stacks are taken into account
+        {
+            remainder := targetStacks - stacks
+            SBStacksFarmed := 0
+            while (SBStacksFarmed < remainder AND ElapsedTime < maxOnlineStackTime )
+            {
+                if (g_SF.Memory.ReadCurrentZone() < 1)
+                    return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
+                g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacksFarmed ) . "/" . targetStacks
+                g_SF.FallBackFromBossZone()
+                if (levelBrivSomeMore)
+                    this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
+                ; Warden ultimate
+                wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
+                if (!usedWardenUlt && wardenThreshold > 0)
+                    usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
+                if (IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
+                    this.StackFarmSetup()
+                else if (!this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2)))
+                    this.StackFarmSetup()                
+                else if (SBStacksFarmed < (remainder / 10) and ElapsedTime > 10000 ) ; not gaining stacks 
+                    this.StackFarmSetup()
+                Sleep, 30
+                ElapsedTime := A_TickCount - StartTime
+                SBStacksFarmed := g_SF.Memory.ReadSBStacks() - SBStacksStart
+            }
+        }
+        else
+        {
+            while ( stacks < targetStacks AND ElapsedTime < maxOnlineStackTime )
+            {
+                if (g_SF.Memory.ReadCurrentZone() < 1)
+                    return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
+                g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
+                g_SF.FallBackFromBossZone()
+                if (levelBrivSomeMore)
+                    this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
+                ; Warden ultimate
+                wardenThreshold := g_BrivUserSettingsFromAddons[ "BGFHTS_WardenUltThreshold" ]
+                if (!usedWardenUlt && wardenThreshold > 0)
+                    usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
+                if (IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
+                    this.StackFarmSetup()
+                else if (!this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2)))
+                    this.StackFarmSetup()
+                Sleep, 30
+                ElapsedTime := A_TickCount - StartTime
+                stacks := this.GetNumStacksFarmed()
+            }
+        }
+    }
+
     BGFHTS_WaitForZoneCompleted(maxTime := 3000)
     {
         g_SF.SetFormation(g_BrivUserSettings)
@@ -447,7 +504,7 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_SharedData_Added_Class ;Added to IC_
         predictStacks := IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive()
         this.BGFHTS_StacksPredictionActive := predictStacks
         if (predictStacks)
-            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks()
+            g_SharedData.BGFHTS_SBStacksPredict := IC_BrivGemFarm_Class.BrivFunctions.PredictStacks(True,False,False)
     }
 
 }

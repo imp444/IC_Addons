@@ -151,7 +151,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_Component
                 if (SharedRunData.BGFHTS_StacksPredictionActive)
                 {
                     stacks := SharedRunData.BGFHTS_SBStacksPredict
-                    GuiControl, ICScriptHub:Text, BGFHTS_StacksPredict, % stacks
+                    GuiControl, ICScriptHub:Text, BGFHTS_StacksPredict, % Floor(stacks)
                     settings := this.Settings
                     if (settings.Multirun && stacks - g_SF.Memory.ReadSBStacks() < targetStacks)
                         targetStacks := settings.MultirunTargetStacks

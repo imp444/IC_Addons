@@ -51,20 +51,20 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         ; Prevent incorrect read if Briv is the only champion leveled in Q/E (e.g. using "Level Briv/Shandie to MinLevel first" LevelUp addon option)
         if (currentZone == 1)
             return
-        if (forceCheck OR g_SharedData.TriggerStart)
+        if (!IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun OR forceCheck)
             isFormation2 := this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2))
         else
             isFormation2 := this.Memory.ReadMostRecentFormationFavorite() == 2 ; (watch for fix for changing on failed swap)
         ; check to swap briv from favorite 2 to another (W to Q or E)
         if (isFormation2 AND isWalkZone)
         {
-            this.DirectedInput(,,["{e}"]*)
+            base.DoSwitchFormation(3)
             return
         }
         ; check to swap briv from favorite 2 to favorite 1 (W to Q)
         else if (isFormation2 AND !isWalkZone)
         {
-            this.DirectedInput(,,["{q}"]*)
+            base.DoSwitchFormation(1)
             return
         }
         ; Switch if still in modron formation.
@@ -72,7 +72,7 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         
               ; Q OR E depending on route.
             if (this.UnBenchBrivConditions(this.Settings))
-                this.DoSwitchFormation(1) 
+                this.DoSwitchFormation(1)
             else if (this.BenchBrivConditions(this.Settings))
                 this.DoSwitchFormation(3)
         }
@@ -94,7 +94,8 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         }
         if (currentZone != 1 AND currentZone != lastZone AND ((attackingMon := this.Memory.ReadNumAttackingMonstersReached()) >= 10 || (attackingRangedMon := this.Memory.ReadNumRangedAttackingMonsters())))
             lastZone := currentZone, this.FallBackFromZone(2000)
-        this.DoSwitchFormationInput(toFavorite)           
+        this.DoSwitchFormationInput(toFavorite) 
+        IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun := True
         Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
         g_SharedData.BGFBFS_UpdateSkipAmount(toFavorite)
     }

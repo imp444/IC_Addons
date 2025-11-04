@@ -232,6 +232,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
             amountToLevelBriv := 455
         else if (currentZone >= 1100)
             amountToLevelBriv := 400
+        else
+            amountToLevelBriv := this.BGFLU_GetTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, minOrMax := "Max") 
         return amountToLevelBriv
         
     }

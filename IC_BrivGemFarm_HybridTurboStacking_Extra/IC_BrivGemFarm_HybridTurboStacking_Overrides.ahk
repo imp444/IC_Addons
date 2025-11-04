@@ -83,8 +83,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
     {
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
             return base.GetNumStacksFarmed()
-        if (base.ShouldOfflineStack())
-            this.ShouldOfflineStack()
+        if (this.ShouldOfflineStack())
+            this.StackRestart()
         if (afterReset || IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
         {
             sbStacks := g_SF.Memory.ReadSBStacks()

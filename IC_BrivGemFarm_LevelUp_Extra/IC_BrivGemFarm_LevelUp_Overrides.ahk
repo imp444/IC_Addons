@@ -69,7 +69,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         this.SetupFailedConversionDone := true
         resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup := False)
         if(this.GemFarmShouldSetFormation())
-            g_SF.SetFormationForStart()        
+            g_SF.SetFormationForStart()
         this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivEllywick" ]) ; level forced champions (briv/ellywick), then other minlevel champs
         this.BGFLU_DoPartyWaits(formationModron)
         this.Levelupx25 := {} 
@@ -78,12 +78,6 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         g_SF.ToggleAutoProgress( 1, false, true )
         return resetsCount
     }
-
-    ; ModronResetCheck()
-    ; {
-    ;     base.ModronResetCheck()
-    ;     this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivEllywick" ]) ; level forced champions (briv/ellywick)
-    ; }
 
     GemFarmDoNonModronActions(currentZone := "")
     {

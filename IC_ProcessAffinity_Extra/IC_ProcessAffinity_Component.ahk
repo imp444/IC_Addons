@@ -27,6 +27,13 @@ hCols := Min(ProcessorCount + 1, 33)
 Gui, ICScriptHub:Add, ListView, AltSubmit Checked Disabled -Hdr -Multi R%hCols% xs y+10 w120 vProcessAffinityView gProcessAffinityView, CoreID
 GUIFunctions.UseThemeListViewBackgroundColor("ProcessAffinityView")
 
+OnMessage(0x200, Func("ProcessAffinity_CheckMouseEvent"))
+
+ProcessAffinity_CheckMouseEvent(W)
+{
+    IC_ProcessAffinity_Component.OnMouseOver(W)
+}
+
 ; Load button
 ProcessAffinityLoad()
 {
@@ -79,7 +86,7 @@ else
 */
 Class IC_ProcessAffinity_Component
 {
-    TimerFunctions := ""
+    StatusUpdatedOnLaunch := false
 
     ; Start up the GUI
     Init()
@@ -105,52 +112,37 @@ Class IC_ProcessAffinity_Component
         this.Start()
     }
 
-    ; Adds timed functions to be run when briv gem farm is started
+    ; Adds timed functions to be run when briv gem farm is started or stopped
     CreateTimedFunctions()
     {
-        this.TimerFunctions := {}
-        fncToCallOnTimer := ObjBindMethod(this, "UpdateStatus")
-        this.TimerFunctions[fncToCallOnTimer] := 1000
-        g_BrivFarmAddonStartFunctions.Push(ObjBindMethod(this, "Start"))
-        g_BrivFarmAddonStopFunctions.Push(ObjBindMethod(this, "Stop"))
+        fncToCallOnTimer := ObjBindMethod(this, "UpdateStatusStart")
+        g_BrivFarmComsObj.OneTimeRunAtStartFunctions[fncToCallOnTimer] := -1
+        fncToCallOnTimer := ObjBindMethod(this, "UpdateStatusStop")
+        g_BrivFarmComsObj.OneTimeRunAtEndFunctions[fncToCallOnTimer] := -1
     }
 
-    Start()
-    {
-        for k,v in this.TimerFunctions
-            SetTimer, %k%, %v%, 0
-    }
-
-    Stop()
-    {
-        for k,v in this.TimerFunctions
-        {
-            SetTimer, %k%, Off
-            SetTimer, %k%, Delete
-        }
-        GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Waiting for Gem Farm to start
-        GuiControl, ICScriptHub:Hide, ProcessAffinityStatusWarning
-    }
-
-    UpdateStatus()
+    UpdateStatusStart()
     {
         try ; avoid thrown errors when comobject is not available.
         {
             SharedRunData := ComObjActive(g_BrivFarm.GemFarmGUID)
-            if (!SharedRunData.ProcessAffinityRunning)
+            if (!SharedRunData.ProcessAffinityRunning())
             {
                 this.Stop()
                 GuiControl, ICScriptHub:Show, ProcessAffinityStatusWarning
+                GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Not Running
                 str := "ProcessAffinity addon was loaded after Briv Gem Farm started.`n"
                 MsgBox, % str . "If you want it enabled, press Stop/Start to retry."
             }
             else
                 GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Running
         }
-        catch
-        {
-            GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Waiting for Gem Farm to start
-        }
+    }
+
+    UpdateStatusStop()
+    {
+        GuiControl, ICScriptHub:Text, ProcessAffinityStatusText, Waiting for Gem Farm to start
+        GuiControl, ICScriptHub:Hide, ProcessAffinityStatusWarning
     }
 
     ; Builds checkboxes for CoreAffinity
@@ -260,5 +252,18 @@ Class IC_ProcessAffinity_Component
             rowNumber := nextChecked ; Resume the search at the row after that found by the previous iteration.
         }
         return false
+    }
+
+    ; Update status on script launch
+    OnMouseOver(W)
+    {
+        if (this.StatusUpdatedOnLaunch)
+            return
+        GuiControlGet, CurrentTab,, ModronTabControl, Tab
+        if (CurrentTab == "Process Affinity")
+        {
+            this.UpdateStatusStart()
+            this.StatusUpdatedOnLaunch := true
+        }
     }
 }

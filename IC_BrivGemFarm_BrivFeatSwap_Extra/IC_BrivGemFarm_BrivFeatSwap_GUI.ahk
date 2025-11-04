@@ -149,7 +149,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         this.SetupStacksSetupGroup()
         this.SetupPreferredBrivJumpZonesGroup()
         this.SetupBGFLUGroup()
-        this.SetupMouseClickGroup()
         this.AddToolTips()
     }
 
@@ -285,22 +284,6 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
         Gui, ICScriptHub:Add, Text, Hidden x+0 vBGFBFS_GetLevelUpAddonText2, % " addon to walk early zones."
     }
 
-    SetupMouseClickGroup()
-    {
-        global
-        local yTitleSpacing := this.YTitleSpacing
-        text := "Enable mouse clicks to cancel Briv's jump animation (Ctrl+Alt+X to toggle on/off)`n"
-        text .= "(Clicks on the ""Clear formation"" button under formations to remove all champions)"
-        Gui, ICScriptHub:Add, CheckBox, xs yp+%yTitleSpacing% vBGFBFS_MouseClick, % text
-        Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickText, (Recommended for 5J/4J TT, highly recommended for 6J/4J TT/RAC and 7J/4J TT)
-        GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-        text := "This option should NOT be used if actively using the computer.`n"
-        text .= "- DO NOT use with Diana (you need her anyway).`n"
-        text .= "- DO NOT use with Shandie."
-        Gui, ICScriptHub:Add, Text, xs y+5 vBGFBFS_MouseClickTextWarning, % text
-        GUIFunctions.UseThemeTextColor()
-    }
-
     ; https://www.autohotkey.com/boards/viewtopic.php?t=37894
     LinkUseDefaultColor(hLink, Use := True)
     {
@@ -372,10 +355,10 @@ Class IC_BrivGemFarm_BrivFeatSwap_GUI
     ; Show Briv's slot 4 current item gild/raity/level.
     AddBrivSkipTooltip()
     {
-        GuiControlGet, visible, ICScriptHub:Visible, BGFBFS_DetectedText
-        if (!visible)
+        GuiControlGet, isVisible, ICScriptHub:Visible, BGFBFS_DetectedText
+        if (!isVisible)
             return
-        loot := IC_BrivGemFarm_BrivFeatSwap_Functions.BrivFunctions.GetBrivLoot()
+        loot := IC_BrivGemFarm_Class.BrivFunctions.GetBrivLoot()
         gild := loot.gild
         enchant := loot.enchant
         rarity := loot.rarity

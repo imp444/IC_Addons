@@ -65,7 +65,6 @@ class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_SharedFunctions_Class
 
     RestartAdventure( reason := "" )
     {
-        g_SF.FormationLevelingLock := True
         g_SF.FormationSwitchLock := True
         g_SharedData.RNGWR_Elly.Reset()
         base.RestartAdventure(reason)

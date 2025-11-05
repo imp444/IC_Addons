@@ -256,21 +256,13 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
     BGFLU_GetMinLevelingKeyspam(formation, forceBrivEllywick := false, currentZone := 0)
     {
-        keyspam := []
+        keyspam := [], nonSpeedIDs := {}
         allowBrivLeveling := this.BGFLU_AllowBrivLeveling()
         ; Need to walk while Briv is in all formations
         if (!forceBrivEllywick)
-        {
-            nonSpeedIDs := {}
             for k, champID in formation
-            {
-                ; Need to walk while Briv is in all formations
-                if (champID == 58 && !allowBrivLeveling)
-                    continue
-                if (champID != -1 && champID != "")
+                if (champID > 0 AND (champID != 58 OR allowBrivLeveling)) ; Need to walk while Briv is in all formations
                     nonSpeedIDs[champID] := champID
-            }
-        }
         ; Get Fkeys for speed champs
         while (keyspam.Length() < g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ])
         {
@@ -293,15 +285,12 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 break
         }
         ; Get Fkeys for other champs
-        if (!forceBrivEllywick)
+        for k, champID in nonSpeedIDs ; nonspeedIDs empty if !forceEllywick (if that were not the case, check !forceEllywick before this)
         {
-            for k, champID in nonSpeedIDs
-            {
-                if (g_SF.FormationLevelingLock) ; waits until formation lock
-                    break
-                if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
-                    keyspam.Push(this.BGFLU_GetFKey(champID))
-            }
+            if (g_SF.FormationLevelingLock) ; waits until formation lock
+                break
+            if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
+                keyspam.Push(this.BGFLU_GetFKey(champID))
         }
         return keyspam
     }
@@ -366,13 +355,13 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 if (this.ChampIDs[champID] == champID) ; Is speed champ
                 {
                     if (g_SF.FormationLevelingLock)
-                        return
+                        return false
                     targetLevel := this.CalculateTargetLevel(champID)
                     if (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && !this.BGFLU_LevelUpChamp(champID, targetLevel)) ; champ in seat and leveling them is successful (at or over target level)
                         break ; do once per call
                 }
         ; Now do x25 levelling.
-        levelBriv := this.DoX25Leveling()
+        levelBriv := levelBriv AND this.DoX25Leveling() 
         ; Complete leveling
         for k, champID in formation
         {
@@ -387,7 +376,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             if (this.BGFLU_LevelUpChamp(champID, targetLevel))
                 return false
         }
-        levelBriv := this.DoX25Leveling()
+        levelBriv := levelBriv AND this.DoX25Leveling()
         if (levelBriv)
         {
             this.BGLU_DoneLeveling := True
@@ -591,7 +580,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
     BGFLU_GetFormationNoEmptySlots(formation)
     {
-        ids := []
+        ids := {}
         for k, champID in formation
         {
             if (champID > 0)

@@ -102,7 +102,6 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
     {
         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
         g_SF.AlreadyOfflineStackedThisRun := True
-        this.StackFarm() ; immediately stack after coming back online if expected.
         stacks := g_SF.Memory.ReadSBStacks()
         g_SharedData.LoopString := "FORT Restart"
         g_SF.CurrentZone := g_SF.Memory.ReadCurrentZone() ; record current zone before saving for bad progression checks

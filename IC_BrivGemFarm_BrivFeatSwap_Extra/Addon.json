@@ -7,6 +7,10 @@
     "Info" : "This Addon will allow to use Briv in E formation so you can take advantage of the \"save feats with formation\" feature to have hybrid jump setups using the Wasting Haste feat (lock at 4J).",
     "Dependencies" : [
         {
+            "Name":"IC Core",
+            "Version":"v0.1.1"
+        },
+        {
             "Name":"Briv Gem Farm",
             "Version":"v1.5.5"
         },
@@ -15,4 +19,5 @@
             "Version":"v0.2.0"
         }
     ]
+    
 }

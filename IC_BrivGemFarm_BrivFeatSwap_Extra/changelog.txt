@@ -1,3 +1,6 @@
+November 6, 2025
+    - Cosmetic code changes.
+
 November 3, 2025
     - Updated to use new base DoSwitchFormation.
     - Added lazy formation checking.

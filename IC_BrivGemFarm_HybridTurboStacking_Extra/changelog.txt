@@ -1,3 +1,7 @@
+November 6, 2025
+    - Fixed Briv not leveling to max when below zone 1100.
+    - Fixes for infinite loop FORT stacking or recursion errors with a certain setting (offline melf stack setting now effectively disabled.)
+
 November 3, 2025
     - Updated how stacking formation was checked again to make sure Tatyana didn't cause issuses.
     - Optimized how stack FORT StackRestart functions.

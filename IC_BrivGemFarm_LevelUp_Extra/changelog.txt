@@ -1,3 +1,7 @@
+November 9, 2025
+    - Fixed typos and code cosmetic updates.
+    - Possible fix for champs with min/max 0/x occasionally not leveling.
+
 November 3, 2025
     - Added better logic checks to different functions.
     - Added loopstring indicator to show when party setups happen.

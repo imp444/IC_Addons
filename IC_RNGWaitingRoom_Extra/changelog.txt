@@ -1,4 +1,7 @@
 November 3, 2025
+    - Fixed (sometimes) bug where Forced Restart wasn't leveling champions
+
+November 3, 2025
     - Updated locks to be differentiated between leveling and formation.
     - Updated ellywick's logic to make sure ellywait happens in more cases.
     - Updated timeout timers.

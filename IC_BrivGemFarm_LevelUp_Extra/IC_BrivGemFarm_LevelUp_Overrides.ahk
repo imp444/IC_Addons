@@ -594,8 +594,6 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     ; Returns TRUE if champ is done leveling, FALSE if not.
     BGFLU_LevelUpChamp(champID, target, isX25 := False)
     {
-        if ((champID == (baldric := 165)) AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to leveling until after rush and ellywait
-            return true
         if (this.BGFLU_ChampUnderTargetLevel(champID, target))
         {
             ; Level up a single champion once

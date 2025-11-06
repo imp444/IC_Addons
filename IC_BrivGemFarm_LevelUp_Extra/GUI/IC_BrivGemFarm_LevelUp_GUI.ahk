@@ -178,7 +178,8 @@ Class IC_BrivGemFarm_LevelUp_GUI
         BrivGroup.AddControl("BGFLU_BrivMinLevelStackingOnlineText", "Text", "x+5 yp+4", "Briv MinLevel before stacking (online)")
         BrivGroup.AddEdit("BGFLU_BrivMinLevelArea",, "xs+0 w50 Limit4",, true)
         BrivGroup.AddControl("BGFLU_BrivMinLevelAreaText", "Text", "x+5 yp+4", "Minimum area to reach before leveling Briv")
-        local BrivMod50Group := new IC_BrivGemFarm_LevelUp_GUI_Mod50Group("BGFLU_BrivLevelingZones", "Briv Min leveling zones", "BGFLU_BrivGroup", false,, "BGFLU_BrivMinLevelArea")
+        BrivGroup.AddCheckBox("BGFLU_BrivThelloraCombineBossCheck",, "xs+0", "Avoid Briv+Thellora jumping into a boss zone", true)
+        local BrivMod50Group := new IC_BrivGemFarm_LevelUp_GUI_Mod50Group("BGFLU_BrivLevelingZones", "Briv Min leveling zones", "BGFLU_BrivGroup", false,, "BGFLU_BrivThelloraCombineBossCheck")
         BrivMod50Group.AutoResize(true, "Borderless")
         BrivGroup.AddExistingControl(BrivMod50Group)
         BrivGroup.AutoResize(true, "Line")
@@ -343,7 +344,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
     ; The bar uses colors from the current theme, or default colors.
     MoveProgressBar(state)
     {
-        cl := IC_BrivGemFarm_LevelUp_HeroDefinesLoader
+        cl := g_BGFLU_HDL_Constants
         GuiControlGet, currentState, ICScriptHub:, BGFLU_LoadDefinitionsProgress
         if (state != currentState)
         {
@@ -361,7 +362,7 @@ Class IC_BrivGemFarm_LevelUp_GUI
     ; Update the text displayed during definitions loading.
     UpdateLoadingText(state)
     {
-        cl := IC_BrivGemFarm_LevelUp_HeroDefinesLoader
+        cl := g_BGFLU_HDL_Constants
         switch state
         {
             case cl.STOPPED:

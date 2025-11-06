@@ -1,41 +1,12 @@
 #include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_ServerCalls_Class.ahk
 #include %A_LineFile%\..\..\..\..\..\SharedFunctions\SH_VersionHelper.ahk
+#include %A_LineFile%\..\IC_BrivGemFarm_LevelUp_HeroDefinesLoaderConstants.ahk
 
 global g_ServerCall := new IC_BrivGemFarm_LevelUp_ServerCalls_Class
+global g_Constants := IC_BrivGemFarm_LevelUp_HeroDefinesLoaderConstants
 
 Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
 {
-    ; Parser version
-    static Version := "1.3.3"
-    ; File locations
-    static HeroDefsPath := A_LineFile . "\..\..\HeroDefines.json"
-    static LastGUIDPath := A_LineFile . "\..\LastGUID_BrivGemFarm_LevelUp.json"
-    static LoaderTempPath := A_LineFile . "\..\LastTableChecksums.txt"
-    ; Filters
-    static TableFilter := "table_checksums"
-    static HeroFilter := "hero_defines"
-    static UpgradeFilter := "upgrade_defines"
-    static EffectFilter := "effect_defines"
-    static EffectKeyFilter := "effect_key_defines"
-    static AttackFilter := "attack_defines"
-    static TextFilter := "text_defines"
-    ; Loader states
-    static STOPPED := 0
-    static GET_PLAYSERVER := 1
-    static CHECK_TABLECHECKSUMS := 2
-    static FILE_PARSING := 3
-    static TEXT_DEFS := 4
-    static HERO_DEFS := 5
-    static ATTACK_DEFS := 6
-    static UPGRADE_DEFS := 7
-    static EFFECT_DEFS := 8
-    static EFFECT_KEY_DEFS := 9
-    static FILE_SAVING := 10
-    static HERO_DATA_FINISHED := 100
-    static HERO_DATA_FINISHED_NOUPDATE := 101
-    static SERVER_TIMEOUT := 200
-    static DEFS_LOAD_FAIL := 201
-
     HeroDefines := ""
     LastTableChecksums := ""
     CurrentState := 0
@@ -44,18 +15,18 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
     Start(languageID := 1)
     {
         ; Get playerserver for definitions
-        this.UpdateLoaderState(this.GET_PLAYSERVER)
+        this.UpdateLoaderState(g_Constants.GET_PLAYSERVER)
         if (g_ServerCall.GetWebRoot() == "")
         {
-            this.UpdateLoaderState(this.SERVER_TIMEOUT)
+            this.UpdateLoaderState(g_Constants.SERVER_TIMEOUT)
             return this.DoCallBack(2)
         }
         ; Check if new table_checksums (always true when loading a new language)
-        this.UpdateLoaderState(this.CHECK_TABLECHECKSUMS)
+        this.UpdateLoaderState(g_Constants.CHECK_TABLECHECKSUMS)
         this.LastTableChecksums := this.GetLastTableChecksums()
         isNewDefs := this.CheckForNewdefs(languageID, this.LastTableChecksums)
         isNewVersion := this.CheckIfNewParserVersion()
-        fileExists := FileExist(this.HeroDefsPath)
+        fileExists := FileExist(g_Constants.HeroDefsPath)
         if (isNewVersion || isNewDefs || !fileExists)
         {
             ; Get filtered defs
@@ -64,30 +35,30 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
             this.Preprocess(defs)
             if (this.HeroDefines == "")
             {
-                this.UpdateLoaderState(this.DEFS_LOAD_FAIL)
+                this.UpdateLoaderState(g_Constants.DEFS_LOAD_FAIL)
                 return this.DoCallBack(2)
             }
             ; Save new definitions
-            this.UpdateLoaderState(this.FILE_SAVING)
-            this.WriteObjectToJSON(this.HeroDefsPath, this.HeroDefines)
+            this.UpdateLoaderState(g_Constants.FILE_SAVING)
+            this.WriteObjectToJSON(g_Constants.HeroDefsPath, this.HeroDefines)
             ; Save new checksums
-            this.FileWrite(this.LoaderTempPath, this.LastTableChecksums)
+            this.FileWrite(g_Constants.LoaderTempPath, this.LastTableChecksums)
             ; Save new version
             if (this.IsNewLoaderVersion)
                 this.UpdateParserVersion()
-            this.CurrentState := this.HERO_DATA_FINISHED
+            this.CurrentState := g_Constants.HERO_DATA_FINISHED
         }
         else
-            this.CurrentState := this.HERO_DATA_FINISHED_NOUPDATE
+            this.CurrentState := g_Constants.HERO_DATA_FINISHED_NOUPDATE
         this.DoCallBack(10)
     }
 
     ; Returns true if the parser has been updated since last execution.
     CheckIfNewParserVersion()
     {
-        loaderSettings := this.LoadObjectFromJSON(this.LastGUIDPath)
+        loaderSettings := this.LoadObjectFromJSON(g_Constants.LastGUIDPath)
         oldVersion := loaderSettings.Version
-        isNew := oldVersion == "" || SH_VersionHelper.IsVersionNewer(this.Version, oldVersion)
+        isNew := oldVersion == "" || SH_VersionHelper.IsVersionNewer(g_Constants.Version, oldVersion)
         this.IsNewLoaderVersion := isNew
         return isNew
     }
@@ -95,18 +66,18 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
     ; Update parser version.
     UpdateParserVersion()
     {
-        loaderSettings := this.LoadObjectFromJSON(this.LastGUIDPath)
+        loaderSettings := this.LoadObjectFromJSON(g_Constants.LastGUIDPath)
         if (!IsObject(loaderSettings))
             loaderSettings := {}
-        loaderSettings.Version := this.Version
-        this.WriteObjectToJSON(this.LastGUIDPath, loaderSettings)
+        loaderSettings.Version := g_Constants.Version
+        this.WriteObjectToJSON(g_Constants.LastGUIDPath, loaderSettings)
     }
 
     ; Returns table_checksums for args
     GetLastTableChecksums(fileName := "")
     {
         if (fileName == "")
-            fileName := this.LoaderTempPath
+            fileName := g_Constants.LoaderTempPath
         fileExists := FileExist(fileName)
         if (fileExists)
         {
@@ -194,12 +165,12 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
     {
         get
         {
-            filter := this.HeroFilter . ","
-            filter .= this.UpgradeFilter . ","
-            filter .= this.EffectFilter . ","
-            filter .= this.EffectKeyFilter . ","
-            filter .= this.AttackFilter . ","
-            filter .= this.TextFilter
+            filter := g_Constants.HeroFilter . ","
+            filter .= g_Constants.UpgradeFilter . ","
+            filter .= g_Constants.EffectFilter . ","
+            filter .= g_Constants.EffectKeyFilter . ","
+            filter .= g_Constants.AttackFilter . ","
+            filter .= g_Constants.TextFilter
             return filter
         }
     }
@@ -226,7 +197,7 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
     ; g_GUID is updated if ICScriptHub has been closed before the final callback.
     UpdateArgsFromFile()
     {
-        args := this.LoadObjectFromJSON(this.LastGUIDPath)
+        args := this.LoadObjectFromJSON(g_Constants.LastGUIDPath)
         g_LanguageID := args.LanguageID
         g_GUID := args.GUID
     }
@@ -251,22 +222,22 @@ Class IC_BrivGemFarm_LevelUp_HeroDefinesLoaderWorker
     Preprocess(data)
     {
         ; Convert to AHK object
-        this.UpdateLoaderState(this.FILE_PARSING)
+        this.UpdateLoaderState(g_Constants.FILE_PARSING)
         data := JSON.parse(data)
         ; Remove unused keys
         this.DeleteServerStats(data)
         this.HeroDefines := {current_time:data.current_time}
-        this.UpdateLoaderState(this.TEXT_DEFS)
+        this.UpdateLoaderState(g_Constants.TEXT_DEFS)
         this.ProcessTextDefs(data)
-        this.UpdateLoaderState(this.HERO_DEFS)
+        this.UpdateLoaderState(g_Constants.HERO_DEFS)
         this.ProcessHeroDefs(data)
-        this.UpdateLoaderState(this.ATTACK_DEFS)
+        this.UpdateLoaderState(g_Constants.ATTACK_DEFS)
         this.ProcessAttackDefs(data)
-        this.UpdateLoaderState(this.UPGRADE_DEFS)
+        this.UpdateLoaderState(g_Constants.UPGRADE_DEFS)
         this.ProcessUpgradeDefs(data)
-        this.UpdateLoaderState(this.EFFECT_DEFS)
+        this.UpdateLoaderState(g_Constants.EFFECT_DEFS)
         this.ProcessEffectDefs(data)
-        this.UpdateLoaderState(this.EFFECT_KEY_DEFS)
+        this.UpdateLoaderState(g_Constants.EFFECT_KEY_DEFS)
         this.ProcessEffectKeyDefs(data)
     }
 

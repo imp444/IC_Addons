@@ -31,6 +31,10 @@ October 29, 2025
     - Added rate limit to Click Damage keypresses.
     - Limited Click Leveling to after Ellywait.
     - Reverted lock on clicks and baldric on Ellywick.
+    
+October 27, 2025
+    - Added setting to avoid leveling Briv if Thellora+Briv combined jumps end up hitting a boss zone.
+    - Removed duplicate code in HeroDefinitionsLoader.
 
 October 26, 2025
     - Fixed bug where wrong function was called that prevented upgrade check from working correctly.

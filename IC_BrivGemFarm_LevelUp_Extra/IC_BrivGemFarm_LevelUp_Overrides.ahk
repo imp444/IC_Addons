@@ -533,6 +533,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         brivMinLevelArea := g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ]
         if (highestZone < brivMinLevelArea)
             return false
+        if (g_BrivUserSettingsFromAddons[ "BGFLU_BrivThelloraCombineBossCheck" ] && IC_BrivGemFarm_LevelUp_Functions.ThelloraBrivCombineHitsBoss())
+            return false
         ; Wait for transition to highestZone before leveling during DoRushWait()
         if (highestZone == brivMinLevelArea && !g_SF.Memory.ReadTransitioning())
         {
@@ -592,6 +594,8 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     ; Returns TRUE if champ is done leveling, FALSE if not.
     BGFLU_LevelUpChamp(champID, target, isX25 := False)
     {
+        if ((champID == (baldric := 165)) AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to leveling until after rush and ellywait
+            return true
         if (this.BGFLU_ChampUnderTargetLevel(champID, target))
         {
             ; Level up a single champion once
@@ -873,6 +877,7 @@ class IC_BrivGemFarm_LevelUp_IC_SharedData_Added_Class ; Added to IC_SharedData_
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStacking" ] := settings.BrivMinLevelStacking
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelStackingOnline" ] := settings.BrivMinLevelStackingOnline
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivMinLevelArea" ] := settings.BrivMinLevelArea
+        g_BrivUserSettingsFromAddons[ "BGFLU_BrivThelloraCombineBossCheck" ] := settings.BrivThelloraCombineBossCheck
         mod50Zones := IC_BrivGemFarm_LevelUp_Functions.ConvertBitfieldToArray(settings.BrivLevelingZones)
         g_BrivUserSettingsFromAddons[ "BGFLU_BrivLevelingZones" ] := mod50Zones
         g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] := settings.LevelToSoftCapFailedConversion

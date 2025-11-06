@@ -43,8 +43,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return shouldOfflineStack
         ; If no Melf +spawn effect until reset, stack offline.
         range := g_SharedData.BGFHTS_CurrentRunStackRange
-        if ((range[1] == "" || range[2] == "") && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
-            return True
+        ; if ((range[1] == "" || range[2] == "") && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
+        ;     return True
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunDelayOffline" ])
             return shouldOfflineStack
         ; Delay offline until last restart for multiple runs.

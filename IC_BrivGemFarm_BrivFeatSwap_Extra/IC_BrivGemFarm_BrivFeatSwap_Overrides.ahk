@@ -110,25 +110,6 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
 
 class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Added_Class
 {
-    DoSwitchFormationInput(toFavorite := 1)
-    {
-        if(toFavorite == 1)
-            this.DirectedInput(,,["{q}"]*)
-        else if (toFavorite == 2)
-        {
-            isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( currentZone, 50) == 0 ? 50 : Mod( currentZone, 50)] == 0         
-            if (isWalkZone)
-                this.DirectedInput(,,["{e}"]*)
-            else
-                this.DirectedInput(,,["{q}"]*)
-        }
-        else if (toFavorite == 3)
-            this.DirectedInput(,,["{e}"]*)
-    }
-}
-
-class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Added_Class
-{
     ; Check if formation switch conditions are met.
     ; Params: formationFavoriteIndex:int - 1:Q, 2:W, 3:E.
     BGFBFS_ShouldSwitchFormation(formationFavoriteIndex)
@@ -147,7 +128,23 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Added_Class
             if (v != -1)
                 return false
         return true
-    }   
+    }
+
+    DoSwitchFormationInput(toFavorite := 1)
+    {
+        if(toFavorite == 1)
+            this.DirectedInput(,,["{q}"]*)
+        else if (toFavorite == 2)
+        {
+            isWalkZone := this.Settings["PreferredBrivJumpZones"][Mod( currentZone, 50) == 0 ? 50 : Mod( currentZone, 50)] == 0         
+            if (isWalkZone)
+                this.DirectedInput(,,["{e}"]*)
+            else
+                this.DirectedInput(,,["{q}"]*)
+        }
+        else if (toFavorite == 3)
+            this.DirectedInput(,,["{e}"]*)
+    }
 }
 
 class IC_BrivGemFarm_BrivFeatSwap_IC_SharedData_Added_Class ;Added to IC_SharedData_Class

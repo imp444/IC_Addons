@@ -14,7 +14,6 @@ SetBatchLines, -1
 #include %A_LineFile%\..\Data\IC_AreaTiming_RunCollection.ahk
 #include %A_LineFile%\..\Data\IC_AreaTiming_SharedData.ahk
 
-global g_SF := new IC_BrivSharedFunctions_Class ; includes MemoryFunctions in g_SF.Memory
 global g_UserSettings := g_SF.LoadObjectFromJSON( A_LineFile . "\..\..\..\Settings.json" )
 global g_AT_SharedData := new IC_AreaTiming_SharedData
 global g_AreaTimingWorker := new IC_AreaTiming_TimerScriptWorker

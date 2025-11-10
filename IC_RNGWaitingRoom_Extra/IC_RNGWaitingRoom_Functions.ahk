@@ -19,11 +19,6 @@ class IC_RNGWaitingRoom_Functions
         return value == 1 ? "" : "s"
     }
 
-    ReadResets()
-    {
-        return g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Controller.userData.StatHandler.Resets.Read()
-    }
-
     GetExeName()
     {
         default := "IdleDragons.exe"
@@ -56,17 +51,12 @@ class IC_RNGWaitingRoom_Functions
             this.GemCardsNeeded := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemCards" ]
             this.MaxRedraws := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemMaxRedraws" ]
             this.WaitForAllCards := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFGemWaitFor5Draws" ]
-            if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ])
-                this.Start()
-            else
-                this.Stop()
         }
 
         Start()
         {
             fncToCallOnTimer := this.LoopTimer
-            SetTimer, %fncToCallOnTimer%, 20, 0
-            this.MainLoop()
+            SetTimer, %fncToCallOnTimer%, 200, 0
         }
 
         Stop()
@@ -110,7 +100,8 @@ class IC_RNGWaitingRoom_Functions
                     if (!shouldRedraw)
                         this.SetStatus("Waiting for card #" . (numCards + 1))
                 }
-                else if (!this.WaitForAllCards && numCards == 5 && this.Redraws == 0 || !this.WaitForAllCards && this.Redraws || this.WaitForAllCards && numCards == 5 && !this.RedrawsLeft)
+                ; (Not waiting) has full hand and does not allow redraws - or - (Not waiting) Redraws > 0 - or - (Waiting) has full hand with no redraws left
+                else if ((!this.WaitForAllCards && numCards == 5 && this.Redraws == 0) || (!this.WaitForAllCards && this.Redraws) || (this.WaitForAllCards && numCards == 5 && !this.RedrawsLeft))
                 {
                     this.WaitedForEllywickThisRun := true
                     success := this.IsSuccess()
@@ -183,7 +174,7 @@ class IC_RNGWaitingRoom_Functions
             size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
             if (size == "" && this.IsEllyWickOnTheField())
             {
-                g_SF.Memory.ActiveEffectKeyHandler.Refresh()
+                g_SF.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.EffectKeyString)
                 size := g_SF.Memory.ActiveEffectKeyHandler.EllywickCallOfTheFeywildHandler.deckOfManyThingsHandler.cardsInHand.size.Read()
             }
             return size == "" ? 0 : size
@@ -354,28 +345,6 @@ class IC_RNGWaitingRoom_Functions
         }
     }
 
-    RemoveThelloraKeyFromInputValues(values)
-    {
-        if (IsObject(values))
-        {
-            newValues := []
-            for k, v in values
-            {
-                slot := this.GetFavoriteFormationSlot(v)
-                if (!slot || !this.IsThelloraInFavoriteFormation(slot))
-                    newValues.Push(v)
-            }
-            return newValues
-        }
-        else
-        {
-            slot := this.GetFavoriteFormationSlot(values)
-            if (slot && this.IsThelloraInFavoriteFormation(slot))
-                values := ""
-            return values
-        }
-    }
-
     GetFavoriteFormationSlot(key)
     {
         key := Trim(key, "{}")
@@ -400,15 +369,5 @@ class IC_RNGWaitingRoom_Functions
         formationFavorite := g_SF.Memory.GetFormationByFavorite(favorite)
         heroID := ActiveEffectKeySharedFunctions.Thellora.HeroID
         return g_SF.IsChampInFormation(heroID, formationFavorite)
-    }
-
-    GetIntitialFormation()
-    {
-        formation := g_SF.BGFLU_GetDefaultFormation()
-        ; Use DM if in modron formation.
-        heroID := 99
-        if (g_SF.IsChampInFormation(heroID, g_SF.Memory.GetActiveModronFormation()))
-            formation.Push(heroID)
-        return formation
     }
 }

@@ -1,3 +1,6 @@
+October 19, 2025
+    - Fixes/changes to work with BrivGemFarm 4.4.3
+    
 November 24, 2024 - v1.1.1
     - Added additional triggers for recording stacking events from ScriptHub.
 

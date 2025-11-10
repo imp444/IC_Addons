@@ -1,5 +1,39 @@
+November 9, 2025
+    - Fixed typos and code cosmetic updates.
+    - Possible fix for champs with min/max 0/x occasionally not leveling.
+
+November 3, 2025
+    - Added better logic checks to different functions.
+    - Added loopstring indicator to show when party setups happen.
+    - Reorganized how champions are loaded for party setup functions.
+    - Updated some formation checks to be lazy (do not test directly 1->1, just that the champs in the current formation are also in the one being tested.)
+    - Updated operation ordering in several places.
+    - Updated leveling and formation locks.
+    - Added a new timer (IsTimeUp) class/function and is used in cases where elapsed time no longer is.
+    - Fixed stacking using time instead of stacks.
+    - Fixed Ellywaiting again.
+    - Added some minor commenting.
+    - Fixed x25 not working.
+    - Fixed Typos.
+    - Updated default values for levelup that were provided by the community.
+    - Updated some default times used for timeouts.
+    - Added critical to formation switching.
+
+October 30, 2025
+    - Added Baldric default levels.
+    - Removed formation lock preventing Baldric from leveling during Ellywait.
+
+October 29, 2025
+    - Updated to use proxy settings file.
+    - Updated x25 levelup to only togglectrl when pressing leveling key up and not for full leveling process.
+    - Fixed calculation for Thellora in prediciton to not include Haste.
+    - Added alternative ways to increase click damage in zones.
+    - Added rate limit to Click Damage keypresses.
+    - Limited Click Leveling to after Ellywait.
+    - Reverted lock on clicks and baldric on Ellywick.
+    
 October 27, 2025
-    - Added setting to avoid levelling Briv if Thellora+Briv combined jumps end up hitting a boss zone.
+    - Added setting to avoid leveling Briv if Thellora+Briv combined jumps end up hitting a boss zone.
     - Removed duplicate code in HeroDefinitionsLoader.
 
 October 26, 2025

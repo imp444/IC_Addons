@@ -1,352 +1,128 @@
-; Overrides IC_BrivGemFarm_LevelUp_Class.GemFarm()
-class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_Class
+; Overrides IC_BrivGemFarm_LevelUp_Class.GemFarmShouldSetFormation()
+; Overrides IC_BrivGemFarm_LevelUp_Class.GemFarmResetSetup()
+; Overrides IC_BrivGemFarm_LevelUp_Added_Class.BGFLU_DoPartyWaits()
+class IC_RNGWaitingRoom_Class extends IC_BrivGemFarm_LevelUp_Class
 {
-    GemFarm()
+    GemFarmShouldSetFormation()
     {
-        static lastResetCount := 0
-        g_SharedData.TriggerStart := true
-        g_SF.Hwnd := WinExist("ahk_exe " . g_UserSettings[ "ExeName"])
-        existingProcessID := g_UserSettings[ "ExeName"]
-        Process, Exist, %existingProcessID%
-        g_SF.PID := ErrorLevel
-        Process, Priority, % g_SF.PID, High
-        g_SF.Memory.OpenProcessReader()
-        if (g_SF.VerifyAdventureLoaded() < 0)
-            return
-        g_SF.CurrentAdventure := g_SF.Memory.ReadCurrentObjID()
-        g_ServerCall.UpdatePlayServer()
-        g_SF.ResetServerCall()
-        g_SF.PatronID := g_SF.Memory.ReadPatronID()
-        this.LastStackSuccessArea := g_UserSettings [ "StackZone" ]
-        this.StackFailAreasThisRunTally := {}
-        g_SF.GameStartFormation := g_BrivUserSettings[ "BrivJumpBuffer" ] > 0 ? 3 : 1
-        g_SaveHelper.Init() ; slow call, loads briv dictionary (3+s)
-        formationModron := g_SF.Memory.GetActiveModronFormation()
-        if (this.PreFlightCheck() == -1) ; Did not pass pre flight check.
-            return -1
-        g_PreviousZoneStartTime := A_TickCount
-        g_SharedData.StackFail := 0
-        g_SF.BGFLU_CalcLastUpgradeLevels()
-        g_SharedData.BGFLU_UpdateSettingsFromFile(true)
-        loop
-        {
-            g_SharedData.LoopString := "Main Loop"
-            CurrentZone := g_SF.Memory.ReadCurrentZone()
-            if (CurrentZone == "" AND !g_SF.SafetyCheck() ) ; Check for game closed
-                g_SF.ToggleAutoProgress( 1, false, true ) ; Turn on autoprogress after a restart
-            ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
-            EllywickEnabled := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ]
-            if (EllywickEnabled && g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > lastResetCount)
-            {
-                g_SharedData.RNGWR_Elly.Reset()
-                g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
-            }
-            if (!EllywickEnabled || !g_SharedData.RNGWR_Elly.RNGWR_LockFormationSwitch)
-                g_SF.SetFormation(g_BrivUserSettings)
-            if (g_SF.Memory.ReadResetsCount() > lastResetCount OR g_SharedData.TriggerStart) ; first loop or Modron has reset
-            {
-                ; Allow formation switch on startup
-                g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun ; Allow formation switch on startup
-                g_SharedData.RNGWR_Elly.Reset()
-                g_SF.ToggleAutoProgress( 0, false, true )
-                g_SharedData.BGFLU_SetStatus()
-                g_SharedData.BGFLU_SaveFormations()
-                g_SharedData.SwapsMadeThisRun := 0
-                g_SharedData.BossesHitThisRun := 0
-                g_SharedData.StackFail := this.CheckForFailedConv()
-                g_SF.WaitForFirstGold()
-                setupMaxDone := false
-                setupFailedConversionDone := true
-                this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivShandie" ])
-                lastResetCount := g_SF.Memory.ReadResetsCount()
-                g_SF.Memory.ActiveEffectKeyHandler.Refresh()
-                worstCase := g_BrivUserSettings[ "AutoCalculateWorstCase" ]
-                g_SharedData.TargetStacks := this.TargetStacks := g_SF.CalculateBrivStacksToReachNextModronResetZone(worstCase) + 50 ; 50 stack safety net
-                this.LeftoverStacks := g_SF.CalculateBrivStacksLeftAtTargetZone(g_SF.Memory.ReadCurrentZone(), g_SF.Memory.GetModronResetArea() + 1, worstCase)
-                ; Don't reset last stack success area if 3 or more runs have failed to stack.
-                this.LastStackSuccessArea := this.StackFailAreasTally[g_UserSettings [ "StackZone" ]] < this.MaxStackRestartFails ? g_UserSettings [ "StackZone" ] : this.LastStackSuccessArea
-                this.StackFailAreasThisRunTally := {}
-                this.StackFailRetryAttempt := 0
-                StartTime := g_PreviousZoneStartTime := A_TickCount
-                PreviousZone := 1
-                g_SharedData.TriggerStart := false
-                g_SharedData.LoopString := "Main Loop"
-            }
-            if (g_SharedData.StackFail != 2)
-                g_SharedData.StackFail := Max(this.TestForSteelBonesStackFarming(), g_SharedData.StackFail)
-            if (g_SharedData.StackFail == 2 OR g_SharedData.StackFail == 4 OR g_SharedData.StackFail == 6 ) ; OR g_SharedData.StackFail == 3
-                g_SharedData.TriggerStart := true
-            if (!Mod( g_SF.Memory.ReadCurrentZone(), 5 ) AND Mod( g_SF.Memory.ReadHighestZone(), 5 ) AND !g_SF.Memory.ReadTransitioning())
-                g_SF.ToggleAutoProgress( 1, true ) ; Toggle autoprogress to skip boss bag
-            if (g_SF.Memory.ReadResetting())
-                this.ModronResetCheck()
-            else
-            {
-                needToStack := this.BGFLU_NeedToStack()
-                ; Level up Briv to MaxLevel after stacking
-                if (!needToStack AND g_SF.Memory.ReadChampLvlByID(58) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[58])
-                    setupMaxDone := false
-                ; Check for failed stack conversion
-                if (g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
-                    setupFailedConversionDone := false
-                if (!setupMaxDone)
-                    setupMaxDone := this.BGFLU_DoPartySetupMax() ; Level up all champs to the specified max level
-                else if (!setupFailedConversionDone)
-                    setupFailedConversionDone := this.BGFLU_DoPartySetupFailedConversion() ; Level up all champs to soft cap (including Briv if option checked)
-                if (g_SharedData.BGFLU_UpdateMaxLevels)
-                {
-                    setupMaxDone := false
-                    g_SharedData.BGFLU_UpdateMaxLevels := false
-                    ; Stop click spam
-                    if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
-                        g_SF.BGFLU_StopSpamClickDamage()
-                }
-                ; Click damage
-                if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-                    g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
-            }
-            if (CurrentZone > PreviousZone ) ; needs to be greater than because offline could stacking getting stuck in descending zones.
-            {
-                PreviousZone := CurrentZone
-                if ((!Mod( g_SF.Memory.ReadCurrentZone(), 5 )) AND (!Mod( g_SF.Memory.ReadHighestZone(), 5)))
-                {
-                    g_SharedData.TotalBossesHit++
-                    g_SharedData.BossesHitThisRun++
-                }
-                lastModronResetZone := g_SF.ModronResetZone
-                g_SF.InitZone( ["{ClickDmg}"] )
-                if (g_SF.ModronResetZone != lastModronResetZone)
-                {
-                    worstCase := g_BrivUserSettings[ "AutoCalculateWorstCase" ]
-                    g_SharedData.TargetStacks := this.TargetStacks := g_SF.CalculateBrivStacksToReachNextModronResetZone(worstCase) + 50 ; 50 stack safety net
-                    this.LeftoverStacks := g_SF.CalculateBrivStacksLeftAtTargetZone(this.Memory.ReadCurrentZone(), this.Memory.GetModronResetArea() + 1, worstCase)
-                }
-                g_SF.ToggleAutoProgress( 1 )
-                continue
-            }
-            g_SF.ToggleAutoProgress( 1 )
-            if (g_SF.CheckifStuck())
-            {
-                g_SharedData.TriggerStart := true
-                g_SharedData.StackFail := StackFailStates.FAILED_TO_PROGRESS ; 3
-                g_SharedData.StackFailStats.TALLY[g_SharedData.StackFail] += 1
-            }
-            Sleep, 20 ; here to keep the script responsive.
-        }
+        ; Prevent Thellora from being put in the formation on z1 before stacking Ellywick
+        EllywickEnabled := g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ]
+        if (EllywickEnabled && g_SF.Memory.ReadResetting() || g_SF.Memory.ReadResetsCount() > this.LastResetCount)
+            g_SharedData.RNGWR_Elly.Reset()
+        if (!EllywickEnabled OR !g_SF.FormationSwitchLock)
+            return base.GemFarmShouldSetFormation()
+        return False
     }
 
-    BGFLU_DoPartySetupMin(forceBrivShandie := false, timeout := "")
+    GemFarmResetSetup(formationModron := "", doBasePartySetup := False)
     {
-        currentZone := g_SF.Memory.ReadCurrentZone()
-        if (forceBrivShandie || currentZone == 1)
-            g_SF.ToggleAutoProgress( 0, false, true )
-        g_SharedData.BGFLU_SetStatus("Leveling champions to the minimum level")
-        formation := IC_RNGWaitingRoom_Functions.GetIntitialFormation()
-        ; If low favor mode is active, cheapeast upgrade first
-        lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
-        ; Level up speed champs first, priority to getting Briv, Shandie, Hew Maan, Nahara, Sentry, Virgil speed effects
-        ; Set formation
-        g_SF.BGFLU_LoadZ1Formation()
-        if (!lowFavorMode)
-            keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
-        StartTime := A_TickCount, ElapsedTime := 0
-        if (timeout == "")
-            timeout := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ]
-        timeout := timeout == "" ? 5000 : timeout
-        index := 0
-        while(keyspam.Length() != 0 AND ElapsedTime < timeout)
-        {
-            ; Update formation on zone change
-            if (currentZone < g_SF.Memory.ReadCurrentZone())
-            {
-                currentZone := g_SF.Memory.ReadCurrentZone()
-                formation := IC_RNGWaitingRoom_Functions.GetIntitialFormation()
-            }
-            if (lowFavorMode)
-            {
-                formationInOrder := this.BGFLU_OrderByCheapeastUpgrade(formation)
-                keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivShandie)
-            }
-            else
-                keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivShandie)
-            ; Maximum number of champions leveled up every loop
-            maxKeyspam := []
-            Loop % Min(g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ], keyspam.Length())
-                maxKeyspam.Push(keyspam[A_Index])
-            ; Level up speed champions once
-            g_SF.DirectedInput(,, maxKeyspam*)
-            ; Set formation
-            g_SF.BGFLU_LoadZ1Formation()
-            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
-            ElapsedTime := A_TickCount - StartTime
-            if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-                g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
-            g_SF.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
-        }
-        this.DirectedInput(hold := 0,, keyspam*) ; keysup
-        remainingTime := timeout - ElapsedTime
-        if (forceBrivShandie AND remainingTime > 0)
-            return this.BGFLU_DoPartySetupMin(false, remainingTime)
+        resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup)
+        g_SharedData.RNGWR_Elly.Reset()
+        return resetsCount
+    }
+
+    BGFLU_DoPartyWaits(formation)
+    {
         g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
+        this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivEllywick" ])
+        g_SF.FormationLevelingLock := False
         if (g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Ellywick.HeroID, formation))
             g_SF.RNGWR_DoEllyWait()
-        if (g_SF.IsChampInFormation(139, formation))
+        g_SF.FormationSwitchLock := False
+        if (g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Thellora.HeroID, formation))
             g_SF.DoRushWait()
-        ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
-        if (currentZone == 1 || g_SharedData.TriggerStart)
-            g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
-        g_SF.ToggleAutoProgress( 1, false, true )
+    }
+
+    ModronResetCheck()
+    {
+        g_SF.FormationLevelingLock := True
+        g_SF.FormationSwitchLock := True
+        base.ModronResetCheck()
     }
 }
 
+; Overrides IC_BrivGemFarm_LevelUp_SharedFunctions_Class.GetInitialFormation()
 ; Overrides IC_BrivSharedFunctions_Class.RestartAdventure()
-; Overrides IC_BrivSharedFunctions_Class.DirectedInput()
-; Overrides IC_BrivGemFarm_LevelUp_Class.DoRushWait()
-class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_BrivSharedFunctions_Class
+; Overrides IC_BrivSharedFunctions_Class.SetFormation()
+class IC_RNGWaitingRoom_SharedFunctions_Class extends IC_SharedFunctions_Class
 {
+    ;
+    GetInitialFormation()
+    {
+        modronFormation := g_SF.Memory.GetActiveModronFormation()
+        if(this.FormationSwitchLock)
+            return modronFormation
+        formation := base.GetInitialFormation()
+        ; Use extra champions if they're in the modron formation.
+        heroIDs := [99,59,97] ; DM / Melf / Tatyana
+        for k,heroID in heroIDs
+            if (g_SF.IsChampInFormation(heroID, modronFormation))
+                formation.Push(heroID)
+        return formation
+    }
+
     RestartAdventure( reason := "" )
     {
-            g_SharedData.LoopString := "ServerCall: Restarting adventure"
-            this.CloseIC( reason )
-            g_SharedData.RNGWR_Elly.Reset()
-            g_SharedData.RNGWR_LockFormationSwitch := !g_SharedData.RNGWR_FirstRun
-            if (this.sprint != "" AND this.steelbones != "" AND (this.sprint + this.steelbones) < 190000)
-            {
-                response := g_serverCall.CallPreventStackFail(this.sprint + this.steelbones)
-            }
-            else if (this.sprint != "" AND this.steelbones != "")
-            {
-                response := g_serverCall.CallPreventStackFail(this.sprint + this.steelbones)
-                g_SharedData.LoopString := "ServerCall: Restarting with >190k stacks, some stacks lost."
-            }
-            else
-            {
-                g_SharedData.LoopString := "ServerCall: Restarting adventure (no manual stack conv.)"
-            }
-            response := g_ServerCall.CallEndAdventure()
-            response := g_ServerCall.CallLoadAdventure( this.CurrentAdventure )
-            g_SharedData.TriggerStart := true
+        g_SF.FormationSwitchLock := True
+        g_SharedData.RNGWR_Elly.Reset()
+        base.RestartAdventure(reason)
     }
 
-    DirectedInput(hold := 1, release := 1, s* )
+    ; a method to swap formations and cancel briv's jump animation.
+    SetFormation(settings := "", forceCheck := False)
     {
-        Critical, On
-        ; TestVar := {}
-        ; for k,v in g_KeyPresses
-        ; {
-        ;     TestVar[k] := v
-        ; }
-        timeout := 5000
-        directedInputStart := A_TickCount
-        hwnd := this.Hwnd
-        ControlFocus,, ahk_id %hwnd%
-        ;while (ErrorLevel AND A_TickCount - directedInputStart < timeout * 10)  ; testing reliability
-        ; if ErrorLevel
-        ;     ControlFocus,, ahk_id %hwnd%
-        values := s
-        ; Remove Thellora
-        if (hold && g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] && g_SharedData.RNGWR_LockFormationSwitch)
-            values := IC_RNGWaitingRoom_Functions.RemoveThelloraKeyFromInputValues(values)
-        if(IsObject(values))
-        {
-            if(hold)
-            {
-                for k, v in values
-                {
-                    g_InputsSent++
-                    ; if TestVar[v] == ""
-                    ;     TestVar[v] := 0
-                    ; TestVar[v] += 1
-                    key := g_KeyMap[v]
-                    sc := g_SCKeyMap[v]
-                    sc := sc << 16
-                    lparam := Format("0x{:X}", 0x0 | sc)
-                    SendMessage, 0x0100, %key%, %lparam%,, ahk_id %hwnd%,,,,%timeout%
-                    if ErrorLevel
-                        this.ErrorKeyDown++
-                    ;     PostMessage, 0x0100, %key%, 0,, ahk_id %hwnd%,
-                }
-            }
-            if(release)
-            {
-                for k, v in values
-                {
-                    key := g_KeyMap[v]
-                    sc := g_SCKeyMap[v]
-                    sc := sc << 16
-                    lparam := Format("0x{:X}", 0xC0000001 | sc)
-                    SendMessage, 0x0101, %key%, %lparam%,, ahk_id %hwnd%,,,,%timeout%
-                    if ErrorLevel
-                        this.ErrorKeyUp++
-                    ;     PostMessage, 0x0101, %key%, 0xC0000001,, ahk_id %hwnd%,
-                }
-            }
-        }
-        else
-        {
-            key := g_KeyMap[values]
-            sc := g_SCKeyMap[values] << 16
-            if(hold)
-            {
-                g_InputsSent++
-                ; if TestVar[v] == ""
-                ;     TestVar[v] := 0
-                ; TestVar[v] += 1
-
-                lparam := Format("0x{:X}", 0x0 | sc)
-                SendMessage, 0x0100, %key%, %lparam%,, ahk_id %hwnd%,,,,%timeout%
-                if ErrorLevel
-                    this.ErrorKeyDown++
-            }
-            if(release)
-            {
-                lparam := Format("0x{:X}", 0xC0000001 | sc)
-                SendMessage, 0x0101, %key%, %lparam%,, ahk_id %hwnd%,,,,%timeout%
-            }
-            if ErrorLevel
-                this.ErrorKeyUp++
-            ;     PostMessage, 0x0101, %key%, 0xC0000001,, ahk_id %hwnd%,
-        }
-        Critical, Off
-        ; g_KeyPresses := TestVar
-    }
-
-    RNGWR_DoEllyWait()
-    {
-        this.Memory.ActiveEffectKeyHandler.Refresh()
-        if (g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())
-        {
-            timeout := 60000
-            ElapsedTime := 0
-            StartTime := A_TickCount
-            while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && ElapsedTime < timeout)
-            {
-                if (!g_SharedData.RNGWR_LockFormationSwitch)
-                    g_SF.BGFLU_LoadZ1Formation()
-                g_SharedData.LoopString := "Elly Wait: " . ElapsedTime
-                this.BGFLU_DoClickDamageSetup(1, g_BrivGemFarm.BGFLU_GetClickDamageTargetLevel())
-                Sleep, 30
-                ElapsedTime := A_TickCount - StartTime
-            }
-            if (ElapsedTime >= timeout)
-                g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
-        }
-        ; Unlock formation switch
-        g_SharedData.RNGWR_FirstRun := false
-        g_SharedData.RNGWR_LockFormationSwitch := false
+        if (!g_BrivUserSettingsFromAddons[ "RNGWR_EllywickGFEnabled" ] OR !g_SF.FormationSwitchLock)
+            return base.SetFormation(settings)
     }
 }
 
-; Extends IC_SharedData_Class
-class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
+class IC_RNGWaitingRoom_SharedFunctions_Added_Class ; Added to IC_BrivSharedFunctions_Class
+{
+    RNGWR_DoEllyWait()
+    {
+        g_SF.ToggleAutoProgress( 0, false, true )
+        if(g_SharedData.RNGWR_FirstRun) ; no ellywait on first run, get to gem farm first.
+        {
+            g_SharedData.RNGWR_FirstRun := False
+            return g_SharedData.RNGWR_Elly.Stop()
+        }
+        this.Memory.ActiveEffectKeyHandler.Refresh(ActiveEffectKeySharedFunctions.Ellywick.EllywickCallOfTheFeywildHandler.EffectKey)
+        g_SharedData.RNGWR_Elly.Start()
+        if (!g_SharedData.RNGWR_Elly.IsEllyWickOnTheField())
+            if(ActiveEffectKeySharedFunctions.Ellywick.HeroID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(ActiveEffectKeySharedFunctions.Ellywick.HeroID)))
+                g_BrivGemFarm.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Ellywick.HeroID)
+        timeout := 60000
+        timeoutTimer := new SH_SharedTimers()
+        minFailCount := 0
+        while(!g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun && !timeoutTimer.IsTimeUp(timeout))
+        {
+            g_SF.SetFormationForStart()
+            g_SharedData.LoopString := "Elly Wait: " . A_TickCount - timeoutTimer.StartTime
+            if(g_BrivGemFarm.BGFLU_DoPartySetupMin())
+                minFailCount += 1
+            if(minCount >= 4)
+                g_BrivGemFarm.BGFLU_DoPartySetupMax()
+            Sleep, 30
+        }
+        g_SharedData.LoopString := "Elly Wait Done!"
+        if (timeoutTimer.IsTimeUp(timeout))
+            g_SharedData.RNGWR_Elly.WaitedForEllywickThisRun := true
+        g_SharedData.RNGWR_Elly.Stop()
+        g_SharedData.RNGWR_FirstRun := false
+        g_BrivGemFarm.BGFLU_DoPartySetupMax()
+        ; Unlock formation switch
+        g_PreviousZoneStartTime := A_TickCount
+    }
+}
+
+class IC_RNGWaitingRoom_IC_SharedData_Added_Class ; Added to IC_SharedData_Class
 {
 ;    RNGWR_Status := ""
 ;    RNGWR_Stats := ""
 ;    RNGWR_Elly := ""
 ;    RNGWR_FirstRun := ""
-;    RNGWR_LockFormationSwitch := ""
 
     ; Return true if the class has been updated by the addon
     RNGWR_Running()
@@ -371,7 +147,6 @@ class IC_RNGWaitingRoom_IC_SharedData_Class extends IC_SharedData_Class
         this.RNGWR_ResetStats()
         this.RNGWR_Elly := new IC_RNGWaitingRoom_Functions.EllywickHandlerHandler
         this.RNGWR_UpdateSettingsFromFile()
-        this.RNGWR_Elly.Start()
     }
 
     RNGWR_UpdateStats(bonusGems := 0, redraws := 0, success := true)

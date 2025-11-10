@@ -6,6 +6,39 @@
 class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 {
     Levelupx25 := {}
+    ChampIDs := {}
+
+    InitChamps()
+    {
+        this.ChampIDs := {}
+        this.ChampIDs[Briv := "58"] := 58 ; must be in quotes so object is treated as dict and not an array that will modify keys.
+        this.ChampIDs[Widdle := 91] := 91
+        this.ChampIDs[Ellywick := 83] := 83
+        this.ChampIDs[HewMaan := 75] := 75
+        this.ChampIDs[Tatyana := 97] := 97
+        this.ChampIDs[Melf := 59] := 59
+        this.ChampIDs[Dynaheir := 145] := 145
+        this.ChampIDs[Diana := 148] := 148
+        this.ChampIDs[BBEG  := 125] := 125
+        this.ChampIDs[Dungeon_Master := 99] := 99
+        this.ChampIDs[Imoen := 117] := 117
+        this.ChampIDs[Laezel  := 128] := 128
+        this.ChampIDs[Deekin := 28] := 28
+        this.ChampIDs[Virgil := 115] := 115
+        this.ChampIDs[Sentry := 52] := 52
+        this.ChampIDs[Nahara := 102] := 102
+        this.ChampIDs[Dhani := 89] := 89
+        this.ChampIDs[Kent := 114] := 114
+        this.ChampIDs[Gazrick := 98] := 98
+        this.ChampIDs[Alyndra := 79] := 79
+        this.ChampIDs[Selise := 81] := 81
+        this.ChampIDs[Vi := 95] := 95
+        this.ChampIDs[Havilar := 56] := 56
+        this.ChampIDs[Shandie := 47] := 47
+        this.ChampIDs[Minsc := 7] := 7
+        this.ChampIDs[Baldric := 165] := 165 
+        this.ChampIDs[Thellora := 139] := 139
+    }
     ;=====================================================
     ;Primary Functions for Briv Gem Farm
     ;=====================================================
@@ -15,11 +48,13 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         base.GemFarmDoZone(formationModron)
     }
     
+    ; returns 0 on normal exit, otherwise error number < 0
     GemFarmPreLoopSetup()
     {
         isFailed := base.GemFarmPreLoopSetup(True)
         if(!isFailed)
         {
+            this.InitChamps()
             g_SF.BGFLU_CalcLastUpgradeLevels()
             g_SharedData.BGFLU_UpdateSettingsFromFile(true)
             g_SharedData.BGFLU_SaveFormations()
@@ -35,14 +70,18 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         resetsCount := base.GemFarmResetSetup(formationModron, doBasePartySetup := False)
         if(this.GemFarmShouldSetFormation())
             g_SF.SetFormationForStart()
-        this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivEllywick" ])
+        this.BGFLU_DoPartySetupMin(g_BrivUserSettingsFromAddons[ "BGFLU_ForceBrivEllywick" ]) ; level forced champions (briv/ellywick), then other minlevel champs
         this.BGFLU_DoPartyWaits(formationModron)
+        this.Levelupx25 := {} 
+        this.BGLU_DoneLeveling := False 
+        g_SF.FormationSwitchLock := False
         g_SF.ToggleAutoProgress( 1, false, true )
         return resetsCount
     }
 
     GemFarmDoNonModronActions(currentZone := "")
     {
+        static lastTick := 0
         needToStack := this.BGFLU_NeedToStack()
         ; Level up Briv to MaxLevel after stacking
         if (!needToStack AND g_SF.Memory.ReadChampLvlByID(ActiveEffectKeySharedFunctions.Briv.HeroID) < g_BrivUserSettingsFromAddons[ "BGFLU_BrivGemFarm_LevelUp_Settings" ].maxLevels[ActiveEffectKeySharedFunctions.Briv.HeroID])
@@ -50,66 +89,68 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
         ; Check for failed stack conversion
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversion" ] AND g_SF.Memory.ReadHasteStacks() < 50 AND needToStack)
             this.SetupFailedConversionDone := false
-        if (!this.SetupMaxDone AND currentZone > 5) ; ignore doing max at setup since this method runs first.
+        if (!this.SetupMaxDone AND currentZone > 5 AND !g_SF.FormationLevelingLock) ; ignore doing max at setup since this method runs first.
             this.SetupMaxDone := this.BGFLU_DoPartySetupMax() ; Level up all champs to the specified max level
         else if (!this.SetupFailedConversionDone)
             this.SetupFailedConversionDone := this.BGFLU_DoPartySetupFailedConversion() ; Level up all champs to soft cap (including Briv if option checked)
-        if (g_SharedData.BGFLU_UpdateMaxLevels)
+        if (g_SharedData.BGFLU_UpdateMaxLevels) 
         {
-            this.SetupMaxDone := false
+            this.SetupMaxDone := false ; Trigger start max leveling
             g_SharedData.BGFLU_UpdateMaxLevels := false
             ; Stop click spam
             if (!g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
                 g_SF.BGFLU_StopSpamClickDamage()
         }
+        if(A_TickCount - lastTick < g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ])
+            return
         ; Click damage
         if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
             g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
+        else if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
+            g_SF.BGFLU_DoClickDamageSetup(g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ])
+        else
+            g_SF.BGFLU_DoClickDamageSetup(1)
     }
 
     ; Stops progress and switches to appropriate party to prepare for stacking Briv's SteelBones.
-    StackFarmSetup()
+    StackFarmSetup(setUIString := False)
     {
-        g_SharedData.LoopString := "Switching to stack farm formation."
-        if (!g_SF.KillCurrentBoss() ) ; Previously/Alternatively FallBackFromBossZone()
-            g_SF.FallBackFromBossZone() ; Boss kill Timeout
+        if(setUIString)
+            g_SharedData.LoopString := "Switching to stack farm formation."
+        if (!this.BossKillAttempt AND !g_SF.KillCurrentBoss() ) ; Previously/Alternatively FallBackFromBossZone()
+            this.BossKillAttempt := True, g_SF.FallBackFromBossZone() ; Boss kill Timeout
         inputValues := "{w}" ; Stack farm formation hotkey
         g_SF.DirectedInput(,, inputValues )
         keyspam := this.BGFLU_GetMinLevelingKeyspam(g_SF.Memory.GetFormationByFavorite(2))
         g_SF.WaitForTransition( inputValues )
         g_SF.DirectedInput(,, keyspam*)
         g_SF.ToggleAutoProgress( 0 , false, true )
-        StartTime := A_TickCount
-        ElapsedTime := 0
+        timeout := 5000
         counter := 0
-        sleepTime := 50
-        g_SharedData.LoopString := "Setting stack farm formation."
+        sleepTime := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
+        if(setUIString)
+            g_SharedData.LoopString := "Setting stack farm formation."
         stackFormation := g_SF.Memory.GetFormationByFavorite(2)
-        isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2 AND g_SF.IsCurrentFormation(stackFormation)
-        if (!isFormation2)
+        if(g_SF.IsCurrentFormationLazy(g_SF.Memory.GetFormationByFavorite(2), 2))
+            isFormation2 := True
+        timeoutTimer := new SH_SharedTimers()
+        while (!isFormation2 AND !timeoutTimer.IsTimeUp(timeout) )
         {
-            g_SF.DirectedInput(,,inputValues)
-            isFormation2 := g_SF.Memory.ReadMostRecentFormationFavorite() == 2
-            if(!isFormation2 AND g_SF.IsCurrentFormation(stackFormation))
-                isFormation2 := True
-        }
-        while (!g_SF.IsCurrentFormation(stackFormation) AND ElapsedTime < 5000 )
-        {
-            ElapsedTime := A_TickCount - StartTime
-            if (ElapsedTime > (counter * sleepTime)) ; input limiter..
-            {
+            if (!timeoutTimer.IsTimeUp(sleepTime * counter)) ; input limiter..
                 g_SF.DirectedInput(,,inputValues)
-                counter++
+            if (timeoutTimer.IsTimeUp(1000) AND !isFormation2 && (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters()))
+            {
+                 ; not W formation or briv is benched
+                if (g_SF.Memory.ReadChampBenchedByID(ActiveEffectKeySharedFunctions.Briv.HeroID) OR !(g_SF.Memory.ReadMostRecentFormationFavorite() == 2))
+                    g_SF.FallBackFromZone()
             }
-            ; Can't formation switch when under attack.
-            if (ElapsedTime > 1000 && g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
-                g_SF.FallBackFromZone()
             else
                 this.BGFLU_DoPartySetupMax(stackFormation)
-            Sleep, 20
+            if(g_SF.IsCurrentFormationLazy(stackFormation, 2))
+                isFormation2 := True
+            counter++
         }
-        while (!this.BGFLU_DoPartySetupMax(stackFormation) AND (A_TickCount - StartTime) < 5000)
-           Sleep, 30
+        g_SharedData.LoopString := "Stack farm formation set."
         return
     }
 }
@@ -117,7 +158,7 @@ class IC_BrivGemFarm_LevelUp_Class extends IC_BrivGemFarm_Class
 class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 {
     /*  BGFLU_DoPartySetupMin - When gem farm is started or an adventure is reloaded, this is called to set up the primary party.
-                          This will only level champs to the minium target specified in BrivGemFarm_LevelUp_Settings.json.
+                          This will only level champs to the minimum target specified in BrivGemFarm_LevelUp_Settings.json.
                           This will not level champs whose minimum level is set to 0.
                           It will wait for Shandie dash / Thellora Rush if necessary.
                           It will only level up at a time the number of champions specified in the MaxSimultaneousInputs setting.
@@ -126,87 +167,83 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
         Returns:
     */
-    BGFLU_DoPartySetupMin(forceBrivEllywick := false, timeout := 5000)
+    BGFLU_DoPartySetupMin(forceBrivEllywick := false, timeout := 10000, initialFormation := "")
     {
         currentZone := g_SF.Memory.ReadCurrentZone()
+        if(!g_SF.FormationSwitchLock) ; don't show leveling string before ellywait.
+            g_SharedData.LoopString .= " - Party setup Min"
         if (forceBrivEllywick || currentZone == 1)
             g_SF.ToggleAutoProgress( 0, false, true )
-        formation := g_SF.GetInitialFormation()
-        ; If low favor mode is active, cheapeast upgrade first
-        lowFavorMode := g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ]
+        if(initialFormation == "")
+            formation := g_SF.GetInitialFormation()
+        g_SF.SetFormationForStart()
         ; Level up speed champs first, priority to getting Briv, Ellywick, Hew Maan, Nahara, Sentry, Virgil speed effects
         ; Set formation
-        g_SF.SetFormationForStart()
         StartTime := A_TickCount
+        ; If low favor mode is active, cheapest upgrade first
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
             keyspam := this.BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivEllywick, timeout, currentZone)
-        if(keyspam)
-            remainingTime := timeout
+        else {
+            formationInOrder := this.BGFLU_OrderByCheapestUpgrade(formation)
+            keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivEllywick)
+        }
+        if(keyspam != "" AND keyspam != {})
+            remainingTime := timeout ; reset timeout
         else
             remainingTime := timeout - (A_TickCount - StartTime)
         g_SF.DirectedInput(hold := 0,, keyspam*) ; keysup
         if (forceBrivEllywick AND remainingTime > 0)
-            this.BGFLU_DoPartySetupMin(false, remainingTime)
+            this.BGFLU_DoPartySetupMin(false, remainingTime, formation) ; do normal after do forced.
         if (currentZone == 1 || g_SharedData.TriggerStart)
             g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel(), Max(remainingTime, 2000))
         ; Click damage (should be enough to kill monsters at the area Thellora jumps to unless using x1)
-        return results
+        return keyspam == {}
     }
 
     BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivEllywick := false, timeout := "", currentZone := 1)
     {
-        StartTime := A_TickCount, ElapsedTime := 0
-        if (timeout == "")
-            timeout := g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ]
-        timeout := timeout == "" ? 5000 : timeout
+        timeout := timeout == "" ? g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelTimeout" ] : timeout
+        timeout := timeout == "" ? 10000 : timeout
         keyspam := {}
         keyspam.Push("")
         loopCount := 0
         allowClick := False
-        while(keyspam.Length() != 0 AND ElapsedTime < timeout)
-        {
-            if(loopCount > 2)
+        timeoutTimer := new SH_SharedTimers()
+        while(keyspam.Length() != 0 AND !timeoutTimer.IsTimeUp(timeout)) {
+            if(2 < loopCount++) 
                 allowClick := True
             keyspam := this.BGFLU_DoPartySetupMinInnerLoop_NoLowFavor(formation, forceBrivEllywick, currentZone, allowClick)
-            loopCount++
-            ElapsedTime := A_TickCount - StartTime
         }
         return keyspam
     }
 
     BGFLU_DoPartySetupMinInnerLoop_NoLowFavor(formation, forceBrivEllywick := false, currentZone := 1, allowClick := True)
     {
-            keyspam := {}
-            ; Update formation on zone change
-            if (currentZone < g_SF.Memory.ReadCurrentZone())
-            {
-                currentZone := g_SF.Memory.ReadCurrentZone()
-                formation := g_SF.GetInitialFormation()
-            }
-            if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
-            {
-                formationInOrder := this.BGFLU_OrderByCheapeastUpgrade(formation)
-                keyspam := this.BGFLU_GetMinLevelingKeyspamLowFavor(formationInOrder, forceBrivEllywick)
-            }
-            else
-                keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivEllywick, currentZone)
-            ; Level up speed champions once
-            g_SF.DirectedInput(,, keyspam*)
-            ; Set formation
-            g_SF.SetFormationForStart()
-            Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
-            if(allowClick OR currentZone > 1)
-            {
-                if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
-                    g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
-                g_SF.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
-            }
-            return keyspam
+        keyspam := {}
+        ; Update formation on zone change
+        if (currentZone < g_SF.Memory.ReadCurrentZone()) {
+            currentZone := g_SF.Memory.ReadCurrentZone()
+            formation := g_SF.GetInitialFormation()
+        }
+        keyspam := this.BGFLU_GetMinLevelingKeyspam(formation, forceBrivEllywick, currentZone)
+        ; Level up speed champions once
+        g_SF.DirectedInput(,, keyspam*)
+        ; Set formation
+        g_SF.SetFormationForStart()
+        Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
+        ; Level Clicks
+        if(allowClick OR currentZone > 1)
+        {
+            if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageMatchArea" ])
+                g_SF.BGFLU_DoClickDamageSetup(, this.BGFLU_GetClickDamageTargetLevel())
+            g_SF.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
+        }
+        return keyspam
     }
 
     BGFLU_DoPartyWaits(formation)
     {
-        g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea() ; once per zone in case user changes it mid run.
+        g_SF.ModronResetZone := g_SF.Memory.GetModronResetArea()
         if (!g_BrivUserSettingsFromAddons[ "BGFLU_SkipMinDashWait" ] AND g_SF.ShouldDashWait())
             g_SF.DoDashWait( Max(g_SF.ModronResetZone - g_BrivUserSettings[ "DashWaitBuffer" ], 0) )
         if (g_SF.IsChampInFormation(ActiveEffectKeySharedFunctions.Thellora.HeroID, formation))
@@ -219,62 +256,25 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
     BGFLU_GetMinLevelingKeyspam(formation, forceBrivEllywick := false, currentZone := 0)
     {
-        keyspam := []
-        ; List of champion IDs
-        if (forceBrivEllywick)
-        {
-            champIDs := [ Briv := 58
-                        , Ellywick := 83 ]
-        }
-        else
-        {
-            champIDs := [ Briv := 58
-                        , Widdle := 91
-                        , Ellywick := 83
-                        , HewMaan := 75
-                        , Tatyana := 97
-                        , Melf := 59
-                        , Dynaheir := 145
-                        , Diana := 148
-                        , BBEG  := 125
-                        , Dungeon Master := 99
-                        , Laezel  := 128
-                        , Deekin := 28
-                        , Virgil := 115
-                        , Sentry := 52
-                        , Nahara := 102
-                        , Dhani := 89
-                        , Kent := 114
-                        , Gazrick := 98
-                        , Alyndra := 79
-                        , Selise := 81
-                        , Vi := 95
-                        , Havilar := 56
-                        , Shandie := 47
-                        , Thellora := 139]
-        }
+        keyspam := [], nonSpeedIDs := {}
+        allowBrivLeveling := this.BGFLU_AllowBrivLeveling()
         ; Need to walk while Briv is in all formations
-        if (!this.BGFLU_AllowBrivLeveling())
-            champIDs.RemoveAt(1)
         if (!forceBrivEllywick)
-        {
-            nonSpeedIDs := {}
             for k, champID in formation
-            {
-                ; Need to walk while Briv is in all formations
-                if (champID == 58 && !this.BGFLU_AllowBrivLeveling())
-                    continue
-                if (champID != -1 && champID != "")
+                if (champID > 0 AND (champID != 58 OR allowBrivLeveling)) ; Need to walk while Briv is in all formations
                     nonSpeedIDs[champID] := champID
-            }
-        }
         ; Get Fkeys for speed champs
         while (keyspam.Length() < g_BrivUserSettingsFromAddons[ "BGFLU_MaxSimultaneousInputs" ])
         {
-            for k, champID in champIDs
+            for k, champID in formation
             {
-                if (g_SF.IsChampInFormation(champID, formation))
+                isEllywickAndForce := forceBrivEllywick AND champID == ActiveEffectKeySharedFunctions.Ellywick.HeroID
+                isBrivAndForce := forceBrivEllywick AND champID == ActiveEffectKeySharedFunctions.Briv.HeroID
+                IsNotForce := !forceBrivEllywick AND this.ChampIDs[champID] == champID
+                if (isBrivAndForce OR isEllywickAndForce OR IsNotForce)
                 {
+                    if((champID == ActiveEffectKeySharedFunctions.Briv.HeroID && !allowBrivLeveling))
+                        continue
                     if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
                         keyspam.Push(this.BGFLU_GetFKey(champID))
                     if (!forceBrivEllywick)
@@ -285,16 +285,12 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
                 break
         }
         ; Get Fkeys for other champs
-        if (!forceBrivEllywick)
+        for k, champID in nonSpeedIDs ; nonspeedIDs empty if !forceEllywick (if that were not the case, check !forceEllywick before this)
         {
-            for k, champID in nonSpeedIDs
-            {
-                if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
-                    if (champID == 165 AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to minleveling
-                        continue
-                    else
-                        keyspam.Push(this.BGFLU_GetFKey(champID))
-            }
+            if (g_SF.FormationLevelingLock) ; waits until formation lock
+                break
+            if (this.BGFLU_ChampUnderTargetLevel(champID, this.BGFLU_GetTargetLevel(champID, "Min")) AND (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID))))
+                keyspam.Push(this.BGFLU_GetFKey(champID))
         }
         return keyspam
     }
@@ -334,61 +330,38 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     */
     BGFLU_DoPartySetupMax(formation := "")
     {
+        if(this.BGLU_DoneLeveling)
+            return true
         ; Speed champions without Briv
-        static champIDs := [ Briv := 58
-                        , Widdle := 91
-                        , Ellywick := 83
-                        , HewMaan := 75
-                        , Tatyana := 97
-                        , Melf := 59
-                        , Dynaheir := 145
-                        , Diana := 148
-                        , BBEG  := 125
-                        , Dungeon Master := 99
-                        , Imoen := 117
-                        , Laezel  := 128
-                        , Deekin := 28
-                        , Virgil := 115
-                        , Sentry := 52
-                        , Nahara := 102
-                        , Dhani := 89
-                        , Kent := 114
-                        , Gazrick := 98
-                        , Alyndra := 79
-                        , Selise := 81
-                        , Vi := 95
-                        , Havilar := 56
-                        , Shandie := 47
-                        , Minsc := 7
-                        , Thellora := 139 ]
-        this.ExitMethod := False
         levelBriv := true ; Return value
+        updateLoopString := !g_SF.FormationSwitchLock AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2
+        if(updateLoopString) ; don't show leveling string before ellywait finishes or when stacking.
+            g_SharedData.LoopString .= " - Party setup Max" ; Will be added multiple times if not cleared in previous function after returning.
         if (!formation)
             formation := g_SF.GetInitialFormation()
-        else
-            formation := this.BGFLU_GetFormationNoEmptySlots(formation)
+        formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         if (this.BGFLU_ChampUnderTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, this.BGFLU_GetTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, "Min")))
         {
             levelBriv := false
             if (this.BGFLU_AllowBrivLeveling()) ; Level Briv to be able to skip areas
-                this.BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivEllywick := True) ; this.BGFLU_DoPartySetupMin(true)
+                this.BGFLU_DoPartySetupMin_NoLowFavor(formation, forceBrivEllywick := True) 
         }
         ; Speed champions are leveled up first (without Briv)
-        ; If low favor mode is active, cheapeast upgrade first
+        ; If low favor mode is active, cheapest upgrade first
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
-            formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
+            formation := this.BGFLU_OrderByCheapestUpgrade(formation)
         else
-            for k, champID in champIDs
-                if (g_SF.IsChampInFormation(champID, formation))
+            for k, champID in formation
+                if (this.ChampIDs[champID] == champID) ; Is speed champ
                 {
-                    targetLevel := this.CalculateTargetLevel(champID)
-                    if (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && this.BGFLU_LevelUpChamp(champID, targetLevel))
+                    if (g_SF.FormationLevelingLock)
                         return false
+                    targetLevel := this.CalculateTargetLevel(champID)
+                    if (champID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(champID)) && !this.BGFLU_LevelUpChamp(champID, targetLevel)) ; champ in seat and leveling them is successful (at or over target level)
+                        break ; do once per call
                 }
         ; Now do x25 levelling.
-        levelBriv := this.DoX25Leveling()
-        if(this.ExitMethod)  
-            return false
+        levelBriv := levelBriv AND this.DoX25Leveling() 
         ; Complete leveling
         for k, champID in formation
         {
@@ -403,38 +376,38 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
             if (this.BGFLU_LevelUpChamp(champID, targetLevel))
                 return false
         }
-        levelBriv := this.DoX25Leveling()
-        if(this.ExitMethod)  
-            return false
+        levelBriv := levelBriv AND this.DoX25Leveling()
         if (levelBriv)
+        {
+            this.BGLU_DoneLeveling := True
             g_SharedData.BGFLU_SetStatus("All champions leveled up.")
-        return g_SF.ArrSize(this.Levelupx25) == 0 AND levelBriv
+        }
+        return levelBriv
     }
 
+    ; Returns True if all champs are done with x25, false if champs still need leveling.
     DoX25Leveling()
     {
-        if (g_SF.ArrSize(this.Levelupx25) > 0)
+        levelBriv := false
+        if (!g_SF.ArrSize(this.Levelupx25) > 0) ; nothing to level
+            return true       
+        for champID, targetLevel in this.Levelupx25
         {
-            levelBriv := false
-            this.ToggleControl(true) ; To go back to x10 - change to ToggleShift
-            for champID, targetLevel in this.Levelupx25
+            champSeat := g_SF.Memory.ReadChampSeatByID(champID)
+            champIDInSeat := g_SF.Memory.ReadSelectedChampIDBySeat(champSeat)
+            if (!this.BGFLU_ChampUnderTargetLevel(champID, targetLevel))
             {
-                champSeat := g_SF.Memory.ReadChampSeatByID(champID)
-                champIDInSeat := g_SF.Memory.ReadSelectedChampIDBySeat(champSeat)
-                if (champID != champIDInSeat)
-                    continue
-                if (this.BGFLU_LevelUpChamp(champID, targetLevel))
-                {
-                    this.ToggleControl()
-                    this.Levelupx25.delete(champID)
-                    this.ExitMethod := True
-                    return levelBriv
-                }
+                this.Levelupx25.delete(champID) 
+                continue
             }
-            this.ToggleControl()
+            if (champID != champIDInSeat)
+                continue
+            else if (this.BGFLU_LevelUpChamp(champID, targetLevel, True)) 
+                return false
+            this.Levelupx25.delete(champID)
         }
-        else
-            levelBriv := true
+        if (!g_SF.ArrSize(this.Levelupx25) > 0) ; done leveling
+            return true
         return levelBriv
     }
 
@@ -452,26 +425,18 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
 
     ToggleShift(shiftKeyDown := false)
     {
-        g_SF.DirectedInput(shiftKeyDown ? 1 : 0, shiftKeyDown ? 0 : 1, "{Shift}")
-        startTime:=A_TickCount
-        elapsedTime:=0
-        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=shiftKeyDown AND elapsedTime < 100) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
-        {
+        g_SF.DirectedInput(shiftKeyDown, !shiftKeyDown, "{Shift}")
+        timeoutTimer := new SH_SharedTimers()
+        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=shiftKeyDown AND !timeoutTimer.IsTimeUp(100)) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
             Sleep 1
-            elapsedTime:=A_TickCount - startTime
-        }
     }
     
     ToggleControl(controlKeyDown := false)
     {
-        g_SF.DirectedInput(controlKeyDown ? 1 : 0, controlKeyDown ? 0 : 1, "{RCtrl}")
-        startTime:=A_TickCount
-        elapsedTime:=0
-        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=controlKeyDown AND elapsedTime < 100) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
-        {
+        g_SF.DirectedInput(controlKeyDown, !controlKeyDown, "{RCtrl}")
+        timeoutTimer := new SH_SharedTimers()
+        while (g_SF.Memory.GameManager.game.gameInstances[g_SF.Memory.GameInstance].Screen.uiController.bottomBar.heroPanel.activeBoxes[0].levelUpInfoHandler.OverrideLevelUpAmount.Read()!=controlKeyDown AND !timeoutTimer.IsTimeUp(100)) ;Allow 100ms for the keypress to apply at maximum to avoid getting stuck. On a fast PC it only took AHK tick (15ms) extra when needed
             Sleep 1
-            elapsedTime:=A_TickCount - startTime
-        }
     }
     
     
@@ -487,7 +452,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         else
             formation := this.BGFLU_GetFormationNoEmptySlots(formation)
         if (g_BrivUserSettingsFromAddons[ "BGFLU_LowFavorMode" ])
-            formation := this.BGFLU_OrderByCheapeastUpgrade(formation)
+            formation := this.BGFLU_OrderByCheapestUpgrade(formation)
         modronFormation := g_SF.Memory.GetActiveModronFormation() ; required as a champ not in modron will never be seen as max because it can't upgrade past its specialization.
         for k, champID in formation
             if (g_SF.IsChampInFormation(champID, formation) AND g_SF.IsChampInFormation(champID, modronFormation) AND (champID != 58 OR g_BrivUserSettingsFromAddons[ "BGFLU_LevelToSoftCapFailedConversionBriv" ]))
@@ -586,7 +551,7 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
     ; Returns the list of champion IDs sorted by cheapast upgrade first.
     ; Params: champIDs:array - List of champion IDs.
     ;         num:int - Number of champions that need to be returned.
-    BGFLU_GetCheapeastUpgrade(champIDs, num := 1)
+    BGFLU_GetCheapestUpgrade(champIDs, num := 1)
     {
         if (num == 1 && champIDs.Length() == num)
             return champIDs
@@ -610,14 +575,14 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         return cheapest
     }
 
-    BGFLU_OrderByCheapeastUpgrade(formation)
+    BGFLU_OrderByCheapestUpgrade(formation)
     {
-        return this.BGFLU_GetCheapeastUpgrade(formation, formation.Length())
+        return this.BGFLU_GetCheapestUpgrade(formation, formation.Length())
     }
 
     BGFLU_GetFormationNoEmptySlots(formation)
     {
-        ids := []
+        ids := {}
         for k, champID in formation
         {
             if (champID > 0)
@@ -626,17 +591,22 @@ class IC_BrivGemFarm_LevelUp_Added_Class ; Added to IC_BrivGemFarm_Class
         return ids
     }
 
-    BGFLU_LevelUpChamp(champID, target)
+    ; Returns TRUE if champ is done leveling, FALSE if not.
+    BGFLU_LevelUpChamp(champID, target, isX25 := False)
     {
-        if ((champID == (baldric := 165)) AND (this.FormationLock OR currentZone == this.ThelloraRushZone OR currentZone == 1)) ; don't add baldric to leveling until after rush and ellywait
-            return true
         if (this.BGFLU_ChampUnderTargetLevel(champID, target))
         {
             ; Level up a single champion once
             text := "Leveling " . g_SF.Memory.ReadChampNameByID(champID) . " to the maximum level (" . target . ")"
             g_SharedData.BGFLU_SetStatus(text)
+            if(isX25)
+                this.ToggleControl(true) ; To go back to x10 - change to ToggleShift
             g_SF.DirectedInput(,, this.BGFLU_GetFKey(champID))
-            return true
+            if(isX25)
+                this.ToggleControl(false) ; To go back to x10 - change to ToggleShift
+            needsLeveling := this.BGFLU_ChampUnderTargetLevel(champID, target)
+            if (!needsLeveling)
+                return true
         }
         return false
     }
@@ -700,7 +670,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
     {
         this.ToggleAutoProgress(0)
         this.SetFormationForStart()
-        g_BrivGemFarm.BGFLU_DoPartySetupMax()
+        g_BrivGemFarm.BGFLU_DoPartySetupMin() ; min before ellywait.Get DM out.
         this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
         ElapsedTime := A_TickCount - StartTime
         g_SharedData.LoopString := "Dash Wait: " . ElapsedTime . " / " . estimate
@@ -732,12 +702,12 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
     {
         this.ToggleAutoProgress(0)
         this.SetFormationForStart()
-        g_BrivGemFarm.BGFLU_DoPartySetupMax()
+        g_BrivGemFarm.BGFLU_DoPartySetupMax() ; max after.
         this.BGFLU_DoClickDamageSetup(1, this.BGFLU_GetClickDamageTargetLevel())
         ElapsedTime := A_TickCount - StartTime
         g_SharedData.LoopString := "Rush Wait: " . ElapsedTime . " / " . estimate
         Sleep, 30
-        return ElapsedTime
+        return ElapsedTime - 30
     }
 
     ; Does once per zone tasks like pressing leveling keys
@@ -745,7 +715,7 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Class extends IC_SharedFunctions_Cl
     {
         global g_PreviousZoneStartTime
         Critical, On
-        if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ])
+        if (g_BrivUserSettingsFromAddons[ "BGFLU_ClickDamageSpam" ] AND !g_SF.FormationLevelingLock)
         {
             ; Level up click damage once
             this.BGFLU_DoClickDamageSetup(1)
@@ -786,26 +756,23 @@ class IC_BrivGemFarm_LevelUp_SharedFunctions_Added_Class ; Added to IC_BrivShare
         ; Don't level up click damage if the is not enough gold for at least one upgrade.
         maxAmount := g_SF.Memory.BGFLU_ReadClickLevelUpAllowed()
         if (maxAmount == 0)
-            return true
+            return
+        if (this.Memory.ReadClickLevel() >= clickLevel)
+            return
+        if (numClicks == 1)
+            return this.BGFLU_LevelClickDamage(1)
         if (clickLevel > 0)
         {
-            if (this.Memory.ReadClickLevel() >= clickLevel)
-                return true
-            if (numClicks == 1)
-                return this.BGFLU_LevelClickDamage(1)
-            StartTime := A_TickCount
-            ElapsedTime := 0
-            while (this.Memory.ReadClickLevel() < clickLevel && ElapsedTime < timeout)
+            timeoutTimer := new SH_SharedTimers()
+            while (this.Memory.ReadClickLevel() < clickLevel && !timeoutTimer.IsTimeUp(timeout))
             {
                 ; Stop leveling up if not enough gold for a full upgrade.
                 maxAmount := g_SF.Memory.BGFLU_ReadClickLevelUpAllowed()
                 this.BGFLU_LevelClickDamage(1)
                 levelUpAmount := g_SF.Memory.ReadLevelUpAmount()
                 if (levelUpAmount > 1 && maxAmount < levelUpAmount)
-                    return true
-                ElapsedTime := A_TickCount - StartTime
+                    return
             }
-            return true
         }
         else if (numClicks > 0)
             this.BGFLU_LevelClickDamage(numClicks)

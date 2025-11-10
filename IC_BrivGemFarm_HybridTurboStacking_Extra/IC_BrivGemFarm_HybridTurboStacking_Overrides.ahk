@@ -43,8 +43,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return shouldOfflineStack
         ; If no Melf +spawn effect until reset, stack offline.
         range := g_SharedData.BGFHTS_CurrentRunStackRange
-        if ((range[1] == "" || range[2] == "") && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
-            return True
+        ; if ((range[1] == "" || range[2] == "") && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2)
+        ;     return True
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunDelayOffline" ])
             return shouldOfflineStack
         ; Delay offline until last restart for multiple runs.
@@ -83,8 +83,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
     {
         if (!g_BrivUserSettingsFromAddons[ "BGFHTS_Enabled" ])
             return base.GetNumStacksFarmed()
-        if (base.ShouldOfflineStack())
-            this.ShouldOfflineStack()
+        if (this.ShouldOfflineStack())
+            this.StackRestart()
         if (afterReset || IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
         {
             sbStacks := g_SF.Memory.ReadSBStacks()
@@ -98,34 +98,24 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return g_SF.Memory.ReadSBStacks() + 48
     }
 
-    StackRestart(doingRetry := False)
+    StackRestart()
     {
-         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
-        this.StackFarmSetup() ; needs to go to W formation to pervent progressing a single zone on restart.
-        highestZone := g_SF.Memory.ReadHighestZone()
-        if (highestZone == g_SF.Memory.ReadCurrentZone() + 1 AND !Mod(highestZone, 5)) { ; if progressed 1 zone due to no jump, retry no progression..
-            g_SF.ToggleAutoProgress(1)
-            this.StackFarmSetup()
-        }
+        IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
+        g_SF.AlreadyOfflineStackedThisRun := True
+        stacks := g_SF.Memory.ReadSBStacks()
         g_SharedData.LoopString := "FORT Restart"
         g_SF.CurrentZone := g_SF.Memory.ReadCurrentZone() ; record current zone before saving for bad progression checks
+        g_PreviousZoneStartTime := A_TickCount ; reset zone start time after stacking
         if(g_SharedData.TotalRunsCount > 0)
             g_SF.CloseIC( "FORT Restart" )
+        ; save stacks in case close IC fails at doing it properly ? ; g_ServerCall.CallPreventStackFail(stacks) - only saves Haste, deletes SB. Only for resets.
         g_SF.SafetyCheck(stackRestart := True)
-        g_SF.AlreadyOfflineStackedThisRun := True
+        if (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
+            g_SF.FallBackFromZone() ; don't get stuck getting attacked.
         if (g_SF.UnBenchBrivConditions(g_BrivUserSettings))
             g_SF.DirectedInput(,, "{q}")
         else if (g_SF.BenchBrivConditions(g_BrivUserSettings))
             g_SF.DirectedInput(,, "{e}")
-        this.StackFarm() ; immediately stack after coming back online if expected.  
-        if (g_SF.Memory.ReadNumAttackingMonstersReached() > 10 || g_SF.Memory.ReadNumRangedAttackingMonsters())
-        {
-            g_SF.FallBackFromZone() ; don't get stuck getting attacked.
-            if (g_SF.UnBenchBrivConditions(g_BrivUserSettings))
-                g_SF.DirectedInput(,, "{q}")
-            else if (g_SF.BenchBrivConditions(g_BrivUserSettings))
-                g_SF.DirectedInput(,, "{e}")
-        }
         IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun := True
         ; SetFormation effectively called here after returning from this function by way of Stack continuing StackFarm()
     }
@@ -139,7 +129,8 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
         ; Melf stacking
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_100Melf" ] && this.BGFHTS_PostponeStacking() && !ignoreMelf)
             return 0
-        stacks := this.GetNumStacksFarmed(IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())
+        predictStacks := IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive()
+        stacks := this.GetNumStacksFarmed(predictStacks)
         targetStacks := targetStacks ? targetStacks : g_BrivUserSettings[ "TargetStacks" ]
         ; first checks should short circuit last check if failed.
         if (this.ShouldAvoidRestack(stacks, targetStacks) AND !ignoreMelf) {
@@ -147,9 +138,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Class extends IC_BrivGemFarm_Class
             return 0
         }
         ; Check if offline stack is needed
-        if(this.StackNormalCheckOrDoOffline()) ; bad name - tries to offline if it can, otherwise does more setup
+        if(this.StackNormalExtraSetup())
             return
-        this.StackFarmSetup()
+        this.StackFarmSetup(setUIString := True)
         ; Start online stacking
         g_SharedData.LoopString := "Stack Normal"
         ; Turn on Briv auto-heal
@@ -207,16 +198,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         return fncToCallOnTimer
     }
 
-    StackNormalCheckOrDoOffline()
+    ; Extra setup for HTS online stacking.
+    StackNormalExtraSetup()
     {
-        isMelfActive := IC_BrivGemFarm_HybridTurboStacking_Melf.IsCurrentEffectSpawnMore()
-        if (this.BGFHTS_DelayedOffline || ((!isMelfActive) && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 2))
-        {
-            this.BGFHTS_DelayedOffline := false
-            IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite([36, 59, 97])
-            this.StackRestart()
-            return true
-        }
         if (g_BrivUserSettingsFromAddons[ "BGFHTS_Multirun" ])
             targetStacks := g_BrivUserSettingsFromAddons[ "BGFHTS_MultirunTargetStacks" ]
         g_SF.ToggleAutoProgress( 0, false, true )
@@ -237,7 +221,9 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
     {
         currentZone:= g_SF.Memory.ReadCurrentZone()
         amountToLevelBriv := 0
-        if (currentZone >= 1400)
+        if (currentZone >= 1500)
+            amountToLevelBriv := 815
+        else if (currentZone >= 1400)
             amountToLevelBriv := 695
         else if (currentZone >= 1300)
             amountToLevelBriv := 575
@@ -246,7 +232,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         else if (currentZone >= 1100)
             amountToLevelBriv := 400
         else
-            amountToLevelBriv := 340
+            amountToLevelBriv := this.BGFLU_GetTargetLevel(ActiveEffectKeySharedFunctions.Briv.HeroID, minOrMax := "Max") 
         return amountToLevelBriv
         
     }
@@ -260,6 +246,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         usedWardenUlt := false
         StartTime := A_TickCount
         ElapsedTime := 0
+        MelfID := 59
         if (!IC_BrivGemFarm_Class.BrivFunctions.PredictStacksActive())  ; Haste stacks are taken into account
         {
             remainder := targetStacks - stacks
@@ -270,6 +257,12 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                     return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
                 g_SharedData.BGFHTS_Status := "Stacking: " . (stacks + SBStacksFarmed ) . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
+                isMelfInParty := MelfID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(MelfID))
+                if (isMelfInParty)
+                    targetLevel := this.BGFLU_GetTargetLevel(MelfID)
+                this.BGFLU_LevelUpChamp(MelfID, targetLevel, true) ; special redundant level melf x25
+                this.BGFLU_DoPartySetupMax(stackFormation)
+                this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 if (levelBrivSomeMore)
                     this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 ; Warden ultimate
@@ -278,7 +271,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
                 if (IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
                     this.StackFarmSetup()
-                else if (!this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2)))
+                else if (!this.IsCurrentFormationLazy(this.Memory.GetFormationByFavorite(2), 2))
                     this.StackFarmSetup()                
                 else if (SBStacksFarmed < (remainder / 10) and ElapsedTime > 10000 ) ; not gaining stacks 
                     this.StackFarmSetup()
@@ -295,6 +288,10 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                     return g_SharedData.BGFHTS_Status := "Stacking interrupted due to game closed or reset"
                 g_SharedData.BGFHTS_Status := "Stacking: " . stacks . "/" . targetStacks
                 g_SF.FallBackFromBossZone()
+                isMelfInParty := MelfID == g_SF.Memory.ReadSelectedChampIDBySeat(g_SF.Memory.ReadChampSeatByID(MelfID))
+                if (isMelfInParty)
+                    targetLevel := this.BGFLU_GetTargetLevel(MelfID)
+                this.BGFLU_LevelUpChamp(MelfID, targetLevel, true) ; level melf x25
                 if (levelBrivSomeMore)
                     this.BGFLU_LevelUpChamp(ActiveEffectKeySharedFunctions.Briv.HeroID, amountToLevelBriv)
                 ; Warden ultimate
@@ -303,7 +300,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
                     usedWardenUlt := this.BGFHTS_TestWardenUltConditions(wardenThreshold)
                 if (IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun AND g_SF.Memory.ReadMostRecentFormationFavorite() != 2) ; not in formation 2 still
                     this.StackFarmSetup()
-                else if (!this.IsCurrentFormation(this.Memory.GetFormationByFavorite(2)))
+                else if (!this.IsCurrentFormationLazy(this.Memory.GetFormationByFavorite(2), 2))
                     this.StackFarmSetup()
                 Sleep, 30
                 ElapsedTime := A_TickCount - StartTime
@@ -404,7 +401,8 @@ class IC_BrivGemFarm_HybridTurboStacking_IC_MemoryFunctions_Class extends IC_Mem
         version := this.GameManager.game.gameInstances[this.GameInstance].FormationSaveHandler.formationSavesV2.__version.Read()
         if (this.FavoriteFormations[favorite] != "" AND version != "" AND version == this.LastFormationSavesVersion[favorite])
             return this.FavoriteFormations[favorite] 
-        formation := this.GetFormationSaveBySlot(,,favorite)
+        slot := this.GetSavedFormationSlotByFavorite(favorite)
+        formation := this.GetFormationSaveBySlot(slot)
         if (favorite == 2) ; don't test stack formation for champions are still benched.
             for k, v in formation
                 for _, champID in g_SharedData.BGFHTS_RemovedIdsFromWFavorite

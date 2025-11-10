@@ -212,7 +212,7 @@ class IC_BrivGemFarm_HybridTurboStacking_Added_Class ; Added to IC_BrivGemFarm_C
         if (!isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfInactiveStrategy" ] == 1)
             removedIds := [59] ; Melf
         else if (isMelfActive && g_BrivUserSettingsFromAddons[ "BGFHTS_MelfActiveStrategy" ] == 1)
-            removedIds := [36, 97] ; Warden/Tatyana
+            removedIds := [36] ; Warden/Tatyana
         IC_BrivGemFarm_HybridTurboStacking_Functions.SetRemovedIdsFromWFavorite(removedIds)
         return false
     }

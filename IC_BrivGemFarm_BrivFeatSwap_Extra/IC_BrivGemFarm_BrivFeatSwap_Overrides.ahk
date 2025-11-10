@@ -94,7 +94,8 @@ class IC_BrivGemFarm_BrivFeatSwap_SharedFunctions_Class extends IC_SharedFunctio
         }
         if (currentZone != 1 AND currentZone != lastZone AND ((attackingMon := this.Memory.ReadNumAttackingMonstersReached()) >= 10 || (attackingRangedMon := this.Memory.ReadNumRangedAttackingMonsters())))
             lastZone := currentZone, this.FallBackFromZone(2000)
-        this.DoSwitchFormationInput(toFavorite)           
+        this.DoSwitchFormationInput(toFavorite) 
+        IC_BrivGemFarm_Class.BrivFunctions.HasSwappedFavoritesThisRun := True
         Sleep, % g_BrivUserSettingsFromAddons[ "BGFLU_MinLevelInputDelay" ]
         g_SharedData.BGFBFS_UpdateSkipAmount(toFavorite)
     }

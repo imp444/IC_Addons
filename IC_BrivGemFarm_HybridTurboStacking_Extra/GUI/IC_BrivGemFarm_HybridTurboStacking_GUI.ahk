@@ -225,7 +225,7 @@ Class IC_BrivGemFarm_HybridTurboStacking_GUI
         Gui, ICScriptHub:Add, Groupbox, Section xs y+%ySpacing% vBGFHTS_StacksGroup, Stacks
         ; Warning
         GUIFunctions.UseThemeTextColor("WarningTextColor", 700)
-        text := "The settings below require both Auto Detect and IgnoreBrivHaste off."
+        text := "The settings below require IgnoreBrivHaste off."
         Gui, ICScriptHub:Add, Text, xs+%xSection% ys+%yTitleSpacing% vBGFHTS_StacksWarning, % text
         GUIFunctions.UseThemeTextColor()
         ; Stacks prediction

@@ -8,9 +8,8 @@ ___
 
 ## Description:
 
-This addon allows to get optimal gem cards draws for Ellywick while gem farming.  
-It will increase the Gems Per Hour (GPH) of your gem farm by allowing Ellywick to draw gem cards on z1 before Thellora
-is placed on the field, getting more gems for all the bosses she skips in the process.
+This addon allows you to get optimal gem card draws for Ellywick while gem farming.  
+It will increase the Gems Per Hour (GPH) of your gem farm by allowing Ellywick to draw/redraw gem cards.
 
 ___
 
@@ -26,28 +25,17 @@ Additively increases the odds of Gem cards being drawn by 20% (additively reduci
 
 This brings the percent chance of drawing Gem cards to **40**%.
 
-### Thellora
+### Modron Formation
 
-Thellora needs to be removed from the Modron formation to stack Ellywick on z1.
-If you switch to the Q/E formation while she is in either of them, she will be put on the field as any seat 1 hero.
-
-If Thellora jumps before Ellywick has drawn gem cards, you will lose the gem bonus for every single boss skipped by Thellora
-when the next save is sent to the server. This is critical if you hit a boss early in your run since going to a boss zone
-triggers a save after you kill a boss for the first time and the bag of gems drops.  
-Saving also triggers periodically after a set amount of seconds (15?).
-
-You have to save another formation containing all the champions in the starting formation (minus Thellora) if you want the game to pick specialzations while levelling.  
-<img alt="Advanced settings" src="Images/modron_formation.png"/>
-
-Select your formation in the Modron Automation Setup menu.
+This is a 4th formation that will be saved to the modron core as the formation loaded when you start a new run, it will hold all of the formations specializations.
+you can use Emmote's [Example formations](https://emmotes.github.io/ic_scripting_routes/#formsTab) page on her site to build your Modron formation.
 
 ### Dungeon Master
 
-If Dungeon Master is saved in the Modron formation, his ultimate will be used automatically to refresh Ellywick's.
+If Dungeon Master is saved in the Modron formation, set his Min/Max in the Level up addon to 200/200, this will allow his ultimate will be used automatically to refresh Ellywick's.
 
 ## Settings:
 
-#### The settings below are used on z1 before Thellora is placed on the field.
 
 * **Number of gem cards** (default: 1)   
 The addon waits until Ellywick has drawn this number of cards before progressing.
@@ -70,6 +58,5 @@ since going to a boss zone triggers a save after you kill the boss and the bag o
 > an additional 4 cards to have 5 gem cards, which is impossible since Ellywick can only have 5 cards in her hand at once.
 > Her ultimate will be used early when there is at least 1 redraw left and her ultimate is off cooldown.
 
-> ⚠️ This addon disables formation switching to prevent Thellora from being loaded on z1.  
 > You will have to switch formations manually if Ellywick is not on the field before pressing the **Start Gem Farm** button
 > (unless switching from the stack formation).
